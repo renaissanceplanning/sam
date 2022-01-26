@@ -1,0 +1,20 @@
+name: sam
+channels: 
+  - conda-forge
+dependencies:
+  - python=3.7
+  - r
+  - geopandas
+  - pandas
+  - numpy
+  - osmnx
+  - networkx
+  - pip
+  - pip:
+    - -e ../rputils
+    - -e ../algi
+    - -e ../gary
+#    - -e ../emma
+#    - -e ../biff
+#    - -e ../roxy
+#    - -e ../sophia
