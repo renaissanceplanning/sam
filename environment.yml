@@ -9,6 +9,8 @@ dependencies:
   - numpy
   - osmnx
   - networkx
+  - rpy2
+  - r-tidycensus
   - pip
   - pip:
     - -e ../rputils
