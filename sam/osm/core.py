@@ -28,42 +28,43 @@ class osm_network(nx.MultiDiGraph):
     '''
     Standardized downloader for OSM networks
     '''
-    def __init__(self, geometry, net_type="drive", crs=None):
+    def __init__(self, net):
+        return super().__init__(net)
+    
+    @classmethod
+    def osm_walk(geometry, crs=None, add_speed=True):
         '''
-        Download an OSM graph using standardized inputs
+        Download an OSM walk newtork.
 
         Parameters
         ----------
         geometry : gpd.GeoDataFrame or gpd.GeoSeries
             Area in which to download the network; all features should be
             [Multi]Polygon.
-        net_type : str, optional
-            Network type to download; one of "walk", "bike", or "drive". The 
-            default is "drive".
         crs : Any, optional
-            The CRS for the network; can be anything accepted by
-            `pyproj.CRS.from_user_input`, e.g. an integer EPSG code. The 
+            The CRS for the network; can be anything accepted by the
+            `ox.project_graph()` function, e.g. an integer EPSG code. The 
             default is None, in which case the projection is inherited from
             `geometry`.
+        add_speed : bool
+            Should a speed attribute be added to the network? If True, the
+            `ox.add_edge_speeds()` function will be used to add a speed to
+            each edge.
 
         Returns
         -------
-        OSM network, subclassed from nx.MultiDigraph 
+        nx.MultiDiGraph
 
         '''
         net = dl_osm_network(geometry=geometry,
-                             net_type=net_type,
+                             net_type="walk",
                              trim_components=True)
         if crs is None:
             crs = geometry.crs
         else:
-            try:
-                crs = CRS.from_user_input(crs)
-            except:
-                raise ValueError(f"CRS cannot be created from {crs}")
+            pass
         net = ox.project_graph(net, to_crs=crs)
         net = ox.add_edge_speeds(net)
-        return super().__init__(net)
     
     def to_gdf(self):
         '''
