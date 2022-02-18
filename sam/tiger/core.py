@@ -12,30 +12,12 @@ from rputils.download.census import dl_tiger
 
 # %% Function    
 
-class tiger(gpd.GeoDataFrame):
+class Tiger(gpd.GeoDataFrame):
     '''
     Download TIGER shapes.
     '''
     def __init__(gdf):
-        super().__init__(gdf)
-        
-        
-    def to_shapefile(self, save_path):
-        '''
-        Write a TIGER shape to shapefile.
-
-        Parameters
-        ----------
-        save_path : path
-            File path at which to save the shape.
-
-        Returns
-        -------
-        None.
-
-        '''
-        self.to_file(save_path)
-        return None 
+        return super().__init__(gdf)
     
     @classmethod
     def blocks(cls, state, county=None, year=2019, crs=None, trim=False):
@@ -230,5 +212,22 @@ class tiger(gpd.GeoDataFrame):
             return cls(ts)
         else:
             return cls(ts.to_crs(crs))
+        
+    def to_shapefile(self, save_path):
+        '''
+        Write a TIGER shape to shapefile.
+
+        Parameters
+        ----------
+        save_path : path
+            File path at which to save the shape.
+
+        Returns
+        -------
+        None.
+
+        '''
+        self.to_file(save_path)
+        return None 
     
     
