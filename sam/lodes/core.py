@@ -107,7 +107,7 @@ class LODES(pd.DataFrame):
         pd.DataFrame
 
         '''
-        df = dl_lodes(file="rac", ST=ST, TYPE="JT00", 
+        df = dl_lodes(file="wac", ST=ST, TYPE="JT00", 
                       YEAR=year, SEG="S000", PART=None)
         df["w_geocode"] = df.h_geocode.astype(str)
         df = df.drop(columns="createdate")
