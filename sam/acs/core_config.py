@@ -1,0 +1,366 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Feb 21 14:19:35 2022
+
+@author: AZ7
+"""
+
+# TODO: rent and value
+# TODO: aggregates for rent, value, vehicles
+
+import pandas as pd
+
+_SEX_CONFIG_ = pd.DataFrame.from_dict({
+    "B01001_002":"male",
+    "B01001_026":"female"
+}, orient="index",columns=["alias"])
+
+_AGE_CONFIG_ = pd.DataFrame.from_dict({
+    "B01001_003":["age_0_4",0],
+    "B01001_004":["age_5_9",5],
+    "B01001_005":["age_10-14",10],
+    "B01001_006":["age_15_17",15],
+    "B01001_007":["age_18_19",18],
+    "B01001_008":["age_20",20],
+    "B01001_009":["age_21",21],
+    "B01001_010":["age_22_24",22],
+    "B01001_011":["age_25_29",25],
+    "B01001_012":["age_30_34",30],
+    "B01001_013":["age_35_39",35],
+    "B01001_014":["age_40_44",40],
+    "B01001_015":["age_45_49",45],
+    "B01001_016":["age_50_54",50],
+    "B01001_017":["age_55_59",55],
+    "B01001_018":["age_60_61",60],
+    "B01001_019":["age_62_64",62],
+    "B01001_020":["age_65_66",65],
+    "B01001_021":["age_67_69",67],
+    "B01001_022":["age_70_74",70],
+    "B01001_023":["age_75_79",75],
+    "B01001_024":["age_80_84",80],
+    "B01001_025":["age_85p",85],
+    "B01001_027":["age_0_4",0],
+    "B01001_028":["age_5_9",5],
+    "B01001_029":["age_10-14",10],
+    "B01001_030":["age_15_17",15],
+    "B01001_031":["age_18_19",18],
+    "B01001_032":["age_20",20],
+    "B01001_033":["age_21",21],
+    "B01001_034":["age_22_24",22],
+    "B01001_035":["age_25_29",25],
+    "B01001_036":["age_30_34",30],
+    "B01001_037":["age_35_39",35],
+    "B01001_038":["age_40_44",40],
+    "B01001_039":["age_45_49",45],
+    "B01001_040":["age_50_54",50],
+    "B01001_041":["age_55_59",55],
+    "B01001_042":["age_60_61",60],
+    "B01001_043":["age_62_64",62],
+    "B01001_044":["age_65_66",65],
+    "B01001_045":["age_67_69",67],
+    "B01001_046":["age_70_74",70],
+    "B01001_047":["age_75_79",75],
+    "B01001_048":["age_80_84",80],
+    "B01001_049":["age_85p",85]
+}, orient="index",columns=["alias","lb"])
+
+_INC_CONFIG_ = pd.DataFrame.from_dict({
+    "B19001_002":["inc_0_10",0],
+    "B19001_003":["inc_10_15",10],
+    "B19001_004":["inc_15_20",15],
+    "B19001_005":["inc_20_25",20],
+    "B19001_006":["inc_25_30",25],
+    "B19001_007":["inc_30_35",30],
+    "B19001_008":["inc_35_40",35],
+    "B19001_009":["inc_40_45",40],
+    "B19001_010":["inc_45_50",45],
+    "B19001_011":["inc_50_60",50],
+    "B19001_012":["inc_60_75",60],
+    "B19001_013":["inc_75_100",75],
+    "B19001_014":["inc_100_125",100],
+    "B19001_015":["inc_125_150",125],
+    "B19001_016":["inc_150_200",150],
+    "B19001_017":["inc_200p",200]
+}, orient="index",columns=["alias","lb"])
+
+_RIP_CONFIG_ = pd.DataFrame.from_dict({
+    "C17002_002":["rip_0_05",0],
+    "C17002_003":["rip_05_1",0.5],
+    "C17002_004":["rip_1_125",1],
+    "C17002_005":["rip_125_15",1.25],
+    "C17002_006":["rip_15_185",1.5],
+    "C17002_007":["rip_185_2",1.85],
+    "C17002_008":["rip_2p",2]
+}, orient="index",columns=["alias","lb"])
+
+_VEH_CONFIG_ = pd.DataFrame.from_dict({
+    "B25044_003":["veh_0",0],
+    "B25044_004":["veh_1",1],
+    "B25044_005":["veh_2",2],
+    "B25044_006":["veh_3",3],
+    "B25044_007":["veh_4",4],
+    "B25044_008":["veh_5p",5],
+    "B25044_010":["veh_0",0],
+    "B25044_011":["veh_1",1],
+    "B25044_012":["veh_2",2],
+    "B25044_013":["veh_3",3],
+    "B25044_014":["veh_4",4],
+    "B25044_015":["veh_5p",5]
+}, orient="index",columns=["alias","lb"])
+
+_TEN_CONFIG_ = pd.DataFrame.from_dict({
+    "B25044_002":"own",
+    "B25044_009":"rent"
+}, orient="index",columns=["alias"])
+
+_DIS_BG_CONFIG_ = pd.DataFrame.from_dict({
+    "C21007_005":"yes",
+    "C21007_008":"yes",
+    "C21007_012":"yes",
+    "C21007_015":"yes",
+    "C21007_020":"yes",
+    "C21007_023":"yes",
+    "C21007_027":"yes",
+    "C21007_030":"yes",
+    "C21007_006":"no",
+    "C21007_009":"no",
+    "C21007_013":"no",
+    "C21007_016":"no",
+    "C21007_021":"no",
+    "C21007_024":"no",
+    "C21007_028":"no",
+    "C21007_031":"no"
+}, orient="index",columns=["alias"])
+
+_DIS_CONFIG_ = pd.DataFrame.from_dict({
+    "B18101_004":"yes",
+    "B18101_007":"yes",
+    "B18101_010":"yes",
+    "B18101_013":"yes",
+    "B18101_016":"yes",
+    "B18101_019":"yes",
+    "B18101_023":"yes",
+    "B18101_026":"yes",
+    "B18101_029":"yes",
+    "B18101_032":"yes",
+    "B18101_035":"yes",
+    "B18101_038":"yes",
+    "B18101_005":"no",
+    "B18101_008":"no",
+    "B18101_011":"no",
+    "B18101_014":"no",
+    "B18101_017":"no",
+    "B18101_020":"no",
+    "B18101_024":"no",
+    "B18101_027":"no",
+    "B18101_030":"no",
+    "B18101_033":"no",
+    "B18101_036":"no",
+    "B18101_039":"no"
+}, orient="index",columns=["alias"])
+
+_SIZE_CONFIG_ = pd.DataFrame.from_dict({
+    "B25009_003":["size_1",1],
+    "B25009_004":["size_2",2],
+    "B25009_005":["size_3",3],
+    "B25009_006":["size_4",4],
+    "B25009_007":["size_5",5],
+    "B25009_008":["size_6",6],
+    "B25009_009":["size_7p",7],
+    "B25009_011":["size_1",1],
+    "B25009_012":["size_2",2],
+    "B25009_013":["size_3",3],
+    "B25009_014":["size_4",4],
+    "B25009_015":["size_5",5],
+    "B25009_016":["size_6",6],
+    "B25009_017":["size_7p",7]
+}, orient="index",columns=["alias","lb"])
+
+_WRK_BG_CONFIG_ = pd.DataFrame.from_dict({
+    "B23009_004":["wrk_0",0],
+    "B23009_014":["wrk_0",0], 
+    "B23009_019":["wrk_0",0], 
+    "B23009_025":["wrk_0",0], 
+    "B23009_035":["wrk_0",0], 
+    "B23009_040":["wrk_0",0],
+    "B23009_005":["wrk_1",1], 
+    "B23009_015":["wrk_1",1], 
+    "B23009_020":["wrk_1",1], 
+    "B23009_026":["wrk_1",1], 
+    "B23009_036":["wrk_1",1], 
+    "B23009_041":["wrk_1",1],
+    "B23009_006":["wrk_2",2], 
+    "B23009_016":["wrk_2",2], 
+    "B23009_021":["wrk_2",2], 
+    "B23009_027":["wrk_2",2], 
+    "B23009_037":["wrk_2",2], 
+    "B23009_042":["wrk_2",2],
+    "B23009_009":["wrk_3p",3], 
+    "B23009_017":["wrk_3p",3],  
+    "B23009_022":["wrk_3p",3],  
+    "B23009_030":["wrk_3p",3],  
+    "B23009_038":["wrk_3p",3],  
+    "B23009_043":["wrk_3p",3]
+}, orient="index",columns=["alias","lb"])
+
+_WRK_CONFIG_ = pd.DataFrame.from_dict({
+    "B08203_007":["wrk_0",0],
+    "B08203_013":["wrk_1",1],
+    "B08203_019":["wrk_2",2],
+    "B08203_025":["wrk_3p",3]
+}, orient="index",columns=["alias","lb"])
+
+_EDU_BG_CONFIG_ = pd.DataFrame.from_dict({
+    "B29002_002":["lths","lths"],
+    "B29002_003":["shs","lths"],
+    "B29002_004":["hs","hs"],
+    "B29002_005":["scnd","scndassc"],
+    "B29002_006":["assc","scndassc"],
+    "B29002_007":["bach","bach"],
+    "B29002_008":["gradprof","gradprof"]
+}, orient="index",columns=["full","basic"])
+
+_EDU_CONFIG_ = pd.DataFrame.from_dict({
+    "B15001_004":["lths","lths"],
+    "B15001_012":["lths","lths"],
+    "B15001_020":["lths","lths"],
+    "B15001_028":["lths","lths"],
+    "B15001_036":["lths","lths"],
+    "B15001_045":["lths","lths"],
+    "B15001_053":["lths","lths"],
+    "B15001_061":["lths","lths"],
+    "B15001_069":["lths","lths"],
+    "B15001_077":["lths","lths"],
+    "B15001_005":["shs","lths"],
+    "B15001_013":["shs","lths"],
+    "B15001_021":["shs","lths"],
+    "B15001_029":["shs","lths"],
+    "B15001_037":["shs","lths"],
+    "B15001_046":["shs","lths"],
+    "B15001_054":["shs","lths"],
+    "B15001_062":["shs","lths"],
+    "B15001_070":["shs","lths"],
+    "B15001_078":["shs","lths"],
+    "B15001_006":["hs","hs"],
+    "B15001_014":["hs","hs"],
+    "B15001_022":["hs","hs"],
+    "B15001_030":["hs","hs"],
+    "B15001_038":["hs","hs"],
+    "B15001_047":["hs","hs"],
+    "B15001_055":["hs","hs"],
+    "B15001_063":["hs","hs"],
+    "B15001_071":["hs","hs"],
+    "B15001_079":["hs","hs"],
+    "B15001_007":["scnd","scndassc"],
+    "B15001_015":["scnd","scndassc"],
+    "B15001_023":["scnd","scndassc"],
+    "B15001_031":["scnd","scndassc"],
+    "B15001_039":["scnd","scndassc"],
+    "B15001_048":["scnd","scndassc"],
+    "B15001_056":["scnd","scndassc"],
+    "B15001_064":["scnd","scndassc"],
+    "B15001_072":["scnd","scndassc"],
+    "B15001_080":["scnd","scndassc"],
+    "B15001_008":["assc","scndassc"],
+    "B15001_016":["assc","scndassc"],
+    "B15001_024":["assc","scndassc"],
+    "B15001_032":["assc","scndassc"],
+    "B15001_040":["assc","scndassc"],
+    "B15001_049":["assc","scndassc"],
+    "B15001_057":["assc","scndassc"],
+    "B15001_065":["assc","scndassc"],
+    "B15001_073":["assc","scndassc"],
+    "B15001_081":["assc","scndassc"],
+    "B15001_009":["bach","bach"],
+    "B15001_017":["bach","bach"],
+    "B15001_025":["bach","bach"],
+    "B15001_033":["bach","bach"],
+    "B15001_041":["bach","bach"],
+    "B15001_050":["bach","bach"],
+    "B15001_058":["bach","bach"],
+    "B15001_066":["bach","bach"],
+    "B15001_074":["bach","bach"],
+    "B15001_082":["bach","bach"],
+    "B15001_010":["gradprof","gradprof"],
+    "B15001_018":["gradprof","gradprof"],
+    "B15001_026":["gradprof","gradprof"],
+    "B15001_034":["gradprof","gradprof"],
+    "B15001_042":["gradprof","gradprof"],
+    "B15001_051":["gradprof","gradprof"],
+    "B15001_059":["gradprof","gradprof"],
+    "B15001_067":["gradprof","gradprof"],
+    "B15001_075":["gradprof","gradprof"],
+    "B15001_083":["gradprof","gradprof"]
+}, orient="index",columns=["full","basic"])
+
+_RACE_CONFIG_ = pd.DataFrame.from_dict({
+    "B02001_002":"white",
+    "B02001_003":"black",
+    "B02001_004":"aian",
+    "B02001_005":"asian",
+    "B02001_006":"nhopi",
+    "B02001_007":"other",
+    "B02001_008":"twoplus",
+}, orient="index",columns=["alias"])
+
+_ETH_CONFIG_ = pd.DataFrame.from_dict({
+    "B03002_002":"hisp",
+    "B03002_012":"nonhisp"
+}, orient="index",columns=["alias"])
+
+_MNTY_CONFIG_ = pd.DataFrame.from_dict({
+    "B03002_003":"nonmnty",
+    "B03002_004":"mnty",
+    "B03002_005":"mnty",
+    "B03002_006":"mnty",
+    "B03002_007":"mnty",
+    "B03002_008":"mnty",
+    "B03002_009":"mnty",
+    "B03002_013":"mnty",
+    "B03002_014":"mnty",
+    "B03002_015":"mnty",
+    "B03002_016":"mnty",
+    "B03002_017":"mnty",
+    "B03002_018":"mnty",
+    "B03002_019":"mnty"
+}, orient="index",columns=["alias"])
+
+_MODE_SHARE_CONFIG_ = pd.DataFrame.from_dict({
+    "B08301_001":["total","total"],
+    "B08301_002":["car","auto"],
+    "B08301_003":["car_1",""],
+    "B08301_004":["car_2p",""],
+    "B08301_005":["car_2p_2",""],
+    "B08301_006":["car_2p_3",""],
+    "B08301_007":["car_2p_4",""],
+    "B08301_008":["car_2p_56",""],
+    "B08301_009":["car_2p_7p",""],
+    "B08301_010":["tran","transit"],
+    "B08301_011":["tran_bus",""],
+    "B08301_012":["tran_ser",""],
+    "B08301_013":["tran_ldtcr",""],
+    "B08301_014":["tran_lrst",""],
+    "B08301_015":["tran_ferry",""],
+    "B08301_016":["taxi","other"],
+    "B08301_017":["motorcycle","transit"],
+    "B08301_018":["bike","nonmot"],
+    "B08301_019":["walk","nonmot"],
+    "B08301_020":["other","other"],
+    "B08301_021":["wfh","wfh"],      
+}, orient="index",columns=["full","basic"])
+
+_TOT_CONFIG_ = pd.DataFrame.from_dict({
+    "B01003_001":"pop",
+    "B11012_001":"hh",
+    "B25001_001":"du"
+}, orient="index",columns=["alias"])
+
+_RENT_CONFIG_ = pd.DataFrame.from_dict({
+
+})
+
+_VALUE_CONFIG_ = pd.DataFrmae.from_dict({
+
+})
+
+
