@@ -234,7 +234,7 @@ def _numeric_processing(state, year, county, geography, config, breaks, name):
 class ACS(pd.DataFrame):
     def __init__(self, df, univ):
         super().__init__(df)
-        self.__universe__ = univ
+        self._universe_ = univ
     
     def to_csv(self, save_path):
         self.to_csv(save_path)

@@ -8,6 +8,8 @@ Created on Mon Feb 21 14:19:35 2022
 # TODO: rent and value
 # TODO: aggregates for rent, value, vehicles
 
+# TODO: change lb to lower_bound
+
 import numpy as np
 import pandas as pd
 
@@ -416,7 +418,7 @@ _MODE_SHARE_CONFIG_ = ACSConfig(
         "B08301_014":["tran_lrst",""],
         "B08301_015":["tran_ferry",""],
         "B08301_016":["taxi","other"],
-        "B08301_017":["motorcycle","transit"],
+        "B08301_017":["motorcycle","auto"],
         "B08301_018":["bike","nonmot"],
         "B08301_019":["walk","nonmot"],
         "B08301_020":["other","other"],
