@@ -171,6 +171,7 @@ _DISABILITY_BG_CONFIG_ = ACSConfig(
     }, orient="index",columns=["full"]),
     table = "C21007",
     univ = "Civilian 18+ population for whom poverty status can be determined"
+)
 
 _DISABILITY_CONFIG_ = ACSConfig(
     pd.DataFrame.from_dict({
@@ -378,6 +379,7 @@ _ETHNICITY_CONFIG_ = ACSConfig(
     }, orient="index",columns=["full"]),
     table = "B03002",
     univ = "Total population"
+)
 
 _MINORITY_CONFIG_ = ACSConfig(
     pd.DataFrame.from_dict({
