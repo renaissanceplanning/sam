@@ -80,7 +80,7 @@ class LODES(pd.DataFrame):
 
         Returns
         -------
-        pd.DataFrame
+        LODES (subclass of pd.DataFrame)
 
         '''
         df = dl_lodes(file="rac", ST=ST, TYPE="JT00", 
@@ -104,7 +104,7 @@ class LODES(pd.DataFrame):
 
         Returns
         -------
-        pd.DataFrame
+        LODES (subclass of pd.DataFrame)
 
         '''
         df = dl_lodes(file="wac", ST=ST, TYPE="JT00", 
@@ -127,7 +127,7 @@ class LODES(pd.DataFrame):
 
         Returns
         -------
-        pd.DataFrame
+        LODES (subclass of pd.DataFrame)
 
         '''
         main = dl_lodes(file="od", ST=ST, TYPE="JT00", 
@@ -140,6 +140,7 @@ class LODES(pd.DataFrame):
         df = df.drop(columns="createdate")
         return cls(df, ST)
     
+    # TODO: set this as LODES? or is it already?
     def aggregate(self, XWalk, to, keepname=False):
         '''
         Aggregate LODES data up from the block level to a higher geographic

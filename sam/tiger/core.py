@@ -45,7 +45,7 @@ class Tiger(gpd.GeoDataFrame):
 
         Returns
         -------
-        gpd.GeoDataFrame
+        Tiger (subclass of gpd.GeoDataFrame)
 
         '''
         ts = dl_tiger(geom="blocks", state=state, county=county, year=year)
@@ -86,7 +86,7 @@ class Tiger(gpd.GeoDataFrame):
 
         Returns
         -------
-        gpd.GeoDataFrame
+        Tiger (subclass of gpd.GeoDataFrame)
 
         '''
         ts = dl_tiger(geom="block_groups", state=state, county=county, year=year)
@@ -127,7 +127,7 @@ class Tiger(gpd.GeoDataFrame):
 
         Returns
         -------
-        gpd.GeoDataFrame
+        Tiger (subclass of gpd.GeoDataFrame)
 
         '''
         ts = dl_tiger(geom="tracts", state=state, county=county, year=year)
@@ -164,7 +164,7 @@ class Tiger(gpd.GeoDataFrame):
 
         Returns
         -------
-        gpd.GeoDataFrame
+        Tiger (subclass of gpd.GeoDataFrame)
 
         '''
         ts = dl_tiger(geom="counties", state=state, year=year)
@@ -198,7 +198,7 @@ class Tiger(gpd.GeoDataFrame):
 
         Returns
         -------
-        gpd.GeoDataFrame
+        Tiger (subclass of gpd.GeoDataFrame)
 
         '''
         ts = dl_tiger(geom="core_based_statistical_areas", year=year)
@@ -213,7 +213,7 @@ class Tiger(gpd.GeoDataFrame):
         else:
             return cls(ts.to_crs(crs))
         
-    def to_shapefile(self, save_path):
+    def to_shp(self, save_path):
         '''
         Write a TIGER shape to shapefile.
 
@@ -228,6 +228,5 @@ class Tiger(gpd.GeoDataFrame):
 
         '''
         self.to_file(save_path)
-        return None 
     
     

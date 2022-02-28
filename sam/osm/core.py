@@ -54,7 +54,7 @@ class OSMNetwork(nx.MultiDiGraph):
 
         Returns
         -------
-        nx.MultiDiGraph
+        OSMNetwork (subclass of nx.MultiDiGraph)
 
         '''
         net = dl_osm_network(geometry=geometry,
@@ -95,7 +95,7 @@ class OSMNetwork(nx.MultiDiGraph):
 
         Returns
         -------
-        nx.MultiDiGraph
+        OSMNetwork (subclass of nx.MultiDiGraph)
 
         '''
         net = dl_osm_network(geometry=geometry,
@@ -136,7 +136,7 @@ class OSMNetwork(nx.MultiDiGraph):
 
         Returns
         -------
-        nx.MultiDiGraph
+        OSMNetwork (subclass of nx.MultiDiGraph)
 
         '''
         net = dl_osm_network(geometry=geometry,
@@ -241,7 +241,6 @@ class OSMNetwork(nx.MultiDiGraph):
         edges_path = os.path.join(save_dir, "edges.shp")
         nodes.reset_index().to_file(nodes_path)
         edges.reset_index().to_file(edges_path)
-        return None
     
     def to_pickle(self, save_path, obj_type="nx"):
         '''
@@ -273,7 +272,6 @@ class OSMNetwork(nx.MultiDiGraph):
                              f"{', '.join(_OBJ_TYPES_)}")
         with open(save_path, "wb") as dst:
             pickle.dump(obj, dst)
-        return None
         
     
     

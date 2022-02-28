@@ -260,8 +260,7 @@ class ACS(pd.DataFrame):
 
         Returns
         -------
-        ACS
-            table of ACS data
+        ACS (subclass of pd.DataFrame)
 
         '''
         cfg = _SEX_CONFIG_
@@ -291,8 +290,7 @@ class ACS(pd.DataFrame):
 
         Returns
         -------
-        ACS
-            table of ACS data
+        ACS (subclass of pd.DataFrame)
 
         '''
         cfg = _AGE_CONFIG_
@@ -322,8 +320,7 @@ class ACS(pd.DataFrame):
 
         Returns
         -------
-        ACS
-            table of ACS data
+        ACS (subclass of pd.DataFrame)
 
         '''
         cfg = _INCOME_CONFIG_
@@ -353,8 +350,7 @@ class ACS(pd.DataFrame):
 
         Returns
         -------
-        ACS
-            table of ACS data
+        ACS (subclass of pd.DataFrame)
 
         '''
         cfg = _RIP_CONFIG_
@@ -382,8 +378,7 @@ class ACS(pd.DataFrame):
 
         Returns
         -------
-        ACS
-            table of ACS data
+        ACS (subclass of pd.DataFrame)
 
         '''
         cfg = _VEHICLES_CONFIG_
@@ -409,8 +404,7 @@ class ACS(pd.DataFrame):
 
         Returns
         -------
-        ACS
-            table of ACS data
+        ACS (subclass of pd.DataFrame)
 
         '''
         cfg = _TENURE_CONFIG_
@@ -439,8 +433,7 @@ class ACS(pd.DataFrame):
 
         Returns
         -------
-        ACS
-            table of ACS data
+        ACS (subclass of pd.DataFrame)
 
         '''
         if geography == "block group":
@@ -470,8 +463,7 @@ class ACS(pd.DataFrame):
 
         Returns
         -------
-        ACS
-            table of ACS data
+        ACS (subclass of pd.DataFrame)
 
         '''
         cfg = _SIZE_CONFIG_
@@ -500,8 +492,7 @@ class ACS(pd.DataFrame):
 
         Returns
         -------
-        ACS
-            table of ACS data
+        ACS (subclass of pd.DataFrame)
 
         '''
         if geography == "block group":
@@ -539,8 +530,7 @@ class ACS(pd.DataFrame):
 
         Returns
         -------
-        ACS
-            table of ACS data
+        ACS (subclass of pd.DataFrame)
 
         '''
         if geography == "block group":
@@ -570,8 +560,7 @@ class ACS(pd.DataFrame):
 
         Returns
         -------
-        ACS
-            table of ACS data
+        ACS (subclass of pd.DataFrame)
 
         '''
         cfg = _RACE_CONFIG_
@@ -596,8 +585,7 @@ class ACS(pd.DataFrame):
 
         Returns
         -------
-        ACS
-            table of ACS data
+        ACS (subclass of pd.DataFrame)
 
         '''
         cfg = _ETHNICITY_CONFIG_
@@ -624,8 +612,7 @@ class ACS(pd.DataFrame):
 
         Returns
         -------
-        ACS
-            table of ACS data
+        ACS (subclass of pd.DataFrame)
 
         '''
         cfg = _MINORITY_CONFIG_
@@ -665,8 +652,7 @@ class ACS(pd.DataFrame):
 
         Returns
         -------
-        ACS
-            table of ACS data
+        ACS (subclass of pd.DataFrame)
 
         '''
         cfg = _MODE_SHARE_CONFIG_
@@ -701,8 +687,7 @@ class ACS(pd.DataFrame):
 
         Returns
         -------
-        ACS
-            table of ACS data
+        ACS (subclass of pd.DataFrame)
 
         '''
         cfgs = [_TOT_POP_CONFIG_, _TOT_HH_CONFIG_, _TOT_HU_CONFIG_]
