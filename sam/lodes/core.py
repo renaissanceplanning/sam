@@ -2,7 +2,7 @@
 """
 Created on Fri Feb 18 15:42:42 2022
 
-@author: AZ7
+@author: Aaron Weinstock
 """
 
 import re
@@ -11,7 +11,35 @@ import pandas as pd
 
 from rputils.download.census import dl_lodes, dl_xwalk
 
-# %% Functions
+# %% Helper functions
+
+def _dlfm_lodes_ac(file, state, year, idcol):
+    '''
+    DownLoad and ForMat an LODES area characteristics file.
+
+    Parameters
+    ----------
+    file : str
+        File type: either "rac" or "wac"; passed to `dl_lodes`.
+    state : str
+        2-letter postal code for a chosen state; passed to `dl_lodes`.
+    year : int
+        Year for the data; passed to `dl_lodes`.
+    idcol : str
+        Block ID column in the file.
+
+    Returns
+    -------
+    pd.DataFrame
+
+    '''
+    df = dl_lodes(file=file, ST=state, TYPE="JT00", 
+                  YEAR=year, SEG="S000", PART=None)
+    df[idcol] = df[idcol].astype(str)
+    df = df.drop(columns="createdate")
+    return df    
+
+# %% Class
 
 class XWalk(pd.DataFrame):
     '''
@@ -22,13 +50,13 @@ class XWalk(pd.DataFrame):
         self.__datastate__ = ST
         
     @classmethod
-    def xwalk(cls, ST):
+    def xwalk(cls, state):
         '''
         Download the geography crosswalk for a state.
 
         Parameters
         ----------
-        ST : str
+        state : str
             2-letter postal code for a chosen state.
 
         Returns
@@ -36,9 +64,9 @@ class XWalk(pd.DataFrame):
         pd.DataFrame
 
         '''
-        df = dl_xwalk(ST=ST)
+        df = dl_xwalk(ST=state)
         df = df.drop(columns=["blklatdd","blklondd","createdate"])
-        return cls(df, ST)
+        return cls(df, state)
     
     def to_csv(self, save_path):
         '''
@@ -66,80 +94,71 @@ class LODES(pd.DataFrame):
         self.__datastate__ = ST
     
     @classmethod
-    def rac(cls, ST, year=2019):
+    def rac(cls, state, year):
         '''
         Download LODES residence area characteristics data (for all jobs in all
         segments)
 
         Parameters
         ----------
-        ST : str
-            2-letter postal code for a chosen state.
-        year : int
-            Year for the data. The default is 2019.
+        See `sam.lodes._dlfm_lodes_ac`
 
         Returns
         -------
-        pd.DataFrame
+        LODES (subclass of pd.DataFrame)
 
         '''
-        df = dl_lodes(file="rac", ST=ST, TYPE="JT00", 
-                      YEAR=year, SEG="S000", PART=None)
-        df["h_geocode"] = df.h_geocode.astype(str)
-        df = df.drop(columns="createdate")
-        return cls(df, ST)
+        df = _dlfm_lodes_ac(file="rac", state=state, year=year, 
+                            idcol="h_geocode")
+        return cls(df, state)
     
     @classmethod
-    def wac(cls, ST, year=2019):
+    def wac(cls, state, year):
         '''
         Download LODES workplace area characteristics data (for all jobs in all
         segments)
 
         Parameters
         ----------
-        ST : str
-            2-letter postal code for a chosen state.
-        year : int
-            Year for the data. The default is 2019.
+        See `sam.lodes._dlfm_lodes_ac`
 
         Returns
         -------
-        pd.DataFrame
+        LODES (subclass of pd.DataFrame)
 
         '''
-        df = dl_lodes(file="wac", ST=ST, TYPE="JT00", 
-                      YEAR=year, SEG="S000", PART=None)
-        df["w_geocode"] = df.h_geocode.astype(str)
-        df = df.drop(columns="createdate")
-        return cls(df, ST)
+        df = _dlfm_lodes_ac(file="wac", state=state, year=year, 
+                            idcol="w_geocode")
+        return cls(df, state)
     
     @classmethod
-    def od(cls, ST, year=2019):
+    def od(cls, state, year):
         '''
         Download LODES origin-destiantion data (for all jobs in all segments)
 
         Parameters
         ----------
-        ST : str
+        state : str
             2-letter postal code for a chosen state.
         year : int
-            Year for the data. The default is 2019.
+            Year for the data.
 
         Returns
         -------
-        pd.DataFrame
+        LODES (subclass of pd.DataFrame)
 
         '''
-        main = dl_lodes(file="rac", ST=ST, TYPE="JT00", 
+        main = dl_lodes(file="od", ST=state, TYPE="JT00", 
                         YEAR=year, SEG=None, PART="main")
-        aux = dl_lodes(file="rac", ST=ST, TYPE="JT00", 
-                       YEAR=year, SEG=None, PART="main")
+        aux = dl_lodes(file="od", ST=state, TYPE="JT00", 
+                       YEAR=year, SEG=None, PART="aux")
         df = pd.concat([main, aux])
         df["h_geocode"] = df.h_geocode.astype(str)
         df["w_geocode"] = df.w_geocode.astype(str)
         df = df.drop(columns="createdate")
-        return cls(df, ST)
+        return cls(df, state)
     
+    # TODO: set this as LODES? or is it already?
     def aggregate(self, XWalk, to, keepname=False):
         '''
         Aggregate LODES data up from the block level to a higher geographic
