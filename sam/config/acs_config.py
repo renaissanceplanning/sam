@@ -20,7 +20,7 @@ class ACSConfig(pd.DataFrame):
         super().__init__(df)
         self._table_ = table
         self._universe_ = univ
-        self._names_ = opts
+        self._names_ = names
         self._reclass_ = "lb" in df.columns
 
 _SEX_CONFIG_ = ACSConfig(
@@ -221,7 +221,7 @@ _SIZE_CONFIG_ = ACSConfig(
         "B25009_016":["size_6",6],
         "B25009_017":["size_7p",7]
     }, orient="index",columns=["full","lb"]),
-    table - "B25009",
+    table = "B25009",
     univ = "Total households"
 )
 
@@ -397,14 +397,14 @@ _MINORITY_CONFIG_ = ACSConfig(
         "B03002_017":"mnty",
         "B03002_018":"mnty",
         "B03002_019":"mnty"
-    }, orient="index",columns=["full"])
+    }, orient="index",columns=["full"]),
     table = "B03002",
     univ = "Total population"
 )
 
 _MODE_SHARE_CONFIG_ = ACSConfig(
     pd.DataFrame.from_dict({
-        "B08301_001":["total","total"],
+        "B08301_001":["trips","trips"],
         "B08301_002":["car","auto"],
         "B08301_003":["car_1",""],
         "B08301_004":["car_2p",""],
@@ -430,14 +430,28 @@ _MODE_SHARE_CONFIG_ = ACSConfig(
     univ = "16+ working population"
 )
 
-_TOT_CONFIG_ = ACSConfig(
+_TOT_POP_CONFIG_ = ACSConfig(
     pd.DataFrame.from_dict({
-        "B01003_001":"pop",
-        "B11012_001":"hh",
-        "B25001_001":"du"
+        "B01003_001":"pop"
     }, orient="index",columns=["full"]),
-    table = ["B01003","B11012","B25001"],
-    univ = "Totals"
+    table = "B01003",
+    univ = "Total population"
+)
+
+_TOT_HH_CONFIG_ = ACSConfig(
+    pd.DataFrame.from_dict({
+        "B11012_001":"hh"
+    }, orient="index",columns=["full"]),
+    table = "B11012",
+    univ = "Total households"
+)
+
+_TOT_HU_CONFIG_ = ACSConfig(
+    pd.DataFrame.from_dict({
+        "B25001_001":"hu"
+    }, orient="index",columns=["full"]),
+    table = "B25001",
+    univ = "Total housing units"
 )
 
 _RENT_CONFIG_ = pd.DataFrame.from_dict({

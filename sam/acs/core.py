@@ -12,8 +12,7 @@ import numpy as np
 from rputils import dl_census
 from core_config import * #TODO: is this right?
 
-#TODO: total method
-#TODO: race and value methods
+#TODO: rent and value methods
 
 # %% Helper functions
 
@@ -633,7 +632,6 @@ class ACS(pd.DataFrame):
                                    geography=geography, config=cfg, name=name)
         return cls(tab, univ=cfg._universe_)
     
-    # TODO: complete docs
     @classmethod
     def mode_share(cls, state, year, county=None, geography="block group", 
                    name="full"):
@@ -647,7 +645,22 @@ class ACS(pd.DataFrame):
         Notes
         -----
         Options include:
-            1. `name = "full"`: car (car) ...
+            1. `name = "full"`: all car/truck/van (car), drove alone (car_1), 
+            all carpool (car_2p), 2-person carpool (car_2p_2), 3-person carpool 
+            (car_2p_3), 4-person carpool (car_2p_4), 5- or 6-person carpool 
+            (car_2p_56), 7+-person carpool (car_2p_7p), all public 
+            transportation (tran), bus (tran_bus), subway or elevated rail
+            (tran_ser), long-distance train or commuter rail (tran_ldtcr), 
+            light rail/streetcar/trolley (tran_lrst), ferry (tran_ferry),
+            taxicab (taxi), motorcycle (motorcycle), bike (bike), walk (walk),
+            other mode of transportation (other), worked from home (wfh)
+            2. `name = "basic"`: car/truck/van/carpool/motorcycle (auto),
+            any public transportation (transit), bike or walk (nonmot), taxi
+            or other mode (other), worked from home (wfh)
+        All columns will be represented as shares. Regardless of the choice of
+        `name`, an additional column "trips" will be provided to indicated the
+        total number of commutes. This column may be multiplied by a shares
+        column to return the number of trips for that mode.            
 
         Returns
         -------
@@ -660,11 +673,47 @@ class ACS(pd.DataFrame):
                                    geography=geography, config=cfg, name=name)
         tab = tab.drop(columns="")
         for c in tab.columns:
-            if bool(re.search("^GEOID",c)) or c == "total":
+            if bool(re.search("^GEOID",c)) or c == "trips":
                 pass
             else:
-                tab[c] = tab[c] / tab["total"]
+                tab[c] = tab[c] / tab["trips"]
         return cls(tab, univ=cfg._universe_)
+    
+    @classmethod
+    def totals(cls, state, year, county=None, geography="block group",
+               name="full"):
+        '''
+        Download ACS total population, households, and housing units data 
+        
+        This will download 3 separate tables for each statistic, and bind
+        them all into a singular table of totals
+        
+        Parameters
+        ----------
+        see `sam.acs._discrete_processing`
+        
+        Notes
+        -----
+        Options include:
+            1. `name = "full"`: total population (pop), total households (hh),
+            total housing units (hu)          
+
+        Returns
+        -------
+        ACS
+            table of ACS data
+
+        '''
+        cfgs = [_TOT_POP_CONFIG_, _TOT_HH_CONFIG_, _TOT_HU_CONFIG_]
+        tab = [_discrete_processing(state=state, year=year, county=county,
+                                    geography=geography, config=cfg, name=name)
+               for cfg in cfgs]
+        idcol = [c for c in tab[0].columns if bool(re.search("^GEOID",c))][0]
+        tab = [df.set_index(idcol) for df in tab]
+        tab = pd.concat(tab, axis=1).reset_index()
+        return cls(tab, univ="totals")
+        
+        
     
     
         
