@@ -236,12 +236,12 @@ def _numeric_processing(state, year, county, geography, config, breaks, name):
 # %% Class
 
 class ACS(pd.DataFrame):
+    '''
+    Download ACS data
+    '''
     def __init__(self, df, univ):
         super().__init__(df)
         self._universe_ = univ
-    
-    def to_csv(self, save_path):
-        self.to_csv(save_path)
         
     @classmethod
     def sex(cls, state, year, county=None, geography="block group", 
@@ -713,6 +713,22 @@ class ACS(pd.DataFrame):
         tab = [df.set_index(idcol) for df in tab]
         tab = pd.concat(tab, axis=1).reset_index()
         return cls(tab, univ="totals")
+    
+    def to_csv(self, save_path):
+        '''
+        Save ACS data as a .csv.
+
+        Parameters
+        ----------
+        save_path : str
+            Path to which to save the .csv.
+
+        Returns
+        -------
+        None.
+
+        '''
+        self.to_csv(save_path)
         
         
     

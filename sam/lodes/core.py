@@ -66,7 +66,7 @@ class LODES(pd.DataFrame):
         self.__datastate__ = ST
     
     @classmethod
-    def rac(cls, ST, year=2019):
+    def rac(cls, ST, year):
         '''
         Download LODES residence area characteristics data (for all jobs in all
         segments)
@@ -76,7 +76,7 @@ class LODES(pd.DataFrame):
         ST : str
             2-letter postal code for a chosen state.
         year : int
-            Year for the data. The default is 2019.
+            Year for the data
 
         Returns
         -------
@@ -90,7 +90,7 @@ class LODES(pd.DataFrame):
         return cls(df, ST)
     
     @classmethod
-    def wac(cls, ST, year=2019):
+    def wac(cls, ST, year):
         '''
         Download LODES workplace area characteristics data (for all jobs in all
         segments)
@@ -100,7 +100,7 @@ class LODES(pd.DataFrame):
         ST : str
             2-letter postal code for a chosen state.
         year : int
-            Year for the data. The default is 2019.
+            Year for the data
 
         Returns
         -------
@@ -114,7 +114,7 @@ class LODES(pd.DataFrame):
         return cls(df, ST)
     
     @classmethod
-    def od(cls, ST, year=2019):
+    def od(cls, ST, year):
         '''
         Download LODES origin-destiantion data (for all jobs in all segments)
 
@@ -123,17 +123,17 @@ class LODES(pd.DataFrame):
         ST : str
             2-letter postal code for a chosen state.
         year : int
-            Year for the data. The default is 2019.
+            Year for the data
 
         Returns
         -------
         pd.DataFrame
 
         '''
-        main = dl_lodes(file="rac", ST=ST, TYPE="JT00", 
+        main = dl_lodes(file="od", ST=ST, TYPE="JT00", 
                         YEAR=year, SEG=None, PART="main")
-        aux = dl_lodes(file="rac", ST=ST, TYPE="JT00", 
-                       YEAR=year, SEG=None, PART="main")
+        aux = dl_lodes(file="od", ST=ST, TYPE="JT00", 
+                       YEAR=year, SEG=None, PART="aux")
         df = pd.concat([main, aux])
         df["h_geocode"] = df.h_geocode.astype(str)
         df["w_geocode"] = df.w_geocode.astype(str)
