@@ -13,7 +13,7 @@ from rputils.download.census import dl_lodes, dl_xwalk
 
 # %% Helper functions
 
-def _dlfm_ac(file, state, year, idcol):
+def _dlfm_lodes_ac(file, state, year, idcol):
     '''
     DownLoad and ForMat an LODES area characteristics file.
 
@@ -50,13 +50,13 @@ class XWalk(pd.DataFrame):
         self.__datastate__ = ST
         
     @classmethod
-    def xwalk(cls, ST):
+    def xwalk(cls, state):
         '''
         Download the geography crosswalk for a state.
 
         Parameters
         ----------
-        ST : str
+        state : str
             2-letter postal code for a chosen state.
 
         Returns
@@ -64,9 +64,9 @@ class XWalk(pd.DataFrame):
         pd.DataFrame
 
         '''
-        df = dl_xwalk(ST=ST)
+        df = dl_xwalk(ST=state)
         df = df.drop(columns=["blklatdd","blklondd","createdate"])
-        return cls(df, ST)
+        return cls(df, state)
     
     def to_csv(self, save_path):
         '''
@@ -101,14 +101,15 @@ class LODES(pd.DataFrame):
 
         Parameters
         ----------
-        See `sam.lodes._dlfm_ac`
+        See `sam.lodes._dlfm_lodes_ac`
 
         Returns
         -------
         LODES (subclass of pd.DataFrame)
 
         '''
-        df = _dlfm_ac(file="rac", state=state, year=year, idcol="h_geocode")
+        df = _dlfm_lodes_ac(file="rac", state=state, year=year, 
+                            idcol="h_geocode")
         return cls(df, state)
     
     @classmethod
@@ -119,14 +120,15 @@ class LODES(pd.DataFrame):
 
         Parameters
         ----------
-        See `sam.lodes._dlfm_ac`
+        See `sam.lodes._dlfm_lodes_ac`
 
         Returns
         -------
         LODES (subclass of pd.DataFrame)
 
         '''
-        df = _dlfm_ac(file="wac", state=state, year=year, idcol="w_geocode")
+        df = _dlfm_lodes_ac(file="wac", state=state, year=year, 
+                            idcol="w_geocode")
         return cls(df, state)
     
     @classmethod

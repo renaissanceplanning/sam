@@ -5,8 +5,6 @@ Created on Thu Jan 27 15:44:09 2022
 @author: Aaron Weinstock
 """
 
-# TODO: helper methods/structure for DL
-
 import os
 import pandana
 import pickle
@@ -24,6 +22,51 @@ _NODES_FIELDS_ = ["x","y"]
 _EDGES_FIELDS_ = ["highway","length","speed_kph","travel_time"]
 _OBJ_TYPES_ = ["nx","pandana","gdf"]
 
+# %% Helper Functions
+
+def _dat_osm(geometry, net_type, add_travel_time=True, crs=None):
+    '''
+    Download, Add travel time to, and Transform an OSM newtork.
+
+    Parameters
+    ----------
+    geometry : gpd.GeoDataFrame or gpd.GeoSeries
+        Area in which to download the network; all features should be
+        [Multi]Polygon; passed to `dl_osm_network`.
+    net_type : str
+        The network type to download: "walk", "bike", or "drive"; passed to
+        `dl_osm_network`.
+    crs : Any, optional
+        The CRS for the network; can be anything accepted by the
+        `ox.project_graph()` function, e.g. an integer EPSG code. The 
+        default is None, in which case the projection is inherited from
+        `geometry`.
+    add_travel_time : bool
+        Should a travel time attribute be added to the network? If True,
+        the `ox.add_edge_speeds()` function will be used to add a speed to
+        each edge, and the `ox.add_edge_travel_times()` function will be
+        used to add a travel time to each edge. The default is True.
+
+    Returns
+    -------
+    nx.MultiDiGraph
+
+    '''
+    net = dl_osm_network(geometry=geometry,
+                         net_type="drive",
+                         trim_components=True)
+    if add_travel_time == True:
+        net = ox.add_edge_speeds(net)
+        net = ox.add_edge_travel_times(net)
+    else:
+        pass
+    if crs is None:
+        crs = geometry.crs
+    else:
+        pass
+    net = ox.project_graph(net, to_crs=crs)
+    return net
+
 # %% Class
 
 class OSMNetwork(nx.MultiDiGraph):
@@ -34,126 +77,57 @@ class OSMNetwork(nx.MultiDiGraph):
         return super().__init__(net)
     
     @classmethod
-    def walk(cls, geometry, crs=None, add_travel_time=True):
+    def walk(cls, geometry, add_travel_time=True, crs=None):
         '''
         Download an OSM walk newtork.
 
         Parameters
         ----------
-        geometry : gpd.GeoDataFrame or gpd.GeoSeries
-            Area in which to download the network; all features should be
-            [Multi]Polygon.
-        crs : Any, optional
-            The CRS for the network; can be anything accepted by the
-            `ox.project_graph()` function, e.g. an integer EPSG code. The 
-            default is None, in which case the projection is inherited from
-            `geometry`.
-        add_travel_time : bool
-            Should a travel time attribute be added to the network? If True,
-            the `ox.add_edge_speeds()` function will be used to add a speed to
-            each edge, and the `ox.add_edge_travel_times()` function will be
-            used to add a travel time to each edge. The default is True.
+        see `sam.osm._dat_osm`
 
         Returns
         -------
         OSMNetwork (subclass of nx.MultiDiGraph)
 
         '''
-        net = dl_osm_network(geometry=geometry,
-                             net_type="walk",
-                             trim_components=True)
-        if add_travel_time == True:
-            net = ox.add_edge_speeds(net)
-            net = ox.add_edge_travel_times(net)
-        else:
-            pass
-        if crs is None:
-            crs = geometry.crs
-        else:
-            pass
-        net = ox.project_graph(net, to_crs=crs)
+        net = _dat_osm(geometry=geometry, net_type="walk",
+                       add_travel_time=add_travel_time, crs=crs)
         return cls(net)
     
     @classmethod
-    def bike(cls, geometry, crs=None, add_travel_time=True):
+    def bike(cls, geometry, add_travel_time=True, crs=None):
         '''
         Download an OSM walk newtork.
 
         Parameters
         ----------
-        geometry : gpd.GeoDataFrame or gpd.GeoSeries
-            Area in which to download the network; all features should be
-            [Multi]Polygon.
-        crs : Any, optional
-            The CRS for the network; can be anything accepted by the
-            `ox.project_graph()` function, e.g. an integer EPSG code. The 
-            default is None, in which case the projection is inherited from
-            `geometry`.
-        add_travel_time : bool
-            Should a travel time attribute be added to the network? If True,
-            the `ox.add_edge_speeds()` function will be used to add a speed to
-            each edge, and the `ox.add_edge_travel_times()` function will be
-            used to add a travel time to each edge. The default is True.
+        see `sam.osm._dat_osm`
 
         Returns
         -------
         OSMNetwork (subclass of nx.MultiDiGraph)
 
         '''
-        net = dl_osm_network(geometry=geometry,
-                             net_type="bike",
-                             trim_components=True)
-        if add_travel_time == True:
-            net = ox.add_edge_speeds(net)
-            net = ox.add_edge_travel_times(net)
-        else:
-            pass
-        if crs is None:
-            crs = geometry.crs
-        else:
-            pass
-        net = ox.project_graph(net, to_crs=crs)
+        net = _dat_osm(geometry=geometry, net_type="bike",
+                       add_travel_time=add_travel_time, crs=crs)
         return cls(net)
     
     @classmethod
-    def drive(cls, geometry, crs=None, add_travel_time=True):
+    def drive(cls, geometry, add_travel_time=True, crs=None):
         '''
         Download an OSM walk newtork.
 
         Parameters
         ----------
-        geometry : gpd.GeoDataFrame or gpd.GeoSeries
-            Area in which to download the network; all features should be
-            [Multi]Polygon.
-        crs : Any, optional
-            The CRS for the network; can be anything accepted by the
-            `ox.project_graph()` function, e.g. an integer EPSG code. The 
-            default is None, in which case the projection is inherited from
-            `geometry`.
-        add_travel_time : bool
-            Should a travel time attribute be added to the network? If True,
-            the `ox.add_edge_speeds()` function will be used to add a speed to
-            each edge, and the `ox.add_edge_travel_times()` function will be
-            used to add a travel time to each edge. The default is True.
+        see `sam.osm._dat_osm`
 
         Returns
         -------
         OSMNetwork (subclass of nx.MultiDiGraph)
 
         '''
-        net = dl_osm_network(geometry=geometry,
-                             net_type="drive",
-                             trim_components=True)
-        if add_travel_time == True:
-            net = ox.add_edge_speeds(net)
-            net = ox.add_edge_travel_times(net)
-        else:
-            pass
-        if crs is None:
-            crs = geometry.crs
-        else:
-            pass
-        net = ox.project_graph(net, to_crs=crs)
+        net = _dat_osm(geometry=geometry, net_type="drive",
+                       add_travel_time=add_travel_time, crs=crs)
         return cls(net)
     
     
