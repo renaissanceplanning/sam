@@ -2,15 +2,16 @@
 """
 Created on Mon Feb 21 14:21:22 2022
 
-@author: AZ7
+@author: Aaron Weinstock
 """
 
 import re
 import pandas as pd
 import numpy as np
 
-from rputils import dl_census
-from config.acs_config import * #TODO: is this right?
+from rputils.download.census import dl_census
+
+from sam.config.acs_config import * #TODO: is this right?
 
 #TODO: rent and value methods
 

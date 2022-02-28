@@ -2,7 +2,7 @@
 """
 Created on Mon Feb 21 14:19:35 2022
 
-@author: AZ7
+@author: Aaron Weinstock
 """
 
 # TODO: rent and value
