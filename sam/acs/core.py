@@ -10,7 +10,7 @@ import pandas as pd
 import numpy as np
 
 from rputils import dl_census
-from core_config import * #TODO: is this right?
+from config.acs_config import * #TODO: is this right?
 
 #TODO: rent and value methods
 
