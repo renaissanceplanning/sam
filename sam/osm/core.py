@@ -5,6 +5,8 @@ Created on Thu Jan 27 15:44:09 2022
 @author: Aaron Weinstock
 """
 
+# TODO: helper methods/structure for DL
+
 import os
 import pandana
 import pickle
@@ -22,7 +24,7 @@ _NODES_FIELDS_ = ["x","y"]
 _EDGES_FIELDS_ = ["highway","length","speed_kph","travel_time"]
 _OBJ_TYPES_ = ["nx","pandana","gdf"]
 
-# %% Functions
+# %% Class
 
 class OSMNetwork(nx.MultiDiGraph):
     '''
