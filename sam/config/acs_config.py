@@ -458,7 +458,7 @@ _RENT_CONFIG_ = pd.DataFrame.from_dict({
 
 })
 
-_VALUE_CONFIG_ = pd.DataFrmae.from_dict({
+_VALUE_CONFIG_ = pd.DataFrame.from_dict({
 
 })
 
