@@ -1,7 +1,7 @@
 import pandas as pd
 import geopandas as gpd
 from datetime import date
-from config.ref_config import par_recode
+# from config.ref_config import par_recode
 from rputils.download.fl_parcels import (fdor_gis_and_tax, 
                                          fdor_availability, 
                                          process_parcels)
