@@ -18,16 +18,16 @@ from sam.osm import OSMNetwork
 
 import pytest
 
-state = "FL"
+state = "VA"
 county = ["51003","51540"]
 county_names = "Duval"
-year = 2020
+year = 2019
 
 # Residence area characteristics
-# rac = lodes.rac(state=state, year=year)
-# rac["ctyfips"] = [x[:5] for x in rac.h_geocode]
-# rac = rac[rac.ctyfips.isin(county)]
-# rac = rac.drop(columns="ctyfips")
+rac = lodes.rac(state=state, year=year)
+rac["ctyfips"] = [x[:5] for x in rac.h_geocode]
+rac = rac[rac.ctyfips.isin(county)]
+rac = rac.drop(columns="ctyfips")
 
 # def test_rac(df=rac):
 #     is_df = isinstance(df, pd.DataFrame)
@@ -59,7 +59,7 @@ year = 2020
 
 
 # # Geography crosswalk
-# xw = lodes.xwalk(state=state)
+xw = lodes.xwalk(state=state)
 
 # def test_od(df=xw):
 #     is_df = isinstance(df, pd.DataFrame)
@@ -67,7 +67,7 @@ year = 2020
 #     assert is_df + non_zero == 2 
 
 # # Jobs files aggregated to block group
-# rac_bg = rac.lodes.aggregate(XWalk=xw, to="bgrp", keepname=False)
+rac_bg = rac.lodes.aggregate(XWalk=xw, to="bgrp", keepname=False)
 # wac_bg = wac.lodes.aggregate(XWalk=xw, to="bgrp", keepname=False)
 # od_bg = od.lodes.aggregate(XWalk=xw, to="bgrp", keepname=False)
 
@@ -85,7 +85,7 @@ year = 2020
 # type(co[co.GEOID.isin(["51003"])])
 
 # test acs variables
-# sex = acs.sex(state="VA", year=2019, county=county)
+sex = acs.sex(state="VA", year=2019, county=county)
 # hh_inc = acs.hh_income(state="VA", year=2019, county=county)
 # age = acs.age(state="VA", year=2019, county=county)
 # poverty = acs.ratio_of_income_to_poverty_level(
@@ -102,5 +102,5 @@ year = 2020
 # walk.to_shp(r"C:\Users\U_RPG\Documents\d1")
 
 
-bg = tiger.block_groups(state=state, year=year, county=county_names, crs="ESRI:102658", trim=True)
+bg = tiger.block_groups(state=state, year=year, county=county, crs="ESRI:102658", trim=True)
 sex = acs.sex(state=state, year=year, county=county_names)
