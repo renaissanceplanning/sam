@@ -11,7 +11,7 @@ import numpy as np
 
 from rputils.download.census import dl_census
 
-import sam.config.acs_config as acs_cfg #TODO: is this right?
+import sam.config.acs_config as acs_cfg 
 
 #TODO: rent and value methods
 #TODO: meta data handling (also lodes)
@@ -60,6 +60,8 @@ def _check_breaks(config, breaks=None):
                                  "{', '.join(np.sort(np.unique(config.lb)))}")
         else:
             raise ValueError("Reclass not supported for this variable")
+
+#TODO fix break bug
 
 def _check_name(config, name=None):
     '''

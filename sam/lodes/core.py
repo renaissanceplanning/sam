@@ -67,7 +67,8 @@ class lodes:
         # df.lodes.__dict__['__datastate__'] = state
         return df
     
-    def rac(state, year):
+    # TODO add built in aggregate and filters
+    def rac(state, year, aggregate = None):
         """
         Download LODES residence area characteristics data (for all jobs in all
         segments)
@@ -135,7 +136,7 @@ class lodes:
         # df.lodes.__dict__['__datayear__'] = year
         return df
 
-    # TODO: set this as LODES? or is it already?
+    # TODO: set this as LODES? or is it already? fix od aggregate add for futher calls
     def aggregate(self, XWalk, to, keepname=False):
         """
         Aggregate LODES data up from the block level to a higher geographic

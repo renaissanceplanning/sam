@@ -75,7 +75,7 @@ def download_fl_parcels(county, crs, year=None, config=None):
     print(f"nal_total {parcels['nal_total']}")
     print(f"result_total {parcels['result_total']}")
     # add a join for recoded DOR UC
-    parcels['result'] = parcels['result'].merge(par_recode)
+    # parcels['result'] = parcels['result'].merge(par_recode)
     
     return parcels['result']
 
