@@ -1,7 +1,7 @@
 import pandas as pd
 import geopandas as gpd
 from datetime import date
-# from config.ref_config import par_recode
+from sam.config.ref_config import par_recode
 from rputils.download.fl_parcels import (fdor_gis_and_tax, 
                                          fdor_availability, 
                                          process_parcels)
@@ -77,7 +77,7 @@ def download_fl_parcels(county, crs, year=None, config=None):
     # add a join for recoded DOR UC
     # parcels['result'] = parcels['result'].merge(par_recode)
     
-    return parcels['result']
+    return parcels['result'].merge(par_recode)
 
 # Test
 # county='Madison'
