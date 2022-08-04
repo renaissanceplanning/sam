@@ -18,16 +18,16 @@ from sam.osm import OSMNetwork
 
 import pytest
 
-state = "VA"
-county = ["51003","51540"]
+state = "FL"
+county = ["12031"]
 county_names = "Duval"
 year = 2019
 
 # Residence area characteristics
-rac = lodes.rac(state=state, year=year)
-rac["ctyfips"] = [x[:5] for x in rac.h_geocode]
-rac = rac[rac.ctyfips.isin(county)]
-rac = rac.drop(columns="ctyfips")
+# rac = lodes.rac(state=state, year=year)
+# rac["ctyfips"] = [x[:5] for x in rac.h_geocode]
+# rac = rac[rac.ctyfips.isin(county)]
+# rac = rac.drop(columns="ctyfips")
 
 # def test_rac(df=rac):
 #     is_df = isinstance(df, pd.DataFrame)
@@ -59,7 +59,7 @@ rac = rac.drop(columns="ctyfips")
 
 
 # # Geography crosswalk
-xw = lodes.xwalk(state=state)
+# xw = lodes.xwalk(state=state)
 
 # def test_od(df=xw):
 #     is_df = isinstance(df, pd.DataFrame)
@@ -67,7 +67,7 @@ xw = lodes.xwalk(state=state)
 #     assert is_df + non_zero == 2 
 
 # # Jobs files aggregated to block group
-rac_bg = rac.lodes.aggregate(XWalk=xw, to="bgrp", keepname=False)
+# rac_bg = rac.lodes.aggregate(XWalk=xw, to="bgrp", keepname=False)
 # wac_bg = wac.lodes.aggregate(XWalk=xw, to="bgrp", keepname=False)
 # od_bg = od.lodes.aggregate(XWalk=xw, to="bgrp", keepname=False)
 
@@ -102,5 +102,7 @@ sex = acs.sex(state="VA", year=2019, county=county)
 # walk.to_shp(r"C:\Users\U_RPG\Documents\d1")
 
 
-bg = tiger.block_groups(state=state, year=year, county=county, crs="ESRI:102658", trim=True)
-sex = acs.sex(state=state, year=year, county=county_names)
+# bg = tiger.block_groups(state=state, year=year, county=county, crs="ESRI:102658", trim=True)
+blocks = tiger.blocks(state, year, county, crs="ESRI:102658", trim=True)
+blocks.to_file(r"C:\Users\U_RPG\Documents\GitHub\packages\sammie\test_data\RAW\tiger\blocks.shp")
+# sex = acs.sex(state=state, year=year, county=county_names)

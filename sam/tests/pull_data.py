@@ -99,118 +99,118 @@ def pull_all_data(summary_areas,
     
     print("Downloading ACS...")
     
-    # sex = pd.concat(
-    #     [acs.sex(state=state, year=years['acs_year'], county=counties)
-    #      for state in states]
-    #     )
-    # sex.to_csv(os.path.join(acs_dir, "sex.csv"))
+    sex = pd.concat(
+        [acs.sex(state=state, year=years['acs_year'], county=counties)
+         for state in states]
+        )
+    sex.to_csv(os.path.join(acs_dir, "sex.csv"))
     
-    # age = pd.concat(
-    #     [acs.age(state=state, year=years['acs_year'], county=counties)
-    #      for state in states]
-    #     )
-    # age.to_csv(os.path.join(acs_dir, "age.csv"))
+    age = pd.concat(
+        [acs.age(state=state, year=years['acs_year'], county=counties)
+         for state in states]
+        )
+    age.to_csv(os.path.join(acs_dir, "age.csv"))
     
-    # hh_income = pd.concat(
-    #     [acs.hh_income(state=state, year=years['acs_year'], county=counties)
-    #      for state in states]
-    #     )
-    # hh_income.to_csv(os.path.join(acs_dir, "hh_income.csv"))
+    hh_income = pd.concat(
+        [acs.hh_income(state=state, year=years['acs_year'], county=counties)
+         for state in states]
+        )
+    hh_income.to_csv(os.path.join(acs_dir, "hh_income.csv"))
     
-    # rip = pd.concat(
-    #     [acs.ratio_of_income_to_poverty_level(
-    #         state=state, year=years['acs_year'], county=counties
-    #         )
-    #      for state in states]
-    #     )
-    # rip.to_csv(os.path.join(acs_dir, "rip.csv"))
+    rip = pd.concat(
+        [acs.ratio_of_income_to_poverty_level(
+            state=state, year=years['acs_year'], county=counties
+            )
+         for state in states]
+        )
+    rip.to_csv(os.path.join(acs_dir, "rip.csv"))
     
-    # hh_vehicles = pd.concat(
-    #     [acs.hh_vehicles(state=state, year=years['acs_year'], county=counties)
-    #      for state in states]
-    #     )
-    # hh_vehicles.to_csv(os.path.join(acs_dir, "hh_vehicles.csv"))
+    hh_vehicles = pd.concat(
+        [acs.hh_vehicles(state=state, year=years['acs_year'], county=counties)
+         for state in states]
+        )
+    hh_vehicles.to_csv(os.path.join(acs_dir, "hh_vehicles.csv"))
     
-    # tenure = pd.concat(
-    #     [acs.tenure(state=state, year=years['acs_year'], county=counties)
-    #      for state in states]
-    #     )
-    # tenure.to_csv(os.path.join(acs_dir, "tenure.csv"))
+    tenure = pd.concat(
+        [acs.tenure(state=state, year=years['acs_year'], county=counties)
+         for state in states]
+        )
+    tenure.to_csv(os.path.join(acs_dir, "tenure.csv"))
     
-    # disability = pd.concat(
-    #     [acs.disability_status(
-    #         state=state, year=years['acs_year'], county=counties
-    #         )
-    #      for state in states]
-    #     )
-    # disability.to_csv(os.path.join(acs_dir, "disability.csv"))
+    disability = pd.concat(
+        [acs.disability_status(
+            state=state, year=years['acs_year'], county=counties
+            )
+         for state in states]
+        )
+    disability.to_csv(os.path.join(acs_dir, "disability.csv"))
     
-    # hh_size = pd.concat(
-    #     [acs.hh_size(state=state, year=years['acs_year'], county=counties)
-    #      for state in states]
-    #     )
-    # hh_size.to_csv(os.path.join(acs_dir, "hh_size.csv"))
+    hh_size = pd.concat(
+        [acs.hh_size(state=state, year=years['acs_year'], county=counties)
+         for state in states]
+        )
+    hh_size.to_csv(os.path.join(acs_dir, "hh_size.csv"))
     
-    # hh_workers = pd.concat(
-    #     [acs.hh_workers(state=state, year=years['acs_year'], county=counties)
-    #      for state in states]
-    #     )
-    # hh_workers.to_csv(os.path.join(acs_dir, "hh_workers.csv"))
+    hh_workers = pd.concat(
+        [acs.hh_workers(state=state, year=years['acs_year'], county=counties)
+         for state in states]
+        )
+    hh_workers.to_csv(os.path.join(acs_dir, "hh_workers.csv"))
     
-    # education = pd.concat(
-    #     [acs.education(state=state, year=years['acs_year'], county=counties)
-    #      for state in states]
-    #     )
-    # education.to_csv(os.path.join(acs_dir, "education.csv"))
+    education = pd.concat(
+        [acs.education(state=state, year=years['acs_year'], county=counties)
+         for state in states]
+        )
+    education.to_csv(os.path.join(acs_dir, "education.csv"))
     
-    # race = pd.concat(
-    #     [acs.race(state=state, year=years['acs_year'], county=counties)
-    #      for state in states]
-    #     )
-    # race.to_csv(os.path.join(acs_dir, "race.csv"))
+    race = pd.concat(
+        [acs.race(state=state, year=years['acs_year'], county=counties)
+         for state in states]
+        )
+    race.to_csv(os.path.join(acs_dir, "race.csv"))
     
-    # ethnicity = pd.concat(
-    #     [acs.ethnicity(state=state, year=years['acs_year'], county=counties)
-    #      for state in states]
-    #     )
-    # ethnicity.to_csv(os.path.join(acs_dir, "ethnicity.csv"))
+    ethnicity = pd.concat(
+        [acs.ethnicity(state=state, year=years['acs_year'], county=counties)
+         for state in states]
+        )
+    ethnicity.to_csv(os.path.join(acs_dir, "ethnicity.csv"))
     
-    # minority_status = pd.concat(
-    #     [acs.minority_status(
-    #         state=state, year=years['acs_year'], county=counties
-    #         )
-    #      for state in states]
-    #     )
-    # minority_status.to_csv(os.path.join(acs_dir, "minority_status.csv"))
+    minority_status = pd.concat(
+        [acs.minority_status(
+            state=state, year=years['acs_year'], county=counties
+            )
+         for state in states]
+        )
+    minority_status.to_csv(os.path.join(acs_dir, "minority_status.csv"))
     
-    # mode_share = pd.concat(
-    #     [acs.mode_share(state=state, year=years['acs_year'], county=counties)
-    #      for state in states]
-    #     )
-    # mode_share.to_csv(os.path.join(acs_dir, "mode_share.csv"))
+    mode_share = pd.concat(
+        [acs.mode_share(state=state, year=years['acs_year'], county=counties)
+         for state in states]
+        )
+    mode_share.to_csv(os.path.join(acs_dir, "mode_share.csv"))
     
-    # totals = pd.concat(
-    #     [acs.totals(state=state, year=years['acs_year'], county=counties)
-    #      for state in states]
-    #     )
-    # totals.to_csv(os.path.join(acs_dir, "totals.csv"))
+    totals = pd.concat(
+        [acs.totals(state=state, year=years['acs_year'], county=counties)
+         for state in states]
+        )
+    totals.to_csv(os.path.join(acs_dir, "totals.csv"))
     
-    # rent = pd.concat(
-    #     [acs.rent(state=state, year=years['acs_year'], county=counties)
-    #      for state in states]
-    #     )
-    # rent.to_csv(os.path.join(acs_dir, "rent.csv"))
+    rent = pd.concat(
+        [acs.rent(state=state, year=years['acs_year'], county=counties)
+         for state in states]
+        )
+    rent.to_csv(os.path.join(acs_dir, "rent.csv"))
     
-    # value = pd.concat(
-    #     [acs.value(state=state, year=years['acs_year'], county=counties)
-    #      for state in states]
-    #     )
-    # value.to_csv(os.path.join(acs_dir, "value.csv"))
+    value = pd.concat(
+        [acs.value(state=state, year=years['acs_year'], county=counties)
+         for state in states]
+        )
+    value.to_csv(os.path.join(acs_dir, "value.csv"))
     
-    # del (sex, age, hh_income, rip, hh_vehicles, tenure, disability, hh_size,
-    #      hh_workers, education, race, ethnicity, minority_status, 
-    #      mode_share,
-    #      totals, rent, value)
+    del (sex, age, hh_income, rip, hh_vehicles, tenure, disability, hh_size,
+         hh_workers, education, race, ethnicity, minority_status, 
+         mode_share,
+         totals, rent, value)
     
     # # # pull shapes
     
