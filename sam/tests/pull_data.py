@@ -207,10 +207,16 @@ def pull_all_data(summary_areas,
         )
     value.to_csv(os.path.join(acs_dir, "value.csv"))
     
+    costs = pd.concat(
+        [acs.cost(state=state, year=years['acs_year'], county=counties)
+         for state in states]
+    )
+    costs.to_csv(os.path.join(acs_dir, "costs.csv"))
+    
     del (sex, age, hh_income, rip, hh_vehicles, tenure, disability, hh_size,
          hh_workers, education, race, ethnicity, minority_status, 
          mode_share,
-         totals, rent, value)
+         totals, rent, value, costs)
     
     # # # pull shapes
     
@@ -264,7 +270,8 @@ def pull_all_data(summary_areas,
     del drive
         
 if __name__ == "__main__":
-    DATA_DIR = 'C:/Users/U_RPG/Documents/GitHub/packages/sammie/test_data'
+    DATA_DIR = 'C:/Users/U_RPG/Renaissance Planning Group/'\
+        'RPG TechTeam - TechTeam/BrowardCountyTransitPlan/data/'
                
     summary_area = gpd.read_file(
         os.path.join(DATA_DIR, "RAW/sum_areas/sum_areas.shp")

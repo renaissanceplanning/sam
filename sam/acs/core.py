@@ -725,3 +725,11 @@ class acs:
                                   state=state, year=year, county=county,
                                   breaks=breaks, name=name)
         return tab
+    
+    def cost(state, year, county=None, geography="block group", 
+              breaks=None, name="full"):
+        cfg = acs_cfg._COST_CONFIG_
+        tab = _numeric_processing(geography=geography, config=cfg, 
+                                  state=state, year=year, county=county,
+                                  breaks=breaks, name=name)
+        return tab
