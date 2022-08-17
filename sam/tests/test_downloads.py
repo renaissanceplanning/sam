@@ -10,7 +10,7 @@ import os
 import rputils
 import numpy as np
 import pandas as pd
-os.environ['R_HOME'] = r"C:\Users\U_RPG\anaconda3\envs\sam\lib\R"
+# os.environ['R_HOME'] = r"C:\Users\U_RPG\anaconda3\envs\sam\lib\R"
 from sam.lodes import lodes 
 from sam.tiger import Tiger as tiger
 from sam.acs import acs
