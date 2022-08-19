@@ -15,7 +15,7 @@ def is_int(element):
     except ValueError:
         return False
 
-def pull_lihtc(state, county, spatial = True):
+def pull_lihtc(state, county, spatial=True, crs='EPSG:4326'):
     if isinstance(state, list):
         for st in state:
             if isinstance(st, int):
@@ -39,11 +39,10 @@ def pull_lihtc(state, county, spatial = True):
             if isinstance(ct, int):
                 ct = str(ct).zfill(3)
             if isinstance(ct, str):
-                if is_int(county):
-                    county = county.zfill(3) 
+                if is_int(ct):
+                    ct = ct.zfill(3) 
                 else:
                     raise ValueError("County must be in a fips code")      
-      
     else:   
         if isinstance(county, int):
             county = [str(county).zfill(3)]
@@ -76,5 +75,7 @@ def pull_lihtc(state, county, spatial = True):
                                                lihtc.latitude,
                                                crs='EPSG:4326')
         )
+        if crs != 'EPSG:4326':
+            lihtc = lihtc.to_crs(crs=crs)
         
     return lihtc

@@ -10,6 +10,7 @@ from sam.parcels import download_fl_parcels
 from sam.acs import acs
 from sam.lodes import lodes
 from sam.tiger import Tiger as tiger
+from sam.lihtc import pull_lihtc
 from sam.osm import OSMNetwork
 from sam.config import ACS_CONF, REF_CONF, PAR_CONF
 
@@ -60,8 +61,9 @@ def pull_all_data(summary_areas,
     shp_dir = os.path.join(raw_dir, "tiger")
     net_dir = os.path.join(raw_dir, "osm")
     par_dir = os.path.join(raw_dir, "parcels")
+    lih_dir = os.path.join(raw_dir, "lihtc")
     
-    for dir in [raw_dir, lodes_dir, acs_dir, shp_dir, net_dir, par_dir]:
+    for dir in [raw_dir, lodes_dir, acs_dir, shp_dir, net_dir, par_dir, lih_dir]:
         if os.path.exists(dir) != True:
             os.mkdir(dir)
         
@@ -268,6 +270,12 @@ def pull_all_data(summary_areas,
     )
     drive.to_shp(net_dir, "drive")
     del drive
+    
+    print("Downloading Low Income Housing")
+    lihtc = pull_lihtc(
+        state=states, county=counties, crs=prj_crs
+    )
+    lihtc.to_file(os.path.join(lih_dir, "lihtc.shp"))
         
 if __name__ == "__main__":
     DATA_DIR = 'C:/Users/U_RPG/Renaissance Planning Group/'\
