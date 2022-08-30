@@ -164,7 +164,7 @@ class Tiger(gpd.GeoDataFrame):
         return super().__init__(gdf)
     
     @classmethod
-    def blocks(cls, state, year, county=None, crs=None, trim=False):
+    def blocks(cls, state, year=2019, county=None, crs=None, trim=False):
         '''
         Download US Census blocks.
 

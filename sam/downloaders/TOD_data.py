@@ -1,0 +1,186 @@
+import os
+import us
+import datetime
+import pandas as pd
+import numpy as np
+import geopandas as gpd
+import osmnx as ox 
+
+from sam.parcels import download_fl_parcels  
+from sam.acs import acs
+from sam.lodes import lodes
+from sam.tiger import Tiger as tiger
+from sam.lihtc import pull_lihtc
+from sam.osm import OSMNetwork
+from sam.config import PAR_CONF
+from sam.config import counties as county_shapes
+
+# TODO adjust to handle multiple states, removed old function as it was inefficient
+# TODO get postal from county geojson?
+
+# helper functions and variables
+expected = np.array(['parcel_year', 'acs_year', 'lodes_year'])
+
+def extract_fips(gdf):
+    #TODO increase persicion to single county
+    gdf = gdf.to_crs(county_shapes.crs)
+    county = county_shapes[county_shapes.intersects(gdf.dissolve().geometry[0])]
+    counties = county['COUNTYFP'].unique().tolist()
+    states = county['STATEFP'].unique().tolist()
+    return states, counties
+
+# fetcher
+def pull_all_data(summary_areas, 
+                  data_dir, 
+                  prj_crs,
+                  lodes_data = ['rac', 'wac', 'od'],
+                  lodes_level = 'bgrp',
+                  years = None):
+    
+    # fill in appropriate years
+    if years == None:
+        years = {
+            "parcel_year": datetime.date.today().year - 1,
+            "acs_year": datetime.date.today().year - 2,
+            "lodes_year": datetime.date.today().year - 3,
+        }
+    else:
+        in_keys = np.array([key in years.keys() for key in expected])
+        if sum(in_keys) != 3:
+            raise ValueError(f'{expected[~in_keys]} not in years dict')        
+    
+    # validate dir
+    data_dir = os.path.normpath(data_dir)
+    raw_dir = os.path.join(data_dir, "RAW")
+    lodes_dir = os.path.join(raw_dir, "lodes")
+    acs_dir = os.path.join(raw_dir, "acs")
+    shp_dir = os.path.join(raw_dir, "tiger")
+    net_dir = os.path.join(raw_dir, "osm")
+    par_dir = os.path.join(raw_dir, "parcels")
+    lih_dir = os.path.join(raw_dir, "lihtc")
+    
+    for dire in [raw_dir, lodes_dir, acs_dir, shp_dir, 
+                 net_dir, par_dir, lih_dir]:
+        if os.path.exists(dire) != True:
+            os.mkdir(dire)
+        
+    # pull state fips    
+    state, counties = extract_fips(summary_areas)
+    
+    # download lodes
+    
+    print("Downloading LODES...")
+    
+    postal = us.states.lookup(state[0]).abbr
+    xw = lodes.xwalk(state=postal)
+    
+    if 'rac' in lodes_data:
+        rac = lodes.rac(state=postal, year=years['lodes_year']) 
+        rac = rac.lodes.aggregate(XWalk=xw, to=lodes_level)
+        rac.to_csv(os.path.join(lodes_dir, f"rac_{years['lodes_year']}.csv"))
+        del rac
+        
+    if 'wac' in lodes_data:
+        wac = lodes.wac(state=postal, year=years['lodes_year'])
+        wac = wac.lodes.aggregate(XWalk=xw, to=lodes_level)
+        wac.to_csv(os.path.join(lodes_dir, f"wac_{years['lodes_year']}.csv"))
+        del wac
+    
+    if 'od' in lodes_data:
+        od = lodes.od(state=postal, year=years['lodes_year'])
+        # od = od.lodes.aggregate(XWalk=xw, to=lodes_level) TODO fix the aggregate method
+        od.to_csv(os.path.join(lodes_dir, f"rac_{years['lodes_year']}.csv"))
+        del od
+    
+    del xw
+    
+    # pull acs TODO make extendable to any new functions without adding code
+    
+    print("Downloading ACS...")
+    
+    # TODO use the get attribute method and a list
+    
+    methods = [func for func in dir(acs) 
+               if callable(getattr(acs, func)) 
+               and not func.startswith("__")]
+    
+    for method in methods:
+        df = getattr(acs, method)(state=state, 
+                                  year=years['acs_year'], 
+                                  county=counties)
+        if df.empty == False:
+            df.to_csv(os.path.join(acs_dir, f'{method}.csv'))
+        else:
+            print(f"{method} returned empty df and is dropped")
+    
+    # pull shapes
+    
+    print("Downloading TIGER...")
+    
+    bgrp = tiger.block_groups(state=state, county=counties)
+    bgrp = bgrp.to_crs(prj_crs)
+    bgrp.to_file(os.path.join(shp_dir, "block_groups.shp"))
+    del bgrp
+    
+    blocks = tiger.blocks(state=state, county=counties)
+    blocks = blocks.to_crs(prj_crs)
+    blocks.to_file(os.path.join(shp_dir, "blocks.shp"))
+    del blocks
+    
+    # pull parcels (only will work in florida for now)  
+    
+    print("Downloading parcels...")
+        
+    # parcels = pd.concat(
+    #     [download_fl_parcels(
+    #         county='Broward',
+    #         crs=prj_crs,
+    #         year=2022,
+    #         config=PAR_CONF
+    #         ) for county in counties]
+    # )  
+    # parcels.to_file(
+    #     os.path.join(par_dir, f'parcels_{years["parcel_year"]}.shp')
+    #     )  
+    # del parcels
+    
+    # pull networks
+    
+    print("Downloading OSM...")
+    
+    walk = OSMNetwork.walk(
+        geometry=summary_areas, add_travel_time=True, crs=prj_crs
+    )
+    walk.to_shp(net_dir, "walk")
+    del walk
+    
+    bike = OSMNetwork.bike(
+        geometry=summary_areas, add_travel_time=True, crs=prj_crs
+    )
+    bike.to_shp(net_dir, "bike")
+    del bike
+    
+    drive = OSMNetwork.drive(
+        geometry=summary_areas, add_travel_time=True, crs=prj_crs
+    )
+    drive.to_shp(net_dir, "drive")
+    del drive
+    
+    print("Downloading Low Income Housing")
+    lihtc = pull_lihtc(
+        state=state, county=counties, crs=prj_crs
+    )
+    lihtc.to_file(os.path.join(lih_dir, "lihtc.shp"))
+        
+if __name__ == "__main__":
+    DATA_DIR = 'C:/Users/U_RPG/Renaissance Planning Group/'\
+        'RPG TechTeam - TechTeam/BrowardCountyTransitPlan/data/'
+
+    summary_area = gpd.read_file(
+        os.path.join(DATA_DIR, "INTERIM/Top 20_Rev/Top_10_Corridors.shp")
+    )
+    
+    pull_all_data(summary_areas=summary_area,
+                  data_dir=DATA_DIR,
+                  prj_crs="ESRI:102658",
+                  lodes_data = ['rac', 'wac'])
