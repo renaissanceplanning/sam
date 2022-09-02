@@ -177,7 +177,7 @@ if __name__ == "__main__":
         'RPG TechTeam - TechTeam/BrowardCountyTransitPlan/data/'
 
     summary_area = gpd.read_file(
-        os.path.join(DATA_DIR, "INTERIM/Top 20_Rev/Top_10_Corridors.shp")
+        os.path.join(DATA_DIR, "RAW/Boundaries/BoundaryUrban.shp")
     )
     
     pull_all_data(summary_areas=summary_area,
