@@ -79,19 +79,22 @@ def pull_all_data(summary_areas,
     if 'rac' in lodes_data:
         rac = lodes.rac(state=postal, year=years['lodes_year']) 
         rac = rac.lodes.aggregate(XWalk=xw, to=lodes_level)
-        rac.to_csv(os.path.join(lodes_dir, f"rac_{years['lodes_year']}.csv"))
+        rac.to_csv(os.path.join(lodes_dir, f"rac_{years['lodes_year']}.csv"),
+                   index=False)
         del rac
         
     if 'wac' in lodes_data:
         wac = lodes.wac(state=postal, year=years['lodes_year'])
         wac = wac.lodes.aggregate(XWalk=xw, to=lodes_level)
-        wac.to_csv(os.path.join(lodes_dir, f"wac_{years['lodes_year']}.csv"))
+        wac.to_csv(os.path.join(lodes_dir, f"wac_{years['lodes_year']}.csv"),
+                   index=False)
         del wac
     
     if 'od' in lodes_data:
         od = lodes.od(state=postal, year=years['lodes_year'])
         # od = od.lodes.aggregate(XWalk=xw, to=lodes_level) TODO fix the aggregate method
-        od.to_csv(os.path.join(lodes_dir, f"rac_{years['lodes_year']}.csv"))
+        od.to_csv(os.path.join(lodes_dir, f"rac_{years['lodes_year']}.csv"),
+                   index=False)
         del od
     
     del xw
@@ -111,7 +114,8 @@ def pull_all_data(summary_areas,
                                   year=years['acs_year'], 
                                   county=counties)
         if df.empty == False:
-            df.to_csv(os.path.join(acs_dir, f'{method}.csv'))
+            df.to_csv(os.path.join(acs_dir, f'{method}.csv'),
+                   index=False)
         else:
             print(f"{method} returned empty df and is dropped")
     
