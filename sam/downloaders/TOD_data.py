@@ -18,6 +18,8 @@ from sam.config import counties as county_shapes
 # TODO adjust to handle multiple states, removed old function as it was inefficient
 # TODO get postal from county geojson?
 
+# TODO set up downloader to handle differing census geographies by 2030
+
 # helper functions and variables
 expected = np.array(['parcel_year', 'acs_year', 'lodes_year'])
 
