@@ -125,7 +125,12 @@ def pull_all_data(summary_areas,
     
     bgrp = tiger.block_groups(state=state, county=counties)
     bgrp = bgrp.to_crs(prj_crs)
-    bgrp.to_file(os.path.join(shp_dir, "block_groups.shp"))
+    bgrp.to_file(os.path.join(shp_dir, "block_groups_2010.shp"))
+    del bgrp
+    
+    bgrp = tiger.block_groups(state=state, county=counties)
+    bgrp = bgrp.to_crs(prj_crs, year = 2020)
+    bgrp.to_file(os.path.join(shp_dir, "block_groups_2020.shp"))
     del bgrp
     
     blocks = tiger.blocks(state=state, county=counties)
