@@ -142,18 +142,18 @@ def pull_all_data(summary_areas,
     
     print("Downloading parcels...")
         
-    # parcels = pd.concat(
-    #     [download_fl_parcels(
-    #         county='Broward',
-    #         crs=prj_crs,
-    #         year=2022,
-    #         config=PAR_CONF
-    #         ) for county in counties]
-    # )  
-    # parcels.to_file(
-    #     os.path.join(par_dir, f'parcels_{years["parcel_year"]}.shp')
-    #     )  
-    # del parcels
+    parcels = pd.concat(
+        [download_fl_parcels(
+            county='Broward',
+            crs=prj_crs,
+            year=years['parcel_year'],
+            config=PAR_CONF
+            ) for county in counties]
+    )  
+    parcels.to_file(
+        os.path.join(par_dir, f'parcels_{years["parcel_year"]}.shp')
+        )  
+    del parcels
     
     # pull networks
     
