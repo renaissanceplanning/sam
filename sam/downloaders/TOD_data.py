@@ -29,7 +29,8 @@ def extract_fips(gdf):
     county = county_shapes[county_shapes.intersects(gdf.dissolve().geometry[0])]
     counties = county['COUNTYFP'].unique().tolist()
     states = county['STATEFP'].unique().tolist()
-    return states, counties
+    county_names = county['NAME'].unique().tolist()
+    return states, counties, county_names
 
 # fetcher
 def pull_all_data(summary_areas, 
@@ -67,7 +68,7 @@ def pull_all_data(summary_areas,
             os.mkdir(dire)
         
     # pull state fips    
-    state, counties = extract_fips(summary_areas)
+    state, counties, county_names = extract_fips(summary_areas)
     
     # download lodes
     
@@ -144,11 +145,11 @@ def pull_all_data(summary_areas,
         
     parcels = pd.concat(
         [download_fl_parcels(
-            county='Broward',
+            county=county,
             crs=prj_crs,
             year=years['parcel_year'],
             config=PAR_CONF
-            ) for county in counties]
+            ) for county in county_names]
     )  
     parcels.to_file(
         os.path.join(par_dir, f'parcels_{years["parcel_year"]}.shp')
@@ -184,14 +185,4 @@ def pull_all_data(summary_areas,
     lihtc.to_file(os.path.join(lih_dir, "lihtc.shp"))
         
 if __name__ == "__main__":
-    DATA_DIR = 'C:/Users/U_RPG/Renaissance Planning Group/'\
-        'RPG TechTeam - TechTeam/BrowardCountyTransitPlan/data/'
-
-    summary_area = gpd.read_file(
-        os.path.join(DATA_DIR, "RAW/Boundaries/BoundaryUrban.shp")
-    )
-    
-    pull_all_data(summary_areas=summary_area,
-                  data_dir=DATA_DIR,
-                  prj_crs="ESRI:102658",
-                  lodes_data = ['rac', 'wac'])
+    pass
