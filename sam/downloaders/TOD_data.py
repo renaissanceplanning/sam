@@ -72,7 +72,7 @@ def pull_all_data(summary_areas,
     
     # download lodes
     
-    print("Downloading LODES...")
+    # print("Downloading LODES...")
     
     postal = us.states.lookup(state[0]).abbr
     xw = lodes.xwalk(state=postal)
