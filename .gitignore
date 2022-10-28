@@ -6,6 +6,24 @@ __pycache__/
 # C extensions
 *.so
 
+#test shapes
+*.shp
+*.cpg
+*.dbf
+*.prj
+*.sbn
+*.shp.xml
+*.shx
+*.sbx
+*.prj
+
+# html
+my_map.html
+
+# osm cashe
+sam/cache
+
+
 # Distribution / packaging
 .Python
 build/
@@ -104,6 +122,12 @@ venv.bak/
 
 # mkdocs documentation
 /site
+
+# VSCode folders
+*/.vscode/
+
+# PyCharm folder
+/.idea
 
 # mypy
 .mypy_cache/

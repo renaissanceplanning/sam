@@ -53,7 +53,7 @@ def _dat_osm(geometry, net_type, add_travel_time=True, crs=None):
 
     '''
     net = dl_osm_network(geometry=geometry,
-                         net_type="drive",
+                         net_type=net_type,
                          trim_components=True)
     if add_travel_time == True:
         net = ox.add_edge_speeds(net)
@@ -154,9 +154,12 @@ class OSMNetwork(nx.MultiDiGraph):
         '''
         nodes, edges = ox.graph_to_gdfs(self)
         # TODO: hierarchy the highway types?
-        edges["highway"] = ['-'.join(np.sort(hwy)) if isinstance(hwy, list)
-                            else hwy
-                            for hwy in edges.highway]
+        edges = edges.reset_index().drop(columns='osmid')
+ 
+        edges['highway'] = ['-'.join(np.sort(hwy)) if isinstance(hwy, list)
+                        else hwy
+                        for hwy in edges.highway]
+            
         if trim == True:
             nf = [f for f in _NODES_FIELDS_ if f in nodes.columns]
             ef = [f for f in _EDGES_FIELDS_ if f in edges.columns]
@@ -190,7 +193,7 @@ class OSMNetwork(nx.MultiDiGraph):
                                        edge_weights=edges[imps],
                                        twoway=False)
                                    
-    def to_shp(self, save_dir, trim=False):
+    def to_shp(self, save_dir, prefix, trim=True):
         '''
         Save `OSMNetwork` as nodes and edges shapefiles.
         
@@ -213,8 +216,8 @@ class OSMNetwork(nx.MultiDiGraph):
 
         '''
         nodes, edges = self.to_gdf(trim=trim)
-        nodes_path = os.path.join(save_dir, "nodes.shp")
-        edges_path = os.path.join(save_dir, "edges.shp")
+        nodes_path = os.path.join(save_dir, f"{prefix}_nodes.shp")
+        edges_path = os.path.join(save_dir, f"{prefix}_edges.shp")
         nodes.reset_index().to_file(nodes_path)
         edges.reset_index().to_file(edges_path)
     

@@ -6,18 +6,19 @@ Created on Mon Feb 21 14:19:35 2022
 """
 
 # TODO: rent and value
-# TODO: aggregates for rent, value, vehicles
+# TODO: aggregates for rent value vehicles
 
 # TODO: change lb to lower_bound
 
 import numpy as np
 import pandas as pd
 
-class ACSConfig(pd.DataFrame):
+class ACSConfig:
     def __init__(self, df, table, univ):
         names = np.array(df.columns)
         names = names[names != "lb"]
-        super().__init__(df)
+        # super().__init__(df)
+        self._df_ = df
         self._table_ = table
         self._universe_ = univ
         self._names_ = names
@@ -27,116 +28,116 @@ _SEX_CONFIG_ = ACSConfig(
     pd.DataFrame.from_dict({
         "B01001_002":"male",
         "B01001_026":"female"
-    }, orient="index",columns=["full"]),
+    }, orient="index", columns=["full"]),
     table = "B01001",
     univ = "Total population"
 )
 
 _AGE_CONFIG_ = ACSConfig(
     pd.DataFrame.from_dict({
-        "B01001_003":["age_0_4",0],
-        "B01001_004":["age_5_9",5],
-        "B01001_005":["age_10-14",10],
-        "B01001_006":["age_15_17",15],
-        "B01001_007":["age_18_19",18],
-        "B01001_008":["age_20",20],
-        "B01001_009":["age_21",21],
-        "B01001_010":["age_22_24",22],
-        "B01001_011":["age_25_29",25],
-        "B01001_012":["age_30_34",30],
-        "B01001_013":["age_35_39",35],
-        "B01001_014":["age_40_44",40],
-        "B01001_015":["age_45_49",45],
-        "B01001_016":["age_50_54",50],
-        "B01001_017":["age_55_59",55],
-        "B01001_018":["age_60_61",60],
-        "B01001_019":["age_62_64",62],
-        "B01001_020":["age_65_66",65],
-        "B01001_021":["age_67_69",67],
-        "B01001_022":["age_70_74",70],
-        "B01001_023":["age_75_79",75],
-        "B01001_024":["age_80_84",80],
-        "B01001_025":["age_85p",85],
-        "B01001_027":["age_0_4",0],
-        "B01001_028":["age_5_9",5],
-        "B01001_029":["age_10-14",10],
-        "B01001_030":["age_15_17",15],
-        "B01001_031":["age_18_19",18],
-        "B01001_032":["age_20",20],
-        "B01001_033":["age_21",21],
-        "B01001_034":["age_22_24",22],
-        "B01001_035":["age_25_29",25],
-        "B01001_036":["age_30_34",30],
-        "B01001_037":["age_35_39",35],
-        "B01001_038":["age_40_44",40],
-        "B01001_039":["age_45_49",45],
-        "B01001_040":["age_50_54",50],
-        "B01001_041":["age_55_59",55],
-        "B01001_042":["age_60_61",60],
-        "B01001_043":["age_62_64",62],
-        "B01001_044":["age_65_66",65],
-        "B01001_045":["age_67_69",67],
-        "B01001_046":["age_70_74",70],
-        "B01001_047":["age_75_79",75],
-        "B01001_048":["age_80_84",80],
-        "B01001_049":["age_85p",85]
-    }, orient="index",columns=["full","lb"]),
+        "B01001_003":["age_0_4", 0],
+        "B01001_004":["age_5_9", 5],
+        "B01001_005":["age_10-14", 10],
+        "B01001_006":["age_15_17", 15],
+        "B01001_007":["age_18_19", 18],
+        "B01001_008":["age_20", 20],
+        "B01001_009":["age_21", 21],
+        "B01001_010":["age_22_24", 22],
+        "B01001_011":["age_25_29", 25],
+        "B01001_012":["age_30_34", 30],
+        "B01001_013":["age_35_39", 35],
+        "B01001_014":["age_40_44", 40],
+        "B01001_015":["age_45_49", 45],
+        "B01001_016":["age_50_54", 50],
+        "B01001_017":["age_55_59", 55],
+        "B01001_018":["age_60_61", 60],
+        "B01001_019":["age_62_64", 62],
+        "B01001_020":["age_65_66", 65],
+        "B01001_021":["age_67_69", 67],
+        "B01001_022":["age_70_74", 70],
+        "B01001_023":["age_75_79", 75],
+        "B01001_024":["age_80_84", 80],
+        "B01001_025":["age_85p", 85], #TODO figure out appropriate levels
+        "B01001_027":["age_0_4", 0],
+        "B01001_028":["age_5_9", 5],
+        "B01001_029":["age_10-14", 10],
+        "B01001_030":["age_15_17", 15],
+        "B01001_031":["age_18_19", 18],
+        "B01001_032":["age_20", 20],
+        "B01001_033":["age_21", 21],
+        "B01001_034":["age_22_24", 22],
+        "B01001_035":["age_25_29", 25],
+        "B01001_036":["age_30_34", 30],
+        "B01001_037":["age_35_39", 35],
+        "B01001_038":["age_40_44", 40],
+        "B01001_039":["age_45_49", 45],
+        "B01001_040":["age_50_54", 50],
+        "B01001_041":["age_55_59", 55],
+        "B01001_042":["age_60_61", 60],
+        "B01001_043":["age_62_64", 62],
+        "B01001_044":["age_65_66", 65],
+        "B01001_045":["age_67_69", 67],
+        "B01001_046":["age_70_74", 70],
+        "B01001_047":["age_75_79", 75],
+        "B01001_048":["age_80_84", 80],
+        "B01001_049":["age_85p", 85] #TODO figure out appropriate levels
+    }, orient="index", columns=["full", "lb"]),
     table = "B01001",
     univ = "Total population"
 )
 
 _INCOME_CONFIG_ = ACSConfig(
     pd.DataFrame.from_dict({
-        "B19001_002":["inc_0_10",0],
-        "B19001_003":["inc_10_15",10],
-        "B19001_004":["inc_15_20",15],
-        "B19001_005":["inc_20_25",20],
-        "B19001_006":["inc_25_30",25],
-        "B19001_007":["inc_30_35",30],
-        "B19001_008":["inc_35_40",35],
-        "B19001_009":["inc_40_45",40],
-        "B19001_010":["inc_45_50",45],
-        "B19001_011":["inc_50_60",50],
-        "B19001_012":["inc_60_75",60],
-        "B19001_013":["inc_75_100",75],
-        "B19001_014":["inc_100_125",100],
-        "B19001_015":["inc_125_150",125],
-        "B19001_016":["inc_150_200",150],
-        "B19001_017":["inc_200p",200]
-    }, orient="index",columns=["full","lb"]),
+        "B19001_002":["inc_0_10", 0],
+        "B19001_003":["inc_10_15", 10],
+        "B19001_004":["inc_15_20", 15],
+        "B19001_005":["inc_20_25", 20],
+        "B19001_006":["inc_25_30", 25],
+        "B19001_007":["inc_30_35", 30],
+        "B19001_008":["inc_35_40", 35],
+        "B19001_009":["inc_40_45", 40],
+        "B19001_010":["inc_45_50", 45],
+        "B19001_011":["inc_50_60", 50],
+        "B19001_012":["inc_60_75", 60],
+        "B19001_013":["inc_75_100", 75],
+        "B19001_014":["inc_100_125", 100],
+        "B19001_015":["inc_125_150", 125],
+        "B19001_016":["inc_150_200", 150],
+        "B19001_017":["inc_200p", 200] #TODO figure out appropriate levels
+    }, orient="index", columns=["full", "lb"]),
     table = "B19001",
     univ = "Total households"
 )
 
 _RIP_CONFIG_ = ACSConfig(
     pd.DataFrame.from_dict({
-        "C17002_002":["rip_0_05",0],
-        "C17002_003":["rip_05_1",0.5],
-        "C17002_004":["rip_1_125",1],
-        "C17002_005":["rip_125_15",1.25],
-        "C17002_006":["rip_15_185",1.5],
-        "C17002_007":["rip_185_2",1.85],
-        "C17002_008":["rip_2p",2]
-    }, orient="index",columns=["full","lb"]),
+        "C17002_002":["rip_0_05", 0],
+        "C17002_003":["rip_05_1", 0.5],
+        "C17002_004":["rip_1_125", 1],
+        "C17002_005":["rip_125_15", 1.25],
+        "C17002_006":["rip_15_185", 1.5],
+        "C17002_007":["rip_185_2", 1.85],
+        "C17002_008":["rip_2p", 2], #TODO figure out appropriate levels
+    }, orient="index", columns=["full", "lb"]),
     table = "C17002",
     univ = "Population for whom poverty status is determined"
 )
 
 _VEHICLES_CONFIG_ = ACSConfig(
     pd.DataFrame.from_dict({
-        "B25044_003":["veh_0",0],
-        "B25044_004":["veh_1",1],
-        "B25044_005":["veh_2",2],
-        "B25044_006":["veh_3",3],
-        "B25044_007":["veh_4",4],
-        "B25044_008":["veh_5p",5],
-        "B25044_010":["veh_0",0],
-        "B25044_011":["veh_1",1],
-        "B25044_012":["veh_2",2],
-        "B25044_013":["veh_3",3],
-        "B25044_014":["veh_4",4],
-        "B25044_015":["veh_5p",5]
-    }, orient="index",columns=["full","lb"]),
+        "B25044_003":["veh_0", 0],
+        "B25044_004":["veh_1", 1],
+        "B25044_005":["veh_2", 2],
+        "B25044_006":["veh_3", 3],
+        "B25044_007":["veh_4", 4],
+        "B25044_008":["veh_5p", 5], #TODO figure out appropriate levels
+        "B25044_010":["veh_0", 0],
+        "B25044_011":["veh_1", 1],
+        "B25044_012":["veh_2", 2],
+        "B25044_013":["veh_3", 3],
+        "B25044_014":["veh_4", 4],
+        "B25044_015":["veh_5p", 5], #TODO figure out appropriate levels
+    }, orient="index", columns=["full", "lb"]),
     table = "B25044",
     univ = "Total households"
 )
@@ -145,7 +146,7 @@ _TENURE_CONFIG_ = ACSConfig(
     pd.DataFrame.from_dict({
         "B25044_002":"own",
         "B25044_009":"rent"
-    }, orient="index",columns=["full"]),
+    }, orient="index", columns=["full"]),
     table = "B25044",
     univ = "Total households"
 )
@@ -168,7 +169,7 @@ _DISABILITY_BG_CONFIG_ = ACSConfig(
         "C21007_024":"no",
         "C21007_028":"no",
         "C21007_031":"no"
-    }, orient="index",columns=["full"]),
+    }, orient="index", columns=["full"]),
     table = "C21007",
     univ = "Civilian 18+ population for whom poverty status can be determined"
 )
@@ -198,8 +199,8 @@ _DISABILITY_CONFIG_ = ACSConfig(
         "B18101_030":"no",
         "B18101_033":"no",
         "B18101_036":"no",
-        "B18101_039":"no"
-    }, orient="index",columns=["full"]),
+        "B18101_039":"no",
+    }, orient="index", columns=["full"]),
     table = "B18101",
     univ = "Civilian non-institutionalized population"
 )
@@ -212,148 +213,148 @@ _SIZE_CONFIG_ = ACSConfig(
         "B25009_006":["size_4",4],
         "B25009_007":["size_5",5],
         "B25009_008":["size_6",6],
-        "B25009_009":["size_7p",7],
+        "B25009_009":["size_7p", 7], 
         "B25009_011":["size_1",1],
         "B25009_012":["size_2",2],
         "B25009_013":["size_3",3],
         "B25009_014":["size_4",4],
         "B25009_015":["size_5",5],
         "B25009_016":["size_6",6],
-        "B25009_017":["size_7p",7]
-    }, orient="index",columns=["full","lb"]),
+        "B25009_017":["size_7p", 7], 
+    }, orient="index",columns=["full", "lb"]),
     table = "B25009",
     univ = "Total households"
 )
 
 _WORKERS_BG_CONFIG_ = ACSConfig(
     pd.DataFrame.from_dict({
-        "B23009_004":["wrk_0",0],
-        "B23009_014":["wrk_0",0], 
-        "B23009_019":["wrk_0",0], 
-        "B23009_025":["wrk_0",0], 
-        "B23009_035":["wrk_0",0], 
-        "B23009_040":["wrk_0",0],
-        "B23009_005":["wrk_1",1], 
-        "B23009_015":["wrk_1",1], 
-        "B23009_020":["wrk_1",1], 
-        "B23009_026":["wrk_1",1], 
-        "B23009_036":["wrk_1",1], 
-        "B23009_041":["wrk_1",1],
-        "B23009_006":["wrk_2",2], 
-        "B23009_016":["wrk_2",2], 
-        "B23009_021":["wrk_2",2], 
-        "B23009_027":["wrk_2",2], 
-        "B23009_037":["wrk_2",2], 
-        "B23009_042":["wrk_2",2],
-        "B23009_009":["wrk_3p",3], 
-        "B23009_017":["wrk_3p",3],  
-        "B23009_022":["wrk_3p",3],  
-        "B23009_030":["wrk_3p",3],  
-        "B23009_038":["wrk_3p",3],  
-        "B23009_043":["wrk_3p",3]
-    }, orient="index",columns=["full","lb"]),
+        "B23009_004":["wrk_0", 0],
+        "B23009_014":["wrk_0", 0], 
+        "B23009_019":["wrk_0", 0], 
+        "B23009_025":["wrk_0", 0], 
+        "B23009_035":["wrk_0", 0], 
+        "B23009_040":["wrk_0", 0],
+        "B23009_005":["wrk_1", 1], 
+        "B23009_015":["wrk_1", 1], 
+        "B23009_020":["wrk_1", 1], 
+        "B23009_026":["wrk_1", 1], 
+        "B23009_036":["wrk_1", 1], 
+        "B23009_041":["wrk_1", 1],
+        "B23009_006":["wrk_2", 2], 
+        "B23009_016":["wrk_2", 2], 
+        "B23009_021":["wrk_2", 2], 
+        "B23009_027":["wrk_2", 2], 
+        "B23009_037":["wrk_2", 2], 
+        "B23009_042":["wrk_2", 2],
+        "B23009_009":["wrk_3p", 3], 
+        "B23009_017":["wrk_3p", 3],  
+        "B23009_022":["wrk_3p", 3],  
+        "B23009_030":["wrk_3p", 3],  
+        "B23009_038":["wrk_3p", 3],  
+        "B23009_043":["wrk_3p", 3], 
+    }, orient="index", columns=["full", "lb"]),
     table = "B23009",
     univ = "Family households"
 )
 
 _WORKERS_CONFIG_ = ACSConfig(
     pd.DataFrame.from_dict({
-        "B08203_007":["wrk_0",0],
-        "B08203_013":["wrk_1",1],
-        "B08203_019":["wrk_2",2],
-        "B08203_025":["wrk_3p",3]
-    }, orient="index",columns=["full","lb"]),
+        "B08203_007":["wrk_0", 0],
+        "B08203_013":["wrk_1", 1],
+        "B08203_019":["wrk_2", 2],
+        "B08203_025":["wrk_3p", 3], #TODO figure out appropriate levels
+    }, orient="index", columns=["full", "lb"]),
     table = "B08203",
     univ = "Total households"
 )
 
 _EDUCATION_BG_CONFIG_ = ACSConfig(
     pd.DataFrame.from_dict({
-        "B29002_002":["lths","lths"],
-        "B29002_003":["shs","lths"],
-        "B29002_004":["hs","hs"],
-        "B29002_005":["scnd","scndassc"],
-        "B29002_006":["assc","scndassc"],
-        "B29002_007":["bach","bach"],
-        "B29002_008":["gradprof","gradprof"]
-    }, orient="index",columns=["full","basic"]),
+        "B29002_002":["lths", "lths"],
+        "B29002_003":["shs", "lths"],
+        "B29002_004":["hs", "hs"],
+        "B29002_005":["scnd", "scndassc"],
+        "B29002_006":["assc", "scndassc"],
+        "B29002_007":["bach", "bach"],
+        "B29002_008":["gradprof", "gradprof"], 
+    }, orient="index", columns=["full", "basic"]),
     table = "B29002",
     univ = "25+ population"
 )
 
 _EDUCATION_CONFIG_ = ACSConfig(
     pd.DataFrame.from_dict({
-        "B15001_004":["lths","lths"],
-        "B15001_012":["lths","lths"],
-        "B15001_020":["lths","lths"],
-        "B15001_028":["lths","lths"],
-        "B15001_036":["lths","lths"],
-        "B15001_045":["lths","lths"],
-        "B15001_053":["lths","lths"],
-        "B15001_061":["lths","lths"],
-        "B15001_069":["lths","lths"],
-        "B15001_077":["lths","lths"],
-        "B15001_005":["shs","lths"],
-        "B15001_013":["shs","lths"],
-        "B15001_021":["shs","lths"],
-        "B15001_029":["shs","lths"],
-        "B15001_037":["shs","lths"],
-        "B15001_046":["shs","lths"],
-        "B15001_054":["shs","lths"],
-        "B15001_062":["shs","lths"],
-        "B15001_070":["shs","lths"],
-        "B15001_078":["shs","lths"],
-        "B15001_006":["hs","hs"],
-        "B15001_014":["hs","hs"],
-        "B15001_022":["hs","hs"],
-        "B15001_030":["hs","hs"],
-        "B15001_038":["hs","hs"],
-        "B15001_047":["hs","hs"],
-        "B15001_055":["hs","hs"],
-        "B15001_063":["hs","hs"],
-        "B15001_071":["hs","hs"],
-        "B15001_079":["hs","hs"],
-        "B15001_007":["scnd","scndassc"],
-        "B15001_015":["scnd","scndassc"],
-        "B15001_023":["scnd","scndassc"],
-        "B15001_031":["scnd","scndassc"],
-        "B15001_039":["scnd","scndassc"],
-        "B15001_048":["scnd","scndassc"],
-        "B15001_056":["scnd","scndassc"],
-        "B15001_064":["scnd","scndassc"],
-        "B15001_072":["scnd","scndassc"],
-        "B15001_080":["scnd","scndassc"],
-        "B15001_008":["assc","scndassc"],
-        "B15001_016":["assc","scndassc"],
-        "B15001_024":["assc","scndassc"],
-        "B15001_032":["assc","scndassc"],
-        "B15001_040":["assc","scndassc"],
-        "B15001_049":["assc","scndassc"],
-        "B15001_057":["assc","scndassc"],
-        "B15001_065":["assc","scndassc"],
-        "B15001_073":["assc","scndassc"],
-        "B15001_081":["assc","scndassc"],
-        "B15001_009":["bach","bach"],
-        "B15001_017":["bach","bach"],
-        "B15001_025":["bach","bach"],
-        "B15001_033":["bach","bach"],
-        "B15001_041":["bach","bach"],
-        "B15001_050":["bach","bach"],
-        "B15001_058":["bach","bach"],
-        "B15001_066":["bach","bach"],
-        "B15001_074":["bach","bach"],
-        "B15001_082":["bach","bach"],
-        "B15001_010":["gradprof","gradprof"],
-        "B15001_018":["gradprof","gradprof"],
-        "B15001_026":["gradprof","gradprof"],
-        "B15001_034":["gradprof","gradprof"],
-        "B15001_042":["gradprof","gradprof"],
-        "B15001_051":["gradprof","gradprof"],
-        "B15001_059":["gradprof","gradprof"],
-        "B15001_067":["gradprof","gradprof"],
-        "B15001_075":["gradprof","gradprof"],
-        "B15001_083":["gradprof","gradprof"]
-    }, orient="index",columns=["full","basic"]),
+        "B15001_004":["lths", "lths"],
+        "B15001_012":["lths", "lths"],
+        "B15001_020":["lths", "lths"],
+        "B15001_028":["lths", "lths"],
+        "B15001_036":["lths", "lths"],
+        "B15001_045":["lths", "lths"],
+        "B15001_053":["lths", "lths"],
+        "B15001_061":["lths", "lths"],
+        "B15001_069":["lths", "lths"],
+        "B15001_077":["lths", "lths"],
+        "B15001_005":["shs", "lths"],
+        "B15001_013":["shs", "lths"],
+        "B15001_021":["shs", "lths"],
+        "B15001_029":["shs", "lths"],
+        "B15001_037":["shs", "lths"],
+        "B15001_046":["shs", "lths"],
+        "B15001_054":["shs", "lths"],
+        "B15001_062":["shs", "lths"],
+        "B15001_070":["shs", "lths"],
+        "B15001_078":["shs", "lths"],
+        "B15001_006":["hs", "hs"],
+        "B15001_014":["hs", "hs"],
+        "B15001_022":["hs", "hs"],
+        "B15001_030":["hs", "hs"],
+        "B15001_038":["hs", "hs"],
+        "B15001_047":["hs", "hs"],
+        "B15001_055":["hs", "hs"],
+        "B15001_063":["hs", "hs"],
+        "B15001_071":["hs", "hs"],
+        "B15001_079":["hs", "hs"],
+        "B15001_007":["scnd", "scndassc"],
+        "B15001_015":["scnd", "scndassc"],
+        "B15001_023":["scnd", "scndassc"],
+        "B15001_031":["scnd", "scndassc"],
+        "B15001_039":["scnd", "scndassc"],
+        "B15001_048":["scnd", "scndassc"],
+        "B15001_056":["scnd", "scndassc"],
+        "B15001_064":["scnd", "scndassc"],
+        "B15001_072":["scnd", "scndassc"],
+        "B15001_080":["scnd", "scndassc"],
+        "B15001_008":["assc", "scndassc"],
+        "B15001_016":["assc", "scndassc"],
+        "B15001_024":["assc", "scndassc"],
+        "B15001_032":["assc", "scndassc"],
+        "B15001_040":["assc", "scndassc"],
+        "B15001_049":["assc", "scndassc"],
+        "B15001_057":["assc", "scndassc"],
+        "B15001_065":["assc", "scndassc"],
+        "B15001_073":["assc", "scndassc"],
+        "B15001_081":["assc", "scndassc"],
+        "B15001_009":["bach", "bach"],
+        "B15001_017":["bach", "bach"],
+        "B15001_025":["bach", "bach"],
+        "B15001_033":["bach", "bach"],
+        "B15001_041":["bach", "bach"],
+        "B15001_050":["bach", "bach"],
+        "B15001_058":["bach", "bach"],
+        "B15001_066":["bach", "bach"],
+        "B15001_074":["bach", "bach"],
+        "B15001_082":["bach", "bach"],
+        "B15001_010":["gradprof", "gradprof"],
+        "B15001_018":["gradprof", "gradprof"],
+        "B15001_026":["gradprof", "gradprof"],
+        "B15001_034":["gradprof", "gradprof"],
+        "B15001_042":["gradprof", "gradprof"],
+        "B15001_051":["gradprof", "gradprof"],
+        "B15001_059":["gradprof", "gradprof"],
+        "B15001_067":["gradprof", "gradprof"],
+        "B15001_075":["gradprof", "gradprof"],
+        "B15001_083":["gradprof", "gradprof"],
+    }, orient="index", columns=["full", "basic"]),
     table = "B15001",
     univ = "18+ population"
 )
@@ -365,9 +366,9 @@ _RACE_CONFIG_ = ACSConfig(
         "B02001_004":"aian",
         "B02001_005":"asian",
         "B02001_006":"nhopi",
-        "B02001_007":"other",
+        "B02001_007":"other_race",
         "B02001_008":"twoplus",
-    }, orient="index",columns=["full"]),
+    }, orient="index", columns=["full"]),
     table = "B02001",
     univ = "Total population"
 )
@@ -375,8 +376,8 @@ _RACE_CONFIG_ = ACSConfig(
 _ETHNICITY_CONFIG_ = ACSConfig(
     pd.DataFrame.from_dict({
         "B03002_002":"hisp",
-        "B03002_012":"nonhisp"
-    }, orient="index",columns=["full"]),
+        "B03002_012":"nonhisp",
+    }, orient="index", columns=["full"]),
     table = "B03002",
     univ = "Total population"
 )
@@ -396,8 +397,8 @@ _MINORITY_CONFIG_ = ACSConfig(
         "B03002_016":"mnty",
         "B03002_017":"mnty",
         "B03002_018":"mnty",
-        "B03002_019":"mnty"
-    }, orient="index",columns=["full"]),
+        "B03002_019":"mnty",
+    }, orient="index", columns=["full"]),
     table = "B03002",
     univ = "Total population"
 )
@@ -419,11 +420,11 @@ _MODE_SHARE_CONFIG_ = ACSConfig(
         "B08301_013":["tran_ldtcr",""],
         "B08301_014":["tran_lrst",""],
         "B08301_015":["tran_ferry",""],
-        "B08301_016":["taxi","other"],
+        "B08301_016":["taxi","other_mode"],
         "B08301_017":["motorcycle","auto"],
         "B08301_018":["bike","nonmot"],
         "B08301_019":["walk","nonmot"],
-        "B08301_020":["other","other"],
+        "B08301_020":["other_mode","other_mode"],
         "B08301_021":["wfh","wfh"],      
     }, orient="index",columns=["full","basic"]),
     table = "B08301",
@@ -454,12 +455,104 @@ _TOT_HU_CONFIG_ = ACSConfig(
     univ = "Total housing units"
 )
 
-_RENT_CONFIG_ = pd.DataFrame.from_dict({
+_RENT_CONFIG_ = ACSConfig(
+    pd.DataFrame.from_dict({
+        "B25056_003" : ["rnt_1_100", 1], 
+        "B25056_004" : ["rnt_100_149", 100], 
+        "B25056_005" : ["rnt_150_199", 150], 
+        "B25056_006" : ["rnt_200_249", 200], 
+        "B25056_007" : ["rnt_250_299", 250], 
+        "B25056_008" : ["rnt_300_349", 300], 
+        "B25056_009" : ["rnt_350_399", 350], 
+        "B25056_010" : ["rnt_400_449", 400], 
+        "B25056_011" : ["rnt_450_499", 450], 
+        "B25056_012" : ["rnt_500_549", 500], 
+        "B25056_013" : ["rnt_550_599", 550], 
+        "B25056_014" : ["rnt_600_649", 600], 
+        "B25056_015" : ["rnt_650_699", 650], 
+        "B25056_016" : ["rnt_700_749", 700], 
+        "B25056_017" : ["rnt_750_799", 750], 
+        "B25056_018" : ["rnt_800_899", 800], 
+        "B25056_019" : ["rnt_900_999", 900],  
+        "B25056_020" : ["rnt_1000_1249", 1000], 
+        "B25056_021" : ["rnt_1250_1499", 1250], 
+        "B25056_022" : ["rnt_1500_1999", 1500], 
+        "B25056_023" : ["rnt_2000_2499", 2000], 
+        "B25056_024" : ["rnt_2500_2999", 2500], 
+        "B25056_025" : ["rnt_3000_3499", 3000], 
+        "B25056_026" : ["rnt_3500p", 3500], 
+        "B25056_019" : ["rnt_none", 0],
+        
+    }, orient="index", columns=["full", "lb"]),
+    table = "B25056",
+    univ = "Renter-occupied housing units"
+)
 
-})
+_VALUE_CONFIG_ = ACSConfig(
+    pd.DataFrame.from_dict({
+        "B25075_002" : ["hval_10000", 0], 
+        "B25075_003" : ["hval_10000_14999", 10000], 
+        "B25075_004" : ["hval_15000_19999", 15000], 
+        "B25075_005" : ["hval_20000_24999", 20000], 
+        "B25075_006" : ["hval_25000_29999", 25000], 
+        "B25075_007" : ["hval_30000_34999", 30000], 
+        "B25075_008" : ["hval_35000_39999", 35000], 
+        "B25075_009" : ["hval_40000_49999", 40000], 
+        "B25075_010" : ["hval_50000_59999", 50000], 
+        "B25075_011" : ["hval_60000_69999", 60000], 
+        "B25075_012" : ["hval_70000_79999", 70000], 
+        "B25075_013" : ["hval_80000_89999", 80000], 
+        "B25075_014" : ["hval_90000_99999", 90000], 
+        "B25075_015" : ["hval_100000_124999", 100000], 
+        "B25075_016" : ["hval_125000_149999", 125000], 
+        "B25075_017" : ["hval_150000_174999", 150000], 
+        "B25075_018" : ["hval_175000_199999", 175000], 
+        "B25075_019" : ["hval_200000_249999", 200000], 
+        "B25075_020" : ["hval_250000_299999", 250000], 
+        "B25075_021" : ["hval_300000_399999", 300000], 
+        "B25075_022" : ["hval_400000_499999", 400000], 
+        "B25075_023" : ["hval_500000_749999", 500000], 
+        "B25075_024" : ["hval_750000_999999", 750000], 
+        "B25075_025" : ["hval_1000000_1499999", 1000000], 
+        "B25075_026" : ["hval_1500000_1999999", 1500000], 
+        "B25075_027" : ["hval_2000000p", 2000000]  
+        
+    }, orient="index", columns=["full", "lb"]),
+    table = "B25075",
+    univ = "Owner-occupied Housing Units"
+)
 
-_VALUE_CONFIG_ = pd.DataFrame.from_dict({
-
-})
-
-
+_COST_CONFIG_ = ACSConfig(
+    pd.DataFrame.from_dict({
+        # Morgages
+    "B25087_003": ["hm_costs_200", 0],
+    "B25087_004": ["hm_costs_200_299", 200],
+    "B25087_005": ["hm_costs_300_399", 300],
+    "B25087_006": ["hm_costs_400_499", 400],
+    "B25087_007": ["hm_costs_500_599", 500],
+    "B25087_008": ["hm_costs_600_699", 600],
+    "B25087_009": ["hm_costs_700_799", 700],
+    "B25087_010": ["hm_costs_800_899", 800],
+    "B25087_011": ["hm_costs_900_999", 900],
+    "B25087_012": ["hm_costs_1,000_1,249", 1000],
+    "B25087_013": ["hm_costs_1,250_1,499", 1250],
+    "B25087_014": ["hm_costs_1,500_1,999", 1500],
+    "B25087_015": ["hm_costs_2,000_2,499", 2000],
+    "B25087_016": ["hm_costs_2,500_2,999", 2500],
+    "B25087_017": ["hm_costs_3,000p", 3000],
+    # no mortgage
+    "B25087_019": ["hn_costs_100", 0],
+    "B25087_020": ["hn_costs_100_149", 100],
+    "B25087_021": ["hn_costs_150_199", 150],
+    "B25087_022": ["hn_costs_200_249", 200],
+    "B25087_023": ["hn_costs_250_299", 250],
+    "B25087_024": ["hn_costs_300_349", 300],
+    "B25087_025": ["hn_costs_350_399", 350],
+    "B25087_026": ["hn_costs_400_499", 400],
+    "B25087_027": ["hn_costs_500_599", 500],
+    "B25087_028": ["hn_costs_600_699", 600],
+    "B25087_029": ["hn_costs_700p", 700]   
+    }, orient="index", columns=["full", "lb"]),
+    table = "B25087",
+    univ = "Owner-occupied Housing Units"
+)
