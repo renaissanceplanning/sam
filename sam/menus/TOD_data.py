@@ -24,6 +24,15 @@ from sam.config import counties as county_shapes
 expected = np.array(['parcel_year', 'acs_year', 'lodes_year'])
 
 def extract_fips(gdf):
+    """Finds the county level fips and names for a give geometry
+
+    Args:
+        gdf (gpd.GeoDataFrame): A gdf containing summary area polygons
+
+    Returns:
+        tuple: A tuple containing strings for state and county fips, and county 
+            names.
+    """
     #TODO increase persicion to single county
     gdf = gdf.to_crs(county_shapes.crs)
     county = county_shapes[county_shapes.intersects(gdf.dissolve().geometry[0])]
@@ -33,13 +42,30 @@ def extract_fips(gdf):
     return states, counties, county_names
 
 # fetcher
-def pull_all_data(summary_areas, 
+def pull_TOD_data(summary_areas, 
                   data_dir, 
                   prj_crs,
                   lodes_data = ['rac', 'wac', 'od'],
                   lodes_level = 'bgrp',
                   years = None):
-    
+    """Download relevant data for a TOD study.
+
+    Args:
+        summary_areas (gpd.GeoDataFrame): A gdf containing summary area polygons 
+        data_dir (str): File path for the data directory
+        prj_crs (str): CRS used across the project
+        lodes_data (list, optional): Which LODES tables to fetch. 
+            Defaults to ['rac', 'wac', 'od'].
+        lodes_level (str, optional): Which geography to summarize LODES to. 
+            Defaults to 'bgrp'.
+        years (dict, optional): Years for parcel, acs, and lodes data. 
+            Defaults to current year - 3 for lodes, current year - 2 for ACS,
+            and current year -1 for parcels. This should work most of the year, 
+            but the Florida Parcels can be difficult.
+
+    Raises:
+        ValueError: Missing years values in the years dict.
+    """
     # fill in appropriate years
     if years == None:
         years = {

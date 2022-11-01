@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import geopandas as gpd
 
+# pathing to pul in reference data
 path = os.path.normpath(os.path.abspath(__file__))
 path = os.path.abspath(os.path.join(path, "..", "..", "ref_data"))
 

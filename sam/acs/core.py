@@ -8,10 +8,9 @@ Created on Mon Feb 21 14:21:22 2022
 import re
 import pandas as pd
 import numpy as np
-
-from rputils.download.census import dl_census
-
 import sam.config.acs_config as acs_cfg 
+
+from sam.download.census import dl_census
 
 #TODO: rent and value methods
 #TODO: meta data handling (also lodes)
@@ -712,6 +711,24 @@ class acs:
     
     def rent(state, year, county=None, geography="block group", 
             breaks=None, name="full"):
+        '''
+        Download ACS rent data (universe: Renter-occupied housing units).
+
+        Parameters
+        ----------
+        see `sam.acs._numeric_processing`
+        
+        Notes
+        -----
+        Options include:
+            1. `name = "full"`: full names for bins
+            2. `breaks = [...]`: only lower bound of bin
+
+        Returns
+        -------
+        ACS (subclass of pd.DataFrame)
+
+        '''
         cfg = acs_cfg._RENT_CONFIG_
         tab = _numeric_processing(geography=geography, config=cfg, 
                                   state=state, year=year, county=county,
@@ -720,6 +737,24 @@ class acs:
     
     def value(state, year, county=None, geography="block group", 
               breaks=None, name="full"):
+        '''
+        Download ACS housing value data (universe: Owner-occupied Housing Units).
+
+        Parameters
+        ----------
+        see `sam.acs._numeric_processing`
+        
+        Notes
+        -----
+        Options include:
+            1. `name = "full"`: full names for bins
+            2. `breaks = [...]`: only lower bound of bin
+
+        Returns
+        -------
+        ACS (subclass of pd.DataFrame)
+
+        '''
         cfg = acs_cfg._VALUE_CONFIG_
         tab = _numeric_processing(geography=geography, config=cfg, 
                                   state=state, year=year, county=county,
@@ -728,6 +763,24 @@ class acs:
     
     def cost(state, year, county=None, geography="block group", 
               breaks=None, name="full"):
+        '''
+        Download ACS housing cost data (universe: Owner-occupied Housing Units).
+
+        Parameters
+        ----------
+        see `sam.acs._numeric_processing`
+        
+        Notes
+        -----
+        Options include:
+            1. `name = "full"`: full names for bins
+            2. `breaks = [...]`: only lower bound of bin
+
+        Returns
+        -------
+        ACS (subclass of pd.DataFrame)
+
+        '''
         cfg = acs_cfg._COST_CONFIG_
         tab = _numeric_processing(geography=geography, config=cfg, 
                                   state=state, year=year, county=county,

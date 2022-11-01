@@ -3,7 +3,7 @@ import geopandas as gpd
 import numpy as np
 from datetime import date
 from sam.config.ref_config import par_recode
-from rputils.download.fl_parcels import (fdor_gis_and_tax, 
+from sam.download.fl_parcels import (fdor_gis_and_tax, 
                                          fdor_availability, 
                                          process_parcels)
 

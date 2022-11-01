@@ -9,6 +9,14 @@ from zipfile import ZipFile
 
 
 def is_int(element):
+    """Checks if value is int or could be converted to int
+
+    Args:
+        element (any): value to test cohersion on
+
+    Returns:
+        bool: True if is or is coercible to int
+    """
     try:
         int(element)
         return True
@@ -16,6 +24,21 @@ def is_int(element):
         return False
 
 def pull_lihtc(state, county, spatial=True, crs='EPSG:4326'):
+    """Pull LIHTC from HUD
+
+    Args:
+        state (str or list of str): State FIPS of list of FIPS
+        county (_type_): County FIPS of list of FIPS
+        spatial (bool, optional): Download GIS or table. Defaults to True.
+        crs (str, optional): Project CRS to convert too. Defaults to 'EPSG:4326'.
+
+    Raises:
+        ValueError: Stops if County is a name not a FIPS
+        ValueError: Stops if County is a name not a FIPS
+
+    Returns:
+        gpd.GeoDataFrame: LIHTC point level dataframe
+    """
     if isinstance(state, list):
         for st in state:
             if isinstance(st, int):

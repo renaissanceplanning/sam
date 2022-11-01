@@ -8,7 +8,7 @@ Created on Thu Jan 27 17:01:13 2022
 import re
 import geopandas as gpd
 
-from rputils.download.census import dl_tiger
+from sam.download.census import dl_tiger
 
 # %% Helper functions
 

@@ -10,7 +10,7 @@ import re
 import numpy as np
 import pandas as pd
 
-from rputils.download.census import dl_lodes, dl_xwalk
+from sam.download.census import dl_lodes, dl_xwalk
 
 # Helper functions
 def _dlfm_lodes_ac(file, state, year, idcol):

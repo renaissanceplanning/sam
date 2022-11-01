@@ -16,7 +16,7 @@ from sam.tiger import Tiger as tiger
 from sam.acs import acs
 from sam.osm import OSMNetwork
 
-import pytest
+# import pytest
 
 state = "FL"
 county = ["12031"]

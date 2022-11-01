@@ -12,7 +12,7 @@ import networkx as nx
 import numpy as np
 import osmnx as ox
 
-from rputils.download.osm import dl_osm_network
+from sam.download.osm import dl_osm_network
 
 # %% Globals
 

@@ -14,6 +14,10 @@ import numpy as np
 import pandas as pd
 
 class ACSConfig:
+    """
+    Abstract Class to create dataframes formatting ACS columns to human readable
+    format.
+    """
     def __init__(self, df, table, univ):
         names = np.array(df.columns)
         names = names[names != "lb"]
