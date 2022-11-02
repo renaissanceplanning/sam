@@ -2,19 +2,17 @@ name: sam
 channels: 
   - conda-forge
 dependencies:
-  - python=3.9
   - r
-  - geopandas
-  - pandas
-  - numpy
   - osmnx
-  - networkx
   - rpy2=3.4.5
   - bs4
   - r-tidycensus
+  - r-tigris
+  - r-sf
+  - r-lwgeom
   - pip
   - pip:
-  - us
+    - us
     - -e ../rputils
     - -e ../algi
     - -e ../gary

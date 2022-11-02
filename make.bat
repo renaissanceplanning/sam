@@ -48,7 +48,7 @@ GOTO %1
     ENDLOCAL & (
         :: Ensure mamba installed in root env
         ECHO Installing mamba...
-        CALL conda install mamba pyyaml -c conda-forge -y
+        CALL conda install mamba yaml pyyaml -c conda-forge -y
         :: Run the update tool for the build conda environment
         ECHO Updating build environment...
         CALL python check_package_deps.py
