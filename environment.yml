@@ -12,6 +12,7 @@ dependencies:
   - rpy2
   - r-tidycensus
   - pandana # this can be dropped if/when osmnx downloader class shifts to dependency on gary
+  - osmnx # see above
   - pip
   - pip:
     - -e ../rputils
