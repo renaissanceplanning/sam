@@ -4,3 +4,4 @@ from . import nlcd
 from . import osm
 from . import pad
 from . import core
+from . import sld

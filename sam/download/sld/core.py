@@ -125,7 +125,14 @@ def dl_sld(columns=None, **kwargs):
                     ign_fields = list(ign_fields)
                 # Read the SLD layer from the gdb
                 kwargs = kwargs.pop("ignore_fields", None)
-                gdf = gpd.read_file(gdb.path, layer=SLD_LAYER,
-                                    ignore_fields=ign_fields, **kwargs)
+                if kwargs is None: #handle a none type as it throw error in read file
+                    gdf = gpd.read_file(gdb.path, layer=SLD_LAYER,
+                                        ignore_fields=ign_fields)
+                else:
+                    gdf = gpd.read_file(gdb.path, layer=SLD_LAYER,
+                                        ignore_fields=ign_fields, **kwargs)
     # Return the gdf as read
     return gdf
+
+if __name__ == "__main__":
+    test = dl_sld()
