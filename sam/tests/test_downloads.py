@@ -17,10 +17,10 @@ from sam.acs import acs
 from sam.osm import OSMNetwork
 
 # import pytest
-
+crs = rputils.create_crs(crs_input=2881)
 state = "FL"
 county = ["12031"]
-county_names = "Duval"
+county_names = "Miami-Dade"
 year = 2019
 
 # Residence area characteristics
@@ -85,7 +85,7 @@ year = 2019
 # type(co[co.GEOID.isin(["51003"])])
 
 # test acs variables
-sex = acs.sex(state="VA", year=2019, county=county)
+# sex = acs.sex(state="VA", year=2019, county=county)
 # hh_inc = acs.hh_income(state="VA", year=2019, county=county)
 # age = acs.age(state="VA", year=2019, county=county)
 # poverty = acs.ratio_of_income_to_poverty_level(
@@ -103,6 +103,11 @@ sex = acs.sex(state="VA", year=2019, county=county)
 
 
 # bg = tiger.block_groups(state=state, year=year, county=county, crs="ESRI:102658", trim=True)
-blocks = tiger.blocks(state, year, county, crs="ESRI:102658", trim=True)
-blocks.to_file(r"C:\Users\U_RPG\Documents\GitHub\packages\sammie\test_data\RAW\tiger\blocks.shp")
-# sex = acs.sex(state=state, year=year, county=county_names)
+# blocks = tiger.blocks(state, year, county, crs="ESRI:102658", trim=True)
+# blocks.to_file(r"C:\Users\U_RPG\Documents\GitHub\packages\sammie\test_data\RAW\tiger\blocks.shp")
+# sex = acs.sex(state=state, year=year, county=county_name
+
+import sam.parcels as spar
+df = spar.download_fl_parcels(county=county_names, crs=crs, year=2018,)
+print()
+
