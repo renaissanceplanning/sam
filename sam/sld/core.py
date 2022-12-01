@@ -14,7 +14,7 @@ def pull_sld(state, county=None, keep_cols=None):
         keep_cols (list, optional): List of SLD columns to keep. Defaults to None.
 
     Returns:
-        _type_: _description_
+        gpd.GeoDataFrame: SLD filtered to project location
     """
     sld = dl_sld(columns=keep_cols)
     if county is None:
