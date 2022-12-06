@@ -163,5 +163,5 @@ if __name__ == "__main__":
         print('building package version of environment')
     else:
         print('building project version of environment')
-    # main(project_yml=Path(project_dir, "environment.yml"), prj_pkg_switch=args.package)
-    main(project_yml=Path(project_dir, "environment.yml"), prj_pkg_switch=True)
+    main(project_yml=Path(project_dir, "environment.yml"), prj_pkg_switch=args.package)
+    # main(project_yml=Path(project_dir, "environment.yml"), prj_pkg_switch=True)
