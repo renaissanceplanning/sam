@@ -7,22 +7,124 @@ is listed.
 """
 # %% STATES
 SFIPS_DICT = {
-    'state': [
-        'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'DC', 'FL',
-        'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME',
-        'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH',
-        'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI',
-        'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI',
-        'WY', 'AS', 'MP', 'GU', 'MP', 'PR', 'VI'
+    "state": [
+        "AL",
+        "AK",
+        "AZ",
+        "AR",
+        "CA",
+        "CO",
+        "CT",
+        "DE",
+        "DC",
+        "FL",
+        "GA",
+        "HI",
+        "ID",
+        "IL",
+        "IN",
+        "IA",
+        "KS",
+        "KY",
+        "LA",
+        "ME",
+        "MD",
+        "MA",
+        "MI",
+        "MN",
+        "MS",
+        "MO",
+        "MT",
+        "NE",
+        "NV",
+        "NH",
+        "NJ",
+        "NM",
+        "NY",
+        "NC",
+        "ND",
+        "OH",
+        "OK",
+        "OR",
+        "PA",
+        "RI",
+        "SC",
+        "SD",
+        "TN",
+        "TX",
+        "UT",
+        "VT",
+        "VA",
+        "WA",
+        "WV",
+        "WI",
+        "WY",
+        "AS",
+        "MP",
+        "GU",
+        "MP",
+        "PR",
+        "VI",
     ],
-    'fips': [
-        '01', '02', '04', '05', '06', '08', '09', '10', '11', '12',
-        '13', '15', '16', '17', '18', '19', '20', '21', '22', '23',
-        '24', '25', '26', '27', '28', '29', '30', '31', '32', '33',
-        '34', '35', '36', '37', '38', '39', '40', '41', '42', '44',
-        '45', '46', '47', '48', '49', '50', '51', '53', '54', '55',
-        '56', '60', '66', '66', '69', '72', '78'
-    ]
+    "fips": [
+        "01",
+        "02",
+        "04",
+        "05",
+        "06",
+        "08",
+        "09",
+        "10",
+        "11",
+        "12",
+        "13",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19",
+        "20",
+        "21",
+        "22",
+        "23",
+        "24",
+        "25",
+        "26",
+        "27",
+        "28",
+        "29",
+        "30",
+        "31",
+        "32",
+        "33",
+        "34",
+        "35",
+        "36",
+        "37",
+        "38",
+        "39",
+        "40",
+        "41",
+        "42",
+        "44",
+        "45",
+        "46",
+        "47",
+        "48",
+        "49",
+        "50",
+        "51",
+        "53",
+        "54",
+        "55",
+        "56",
+        "60",
+        "66",
+        "66",
+        "69",
+        "72",
+        "78",
+    ],
 }
 
 
@@ -41,7 +143,7 @@ def get_state_by_abbr(ST):
 
 
 # %% SUMMARY LEVELS
-class SummaryLevel():
+class SummaryLevel:
     """
     Simple class storing details on census summary levels, as shown here:
     https://jtleider.github.io/censusdata/geographies.html
@@ -116,61 +218,132 @@ SUMMARY_LEVELS = [
     SummaryLevel("state> consolidated city> place (or part)", "172"),
     SummaryLevel("state> alaska native regional corporation", "230"),
     SummaryLevel("american indian area/alaska native area/hawaiian home land", "250"),
-    SummaryLevel("american indian area/alaska native area/hawaiian home land> tribal subdivision/remainder", "251"),
-    SummaryLevel("american indian area/alaska native area (reservation or statistical entity only)", "252"),
-    SummaryLevel("american indian area (off-reservation trust land only)/hawaiian home land", "254"),
-    SummaryLevel("american indian area/alaska native area/hawaiian home land> tribal census tract", "256"),
-    SummaryLevel("american indian area/alaska native area/hawaiian home land> tribal census tract> tribal block group",
-                 "258"),
-    SummaryLevel("american indian area/alaska native area/hawaiian home land> state", "260"),
-    SummaryLevel("american indian area/alaska native area/hawaiian home land> state> place/remainder", "269"),
-    SummaryLevel("american indian area/alaska native area/hawaiian home land> state> county", "270"),
-    SummaryLevel("state> american indian area/alaska native area/hawaiian home land (or part)", "280"),
-    SummaryLevel("state> american indian area> tribal subdivision/remainder (or part)", "281"),
-    SummaryLevel("state> american indian area/alaska native area (reservation or statistical entity only) (or part)",
-                 "283"),
-    SummaryLevel("state> american indian area (off-reservation trust land only)/hawaiian home land (or part)", "286"),
-    SummaryLevel("american indian area/alaska native area/hawaiian home land> tribal subdivision/remainder> state",
-                 "290"),
+    SummaryLevel(
+        "american indian area/alaska native area/hawaiian home land> tribal subdivision/remainder",
+        "251",
+    ),
+    SummaryLevel(
+        "american indian area/alaska native area (reservation or statistical entity only)",
+        "252",
+    ),
+    SummaryLevel(
+        "american indian area (off-reservation trust land only)/hawaiian home land",
+        "254",
+    ),
+    SummaryLevel(
+        "american indian area/alaska native area/hawaiian home land> tribal census tract",
+        "256",
+    ),
+    SummaryLevel(
+        "american indian area/alaska native area/hawaiian home land> tribal census tract> tribal block group",
+        "258",
+    ),
+    SummaryLevel(
+        "american indian area/alaska native area/hawaiian home land> state", "260"
+    ),
+    SummaryLevel(
+        "american indian area/alaska native area/hawaiian home land> state> place/remainder",
+        "269",
+    ),
+    SummaryLevel(
+        "american indian area/alaska native area/hawaiian home land> state> county",
+        "270",
+    ),
+    SummaryLevel(
+        "state> american indian area/alaska native area/hawaiian home land (or part)",
+        "280",
+    ),
+    SummaryLevel(
+        "state> american indian area> tribal subdivision/remainder (or part)", "281"
+    ),
+    SummaryLevel(
+        "state> american indian area/alaska native area (reservation or statistical entity only) (or part)",
+        "283",
+    ),
+    SummaryLevel(
+        "state> american indian area (off-reservation trust land only)/hawaiian home land (or part)",
+        "286",
+    ),
+    SummaryLevel(
+        "american indian area/alaska native area/hawaiian home land> tribal subdivision/remainder> state",
+        "290",
+    ),
     SummaryLevel(
         "american indian area/alaska native area/hawaiian home land> tribal census tract (or part) within aia (reservation only)",
-        "291"),
+        "291",
+    ),
     SummaryLevel(
         "american indian area/alaska native area/hawaiian home land> tribal census tract (or part) within aia (trust land only)",
-        "292"),
+        "292",
+    ),
     SummaryLevel(
         "american indian area/alaska native area/hawaiian home land> tribal census tract> tribal block group (or part) within tribal census tract within aia (reservation only)",
-        "293"),
+        "293",
+    ),
     SummaryLevel(
         "american indian area/alaska native area/hawaiian home land> tribal census tract> tribal block group (or part) within tribal census tract within aia (trust land only)",
-        "294"),
+        "294",
+    ),
     SummaryLevel("metropolitan statistical area/micropolitan statistical area", "310"),
-    SummaryLevel("metropolitan statistical area/micropolitan statistical area> state (or part)", "311"),
-    SummaryLevel("metropolitan statistical area/micropolitan statistical area> state> principal city", "312"),
-    SummaryLevel("metropolitan statistical area/micropolitan statistical area> metropolitan division", "314"),
+    SummaryLevel(
+        "metropolitan statistical area/micropolitan statistical area> state (or part)",
+        "311",
+    ),
+    SummaryLevel(
+        "metropolitan statistical area/micropolitan statistical area> state> principal city",
+        "312",
+    ),
+    SummaryLevel(
+        "metropolitan statistical area/micropolitan statistical area> metropolitan division",
+        "314",
+    ),
     SummaryLevel("metropolitan statistical area> metropolitan division> state", "315"),
-    SummaryLevel("state> metropolitan statistical area/micropolitan statistical area (or part)", "320"),
-    SummaryLevel("state> metropolitan statistical area/micropolitan statistical area> principal city (or part)", "321"),
-    SummaryLevel("state> metropolitan statistical area/micropolitan statistical area> county", "322"),
-    SummaryLevel("state> metropolitan statistical area/micropolitan statistical area> metropolitan division (or part)",
-                 "323"),
-    SummaryLevel("state> metropolitan statistical area/micropolitan statistical area> metropolitan division> county",
-                 "324"),
+    SummaryLevel(
+        "state> metropolitan statistical area/micropolitan statistical area (or part)",
+        "320",
+    ),
+    SummaryLevel(
+        "state> metropolitan statistical area/micropolitan statistical area> principal city (or part)",
+        "321",
+    ),
+    SummaryLevel(
+        "state> metropolitan statistical area/micropolitan statistical area> county",
+        "322",
+    ),
+    SummaryLevel(
+        "state> metropolitan statistical area/micropolitan statistical area> metropolitan division (or part)",
+        "323",
+    ),
+    SummaryLevel(
+        "state> metropolitan statistical area/micropolitan statistical area> metropolitan division> county",
+        "324",
+    ),
     SummaryLevel("combined statistical area", "330"),
     SummaryLevel("combined statistical area> state", "331"),
     SummaryLevel("combined statistical area> micropolitan statistical area", "332"),
-    SummaryLevel("combined statistical area> metropolitan statistical area/micropolitan statistical area> state",
-                 "333"),
+    SummaryLevel(
+        "combined statistical area> metropolitan statistical area/micropolitan statistical area> state",
+        "333",
+    ),
     SummaryLevel("combined new england city and town area", "335"),
     SummaryLevel("combined new england city and town area> state", "336"),
-    SummaryLevel("combined new england city and town area> new england city and town area", "337"),
-    SummaryLevel("combined new england city and town area> new england city and town area> state", "338"),
+    SummaryLevel(
+        "combined new england city and town area> new england city and town area", "337"
+    ),
+    SummaryLevel(
+        "combined new england city and town area> new england city and town area> state",
+        "338",
+    ),
     SummaryLevel("state> combined statistical area (or part)", "340"),
     SummaryLevel(
         "state> combined statistical area> metropolitan statistical area/micropolitan statistical area (or part)",
-        "341"),
+        "341",
+    ),
     SummaryLevel("state> combined new england city and town area (or part)", "345"),
-    SummaryLevel("state> combined new england city and town area> new england city and town area (or part)", "346"),
+    SummaryLevel(
+        "state> combined new england city and town area> new england city and town area (or part)",
+        "346",
+    ),
     SummaryLevel("new england city and town area", "350"),
     SummaryLevel("new england city and town area> state", "351"),
     SummaryLevel("new england city and town area> state> principal city", "352"),
@@ -179,10 +352,19 @@ SUMMARY_LEVELS = [
     SummaryLevel("state> new england city and town area (or part)", "360"),
     SummaryLevel("state> new england city and town area> place", "361"),
     SummaryLevel("state> new england city and town area> county (or part)", "362"),
-    SummaryLevel("state> new england city and town area> county> county subdivision", "363"),
-    SummaryLevel("state> new england city and town area> necta division (or part)", "364"),
-    SummaryLevel("state> new england city and town area> necta division> county (or part)", "365"),
-    SummaryLevel("state> new england city and town area> necta division> county> county subdivision", "366"),
+    SummaryLevel(
+        "state> new england city and town area> county> county subdivision", "363"
+    ),
+    SummaryLevel(
+        "state> new england city and town area> necta division (or part)", "364"
+    ),
+    SummaryLevel(
+        "state> new england city and town area> necta division> county (or part)", "365"
+    ),
+    SummaryLevel(
+        "state> new england city and town area> necta division> county> county subdivision",
+        "366",
+    ),
     SummaryLevel("urban area", "400"),
     SummaryLevel("urban area> state", "410"),
     SummaryLevel("urban area> state> county", "430"),
@@ -191,12 +373,19 @@ SUMMARY_LEVELS = [
     SummaryLevel("state> congressional district> county> tract", "511"),
     SummaryLevel("state> congressional district> county> county subdivision", "521"),
     SummaryLevel("state> congressional district> place", "531"),
-    SummaryLevel("state> congressional district> american indian area/alaska native area/hawaiian home land", "550"),
-    SummaryLevel("state> congressional district> alaska native regional corporation", "560"),
+    SummaryLevel(
+        "state> congressional district> american indian area/alaska native area/hawaiian home land",
+        "550",
+    ),
+    SummaryLevel(
+        "state> congressional district> alaska native regional corporation", "560"
+    ),
     SummaryLevel("state> state legislative district (upper chamber)", "610"),
     SummaryLevel("state> state legislative district (upper chamber)> county", "612"),
     SummaryLevel("state> state legislative district (lower chamber)", "620"),
-    SummaryLevel("state> state legislative district (lower chamber)> county (or part)", "622"),
+    SummaryLevel(
+        "state> state legislative district (lower chamber)> county (or part)", "622"
+    ),
     SummaryLevel("state> public use microdata area", "795"),
     SummaryLevel("zip code tabulation area", "860"),
     SummaryLevel("state> zip code tabulation area (or part)", "871"),
@@ -231,7 +420,7 @@ def surmise_summary_level(geo_list):
     with the spcification defined in `geo_list`. If multiple matches
     are found, the intended summary level is surmised based on (in
     order of priorty):
-    
+
         - the match with fewest unspecified items
         - the match with the shortest (number of elements in the)summary
         level definition
@@ -263,4 +452,5 @@ def surmise_summary_level(geo_list):
         return candidates[0][-1]
     else:
         raise ValueError(
-            f"No summary levels include the definitions listed in {geo_list}")
+            f"No summary levels include the definitions listed in {geo_list}"
+        )

@@ -4,68 +4,102 @@ Created on Tue Mar  1 14:30:54 2022
 
 @author: AZ7
 """
-#todo clean up tests for automatic testing
+# todo clean up tests for automatic testing
 
 import os
 import rputils
 import numpy as np
 import pandas as pd
-# os.environ['R_HOME'] = r"C:\Users\U_RPG\anaconda3\envs\sam\lib\R"
-from sam.lodes import lodes 
-from sam.tiger import Tiger as tiger
-from sam.acs import acs
+from sam.lodes import lodes
+from sam.download.census import dl_tiger, dl_census, dl_xwalk, dl_lodes
+from sam.download.
 from sam.osm import OSMNetwork
+from sam.download.sld import dl_sld
+from sam.config import counties
+from sam.download.ms_footprints import
 
 # import pytest
-crs = rputils.create_crs(crs_input=2881)
-state = "FL"
-county = ["12031"]
-county_names = "Miami-Dade"
-year = 2019
+TEST_CRS = rputils.create_crs(crs_input=2881)
+TEST_STATE = "FL"
+TEST_COUNTY = ["12031"]
+TEST_COUNTY_NM = "Miami-Dade"
+TEST_YEAR = 2019
+
 
 # Residence area characteristics
-# rac = lodes.rac(state=state, year=year)
-# rac["ctyfips"] = [x[:5] for x in rac.h_geocode]
-# rac = rac[rac.ctyfips.isin(county)]
-# rac = rac.drop(columns="ctyfips")
+def test_dl_rac():
+	rac = lodes.rac(state=TEST_STATE, year=TEST_YEAR)
+	rac["ctyfips"] = [x[:5] for x in rac.h_geocode]
+	rac = rac[rac.ctyfips.isin(TEST_COUNTY)]
+	return rac.drop(columns="ctyfips")
 
-# def test_rac(df=rac):
-#     is_df = isinstance(df, pd.DataFrame)
-#     non_zero = len(df) > 0
-#     assert is_df + non_zero == 2 
+
+def test_rac(df=test_dl_rac()):
+	is_df = isinstance(df, pd.DataFrame)
+	non_zero = len(df) > 0
+	assert is_df + non_zero == 2
+
 
 # # Workplace area characteristics
-# wac = lodes.wac(state=state, year=year)
-# wac["ctyfips"] = [x[:5] for x in wac.w_geocode]
-# wac = wac[wac.ctyfips.isin(county)]
-# wac = wac.drop(columns="ctyfips")
+def test_dl_wac():
+	wac = lodes.wac(state=TEST_STATE, year=TEST_YEAR)
+	wac["ctyfips"] = [x[:5] for x in wac.w_geocode]
+	wac = wac[wac.ctyfips.isin(TEST_COUNTY)]
+	return wac.drop(columns="ctyfips")
 
-# def test_wac(df=wac):
-#     is_df = isinstance(df, pd.DataFrame)
-#     non_zero = len(df) > 0
-#     assert is_df + non_zero == 2 
+
+def test_wac(df=test_dl_wac()):
+	is_df = isinstance(df, pd.DataFrame)
+	non_zero = len(df) > 0
+	assert is_df + non_zero == 2
+
 
 # # # Origin-destination jobs
-# od = lodes.od(state=state, year=year)
-# od["h_ctyfips"] = [x[:5] for x in od.h_geocode]
-# od["w_ctyfips"] = [x[:5] for x in od.w_geocode]
-# od = od[np.logical_or(od.h_ctyfips.isin(county), od.w_ctyfips.isin(county))]
-# od = od.drop(columns=["h_ctyfips","w_ctyfips"])
+def test_dl_lodes():
+	od = lodes.od(state=TEST_STATE, year=TEST_YEAR)
+	od["h_ctyfips"] = [x[:5] for x in od.h_geocode]
+	od["w_ctyfips"] = [x[:5] for x in od.w_geocode]
+	od = od[np.logical_or(od.h_ctyfips.isin(TEST_COUNTY), od.w_ctyfips.isin(TEST_COUNTY))]
+	return od.drop(columns=["h_ctyfips", "w_ctyfips"])
 
-# def test_od(df=od):
-#     is_df = isinstance(df, pd.DataFrame)
-#     non_zero = len(df) > 0
-#     assert is_df + non_zero == 2 
+
+def test_od(df=test_dl_lodes()):
+	is_df = isinstance(df, pd.DataFrame)
+	non_zero = len(df) > 0
+	assert is_df + non_zero == 2
 
 
 # # Geography crosswalk
-# xw = lodes.xwalk(state=state)
+def test_dl_xwalk():
+	return lodes.xwalk(state=TEST_STATE)
 
-# def test_od(df=xw):
-#     is_df = isinstance(df, pd.DataFrame)
-#     non_zero = len(df) > 0
-#     assert is_df + non_zero == 2 
 
+def test_od(df=test_dl_xwalk()):
+	is_df = isinstance(df, pd.DataFrame)
+	non_zero = len(df) > 0
+	assert is_df + non_zero == 2
+
+
+def test_dl_sld():
+	aoi = counties.loc[counties.GEOID == TEST_COUNTY[0]]
+	return dl_sld(mask=aoi)
+
+
+def test_sld(df=test_dl_sld()):
+	is_df = isinstance(df, pd.DataFrame)
+	non_zero = len(df) > 0
+	assert is_df + non_zero == 2
+
+
+# Building Footprints
+def test_dl_buildings():
+	# Download a dummy AOI
+	# aoi = sam.download.census.dl_tiger(geom="counties", state="FL", county="031")
+	aoi = sam.download.census.dl_tiger(geom="counties", state=TEST_STATE, county=TEST_COUNTY)
+	# Check how much of aoi has "new" building data
+	sam.download.ms_footprints.ms_isin_focal_area(aoi)
+	# Download buildings within that AOI
+	bf = sam.download.ms_footprints.dl_ms_building_footprints(state="", mask=aoi)
 # # Jobs files aggregated to block group
 # rac_bg = rac.lodes.aggregate(XWalk=xw, to="bgrp", keepname=False)
 # wac_bg = wac.lodes.aggregate(XWalk=xw, to="bgrp", keepname=False)
@@ -77,6 +111,7 @@ year = 2019
 #         )
 
 # Census geographies in Virgina
+def test_dl_census_geoms():
 # blk = tiger.blocks(state="VA", year=2019, county="51540", crs=2913, trim=True)
 # bg = tiger.block_groups(state="VA", year=2019, county="51540", crs=2913, trim=True)
 # tct = tiger.tracts(state="VA", year=2019, county=county, crs=2283, trim=True)
@@ -108,6 +143,10 @@ year = 2019
 # sex = acs.sex(state=state, year=year, county=county_name
 
 import sam.parcels as spar
-df = spar.download_fl_parcels(county=county_names, crs=crs, year=2018,)
-print()
 
+df = spar.download_fl_parcels(
+	county=TEST_COUNTY_NM,
+	crs=TEST_CRS,
+	year=2018,
+)
+print()

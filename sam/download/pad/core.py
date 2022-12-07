@@ -9,7 +9,7 @@ Created on Thu Sep 23 16:17:50 2021
 
 from urllib.request import Request, urlopen
 from bs4 import BeautifulSoup
-import re 
+import re
 from urllib.parse import urlparse
 import pandas as pd
 from zipfile import ZipFile
@@ -19,11 +19,11 @@ import fiona
 import geopandas as gpd
 
 
-
 # %% Functions
 
+
 def pad_links_by_state():
-    '''
+    """
     Produce a table of all PAD shapefiles available at the state level by
     scraping the USGS site for protected areas. PAD state shapefiles are stored
     in zip archives for the state; this function will identify the link to
@@ -71,13 +71,13 @@ def pad_links_by_state():
         data; the "PAD_file" and "PAD_link" columns can be passed as inputs
         to `read_pad` to load files of interest.
 
-    '''
+    """
     # Find the PAD-US data page on the home site
     home_link = "https://www.usgs.gov/core-science-systems/science-analytics-and-synthesis/gap/science/protected-areas"
     home_req = Request(home_link)
     home_page = urlopen(home_req)
     home_soup = BeautifulSoup(home_page, "lxml")
-    for link in home_soup.findAll('a'):
+    for link in home_soup.findAll("a"):
         if link.string is None:
             pass
         else:
@@ -88,15 +88,15 @@ def pad_links_by_state():
                 pass
     if bool(re.search("^/", data_link)) == True:
         home_parsed = urlparse(home_link)
-        home_base = '://'.join([home_parsed.scheme, home_parsed.netloc])
-        data_link = ''.join([home_base, data_link])
+        home_base = "://".join([home_parsed.scheme, home_parsed.netloc])
+        data_link = "".join([home_base, data_link])
     else:
         pass
     # Find the download page on the data page
     data_req = Request(data_link)
     data_page = urlopen(data_req)
     data_soup = BeautifulSoup(data_page, "lxml")
-    for link in data_soup.findAll('a'):
+    for link in data_soup.findAll("a"):
         if link.string is None:
             pass
         else:
@@ -107,15 +107,15 @@ def pad_links_by_state():
                 pass
     if bool(re.search("^/", dl_link)) == True:
         data_parsed = urlparse(data_link)
-        data_base = '://'.join([data_parsed.scheme, data_parsed.netloc])
-        dl_link = ''.join([data_base, dl_link])
+        data_base = "://".join([data_parsed.scheme, data_parsed.netloc])
+        dl_link = "".join([data_base, dl_link])
     else:
         pass
     # Find the states shape page on the dl page
     dl_req = Request(dl_link)
     dl_page = urlopen(dl_req)
     dl_soup = BeautifulSoup(dl_page, "lxml")
-    for link in dl_soup.findAll('a'):
+    for link in dl_soup.findAll("a"):
         if link.string is None:
             pass
         else:
@@ -126,8 +126,8 @@ def pad_links_by_state():
                 pass
     if bool(re.search("^/", shp_link)) == True:
         dl_parsed = urlparse(dl_link)
-        dl_base = '://'.join([dl_parsed.scheme, dl_parsed.netloc])
-        shp_link = ''.join([dl_base, shp_link])
+        dl_base = "://".join([dl_parsed.scheme, dl_parsed.netloc])
+        shp_link = "".join([dl_base, shp_link])
     else:
         pass
     # Find the download links on the shapes page
@@ -144,12 +144,14 @@ def pad_links_by_state():
                 shp_links.append(d.get("data-url"))
     # Format output
     shp_parsed = urlparse(shp_link)
-    shp_base = '://'.join([shp_parsed.scheme, shp_parsed.netloc])
-    df = pd.DataFrame({"state":shp_names, "pad":shp_links})
+    shp_base = "://".join([shp_parsed.scheme, shp_parsed.netloc])
+    df = pd.DataFrame({"state": shp_names, "pad": shp_links})
     pad_final = []
-    for i,row in df.iterrows():
+    for i, row in df.iterrows():
         try:
-            st = re.search("(?<=_state).*?(?=_shapefile)", row["state"], re.IGNORECASE).group(0)
+            st = re.search(
+                "(?<=_state).*?(?=_shapefile)", row["state"], re.IGNORECASE
+            ).group(0)
         except:
             st = "NULL"
         if st == "NULL":
@@ -157,27 +159,36 @@ def pad_links_by_state():
         else:
             print(st)
             if bool(re.search("^/", row["pad"])) == True:
-                zip_link = ''.join([shp_base, row["pad"]])
+                zip_link = "".join([shp_base, row["pad"]])
             else:
                 zip_link = row["pad"]
             zip_open = ZipFile(BytesIO(urlopen(zip_link).read()))
             zip_files = np.array(zip_open.namelist())
-            shps = zip_files[np.where([bool(re.search(".shp$", f)) for f in zip_files])[0]]
-            ft = [re.search("(?<=[0-9]{1}_[0-9]{1}).*?(?=(_state)|(.shp$))", x, re.IGNORECASE).group(0)
-                  for x in shps]
-            st_df = pd.DataFrame({"state_USPS":np.repeat(st, len(ft)),
-                                  "PAD_type":ft,
-                                  "PAD_file":shps,
-                                  "PAD_link":np.repeat(zip_link, len(ft))})
+            shps = zip_files[
+                np.where([bool(re.search(".shp$", f)) for f in zip_files])[0]
+            ]
+            ft = [
+                re.search(
+                    "(?<=[0-9]{1}_[0-9]{1}).*?(?=(_state)|(.shp$))", x, re.IGNORECASE
+                ).group(0)
+                for x in shps
+            ]
+            st_df = pd.DataFrame(
+                {
+                    "state_USPS": np.repeat(st, len(ft)),
+                    "PAD_type": ft,
+                    "PAD_file": shps,
+                    "PAD_link": np.repeat(zip_link, len(ft)),
+                }
+            )
             pad_final.append(st_df)
     # Return
     pad_concat = pd.concat(pad_final).reset_index(drop=True)
     return pad_concat
 
 
-
 def read_pad(pad_link, pad_files):
-    '''
+    """
     Read a PAD shapefile from its zip archive.
 
     Parameters
@@ -195,7 +206,7 @@ def read_pad(pad_link, pad_files):
         The PAD shape of interest. Will be a dict of GeoDataFrames if
         `pad_file` is an iterable, with `pad_file` serving as the keys.
 
-    '''
+    """
     # Decide whether we're reading 1 file or many
     pad_zip = urlopen(pad_link).read()
     if isinstance(pad_files, str):
@@ -203,7 +214,7 @@ def read_pad(pad_link, pad_files):
         return_dict = False
     else:
         return_dict = True
-        
+
     # Open the zip archive, then load from features. Can't use gpd.read_file
     # because there's currently no interplay between read_file and the output
     # of ZipFile or ZipMemoryFile
@@ -211,7 +222,7 @@ def read_pad(pad_link, pad_files):
     with fiona.io.ZipMemoryFile(pad_zip) as pz:
         for pad_file in pad_files:
             with pz.open(pad_file) as pf:
-                crs = pf.crs
+                crs = pf.TEST_CRS
                 gdf = gpd.GeoDataFrame.from_features(pf, crs=crs)
             cols = [c for c in gdf.columns if c != "geometry"] + ["geometry"]
             gdf = gdf[cols]
@@ -222,20 +233,15 @@ def read_pad(pad_link, pad_files):
         return pad_gdfs[pad_files[0]]
 
 
+if __name__ == "__main__":
 
-# %% Example
+    # Identify the currently available pad data
+    DATA = pad_links_by_state()
 
-# # Identify the currently available pad data
-# DATA = pad_links_by_state()
+    # Identify which shapes are available for a state of interest
+    ST = "OR"
+    state_data = DATA[DATA.state_USPS == ST]
 
-# # Identify which shapes are available for a state of interest
-# ST = "OR"
-# state_data = DATA[DATA.state_USPS == ST]
-
-# # Load all files for that state
-# pad_state = read_pad(pad_link = state_data.PAD_link.iloc[0],
-#                      pad_files = state_data.PAD_file)
-
-
-
-
+    # Load all files for that state
+    pad_state = read_pad(pad_link = state_data.PAD_link.iloc[0],
+                         pad_files = state_data.PAD_file)

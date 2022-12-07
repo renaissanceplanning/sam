@@ -20,14 +20,14 @@ def extract_urls(county, year):
     county_urls = fdor_availability(df=urls_df, county=county, year=year)
 
     gis_url = county_urls.loc[
-        (county_urls.year == year)
+        (county_urls.TEST_YEAR == year)
         & (county_urls.file == "GIS")
         & county_urls.url.str.contains("pin")
     ][["url"]].squeeze()
     nal_url = county_urls.loc[
-        (county_urls.year == year) & 
-        (county_urls.file == 'TaxRoll') & 
-        (county_urls.url.str.contains('DBF'))][['url']].squeeze()
+	    (county_urls.TEST_YEAR == year) &
+	    (county_urls.file == 'TaxRoll') &
+	    (county_urls.url.str.contains('DBF'))][['url']].squeeze()
     
     return gis_url, nal_url
 

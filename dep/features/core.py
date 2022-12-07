@@ -21,40 +21,70 @@ from rpy2.robjects.packages import importr
 import rputils
 
 # Import tigris, sf, and lwgeom -- these are the packages we need functions from
-Rlibs = ["base","tigris","sf","lwgeom","tidycensus"]
+Rlibs = ["base", "tigris", "sf", "lwgeom", "tidycensus"]
 for lib in Rlibs:
     importr(lib)
-    
+
+
 # Convert Nones to nulls
 def _none2null(none_obj):
     return ro.r("NULL")
+
+
 none_converter = Converter("None converter")
 none_converter.py2rpy.register(type(None), _none2null)
 
 # Define the global R functions
-st_geometry = ro.r['st_geometry']
-st_drop_geometry = ro.r['st_drop_geometry']
-st_crs = ro.r['st_crs']
-st_astext = ro.r['st_astext']
+st_geometry = ro.r["st_geometry"]
+st_drop_geometry = ro.r["st_drop_geometry"]
+st_crs = ro.r["st_crs"]
+st_astext = ro.r["st_astext"]
 
 # %% Helpers
 
 # dl_tiger
-__TIGRIS__ = ["address_ranges","alaska_native_regional_corporations",
-              "area_water","blocks","block_groups","coastline",
-              "combined_statistical_areas","congressional_districts",
-              "core_based_statistical_areas","counties","county_subdivisions",
-              "divisions","landmarks","linear_water","metro_divisions",
-              "military","nation","native_areas","new_england","places",
-              "primary_roads","primary_secondary_roads","pumas","rails",
-              "regions","roads","school_districts","states",
-              "state_legislative_districts","tracts","tribal_block_groups",
-              "tribal_census_tracts","tribal_subdivisions_national",
-              "urban_areas","voting_districts","zctas"]
+__TIGRIS__ = [
+    "address_ranges",
+    "alaska_native_regional_corporations",
+    "area_water",
+    "blocks",
+    "block_groups",
+    "coastline",
+    "combined_statistical_areas",
+    "congressional_districts",
+    "core_based_statistical_areas",
+    "counties",
+    "county_subdivisions",
+    "divisions",
+    "landmarks",
+    "linear_water",
+    "metro_divisions",
+    "military",
+    "nation",
+    "native_areas",
+    "new_england",
+    "places",
+    "primary_roads",
+    "primary_secondary_roads",
+    "pumas",
+    "rails",
+    "regions",
+    "roads",
+    "school_districts",
+    "states",
+    "state_legislative_districts",
+    "tracts",
+    "tribal_block_groups",
+    "tribal_census_tracts",
+    "tribal_subdivisions_national",
+    "urban_areas",
+    "voting_districts",
+    "zctas",
+]
 __TIGRIS_DEFAULT_YEAR__ = 2019
 
 # dl_census
-__TIDYCENSUS__ = ["acs","decennial","estimates","flows","pums"]
+__TIDYCENSUS__ = ["acs", "decennial", "estimates", "flows", "pums"]
 __TIDYCENSUS_DEFAULT_YEAR__ = 2019
 
 # dl_lodes/dl_xwalk
@@ -62,82 +92,161 @@ __LODES_YEAR__ = 2019
 __LODES_VERSION__ = 7
 __LODES_URL__ = "https://lehd.ces.census.gov/data/lodes/LODES"
 
-# geography equivalences between acs, tiger, and xwalk                  
-__GEOGS__ = pd.DataFrame.from_dict({
-    "address ranges":[np.nan,"address_ranges",np.nan,False],
-    "area water":[np.nan,"area_water",np.nan,False],
-    "coastline":[np.nan,"coastline",np.nan,False],
-    "landmarks":[np.nan,"landmarks",np.nan,False],
-    "linear water":[np.nan,"linear_water",np.nan,False],
-    "metro divisions":[np.nan,"metro_divisions",np.nan,False],
-    "military":[np.nan,"military","mil",False],
-    "primary roads":[np.nan,"primary_roads",np.nan,False],
-    "primary secondary roads":[np.nan,"primary_secondary_roads",np.nan,False],
-    "rails":[np.nan,"rails",np.nan,False],
-    "roads":[np.nan,"roads",np.nan,False],
-    "tribal block groups":[np.nan,"tribal_block_groups",np.nan,False],
-    "tribal census tracts":[np.nan,"tribal_census_tracts",np.nan,False],
-    "tribal subdivisions":[np.nan,"tribal_subdivisions_national","tsub",False],
-    "state":["state","states","st",True],
-    "county":["county","counties","cty",True],
-    "tract":["tract","tracts","trct",True],
-    "block group":["block group","block_groups","bgrp",True],
-    "zip code":["zcta","zctas","zcta",True],
-    "block":["block","blocks","tabblk2010",True],
-    "place":["place","places","stplc",True],
-    "congressional district":["congressional district","congressional_districts","stcd116",True],
-    "puma":["public use micodata area","pumas",np.nan,True],
-    "state senate district":["state legislative district (upper chamber)","state_legislative_districts","stsldl",True], #house="upper"
-    "state house district":["state legislative district (lower chamber)","state_legislative_districts","stsldu",True], #house="lower"
-    "native area":["american indian area/alaska native area/hawaiian home land","native_areas","trib",True],
-    "county subdivision":["county subdivision","county_subdivisions","ctycsub",True],
-    "csa":["combined statistical area","combined_statistical_areas",np.nan,True],
-    "ua":["urban area","urban_areas",np.nan,True],
-    "elementary school district":["school district (elementary)","school_districts","stschool",True], #type="elementary"
-    "secondary school district":["school district (secondary)","school_districts","stsecon",True], #type="secondary"
-    "unified school district":["school district (unified)","school_districts","stschool",True], #type="unified"
-    "necta":["new england city and town area","new_england","necta",True], #type="necta"
-    "combined necta":["combined new england city and town area","new_england",np.nan,True], #type="combined"
-    "usa":["us","nation",np.nan,True],
-    "region":["region","regions",np.nan,True],
-    "division":["division","divisions",np.nan,True],
-    "anrc":["alaska native regional corporation","alaska_native_regional_corporations","stanrc",True],
-    "voting district":["voting district","voting_districts",np.nan,True],
-    "reservation":["american indian area/alaska native area (reservation or statistical entity only)","native_areas","trib",False],
-    "off-reservation trust":["american indian area (off-reservation trust land only)/hawaiian home land","native_areas","trib",False],
-    "cbsa":["metropolitan statistical area/micropolitan statistical_area","core_based_statistical_areas","cbsa",False],
-}, orient="index", columns=["census_geog","tiger_fun","xwalk_agg","auto_census"])
-__GEOGS__ = __GEOGS__.reset_index().rename(columns={"index":"level"})
+# geography equivalences between acs, tiger, and xwalk
+__GEOGS__ = pd.DataFrame.from_dict(
+    {
+        "address ranges": [np.nan, "address_ranges", np.nan, False],
+        "area water": [np.nan, "area_water", np.nan, False],
+        "coastline": [np.nan, "coastline", np.nan, False],
+        "landmarks": [np.nan, "landmarks", np.nan, False],
+        "linear water": [np.nan, "linear_water", np.nan, False],
+        "metro divisions": [np.nan, "metro_divisions", np.nan, False],
+        "military": [np.nan, "military", "mil", False],
+        "primary roads": [np.nan, "primary_roads", np.nan, False],
+        "primary secondary roads": [np.nan, "primary_secondary_roads", np.nan, False],
+        "rails": [np.nan, "rails", np.nan, False],
+        "roads": [np.nan, "roads", np.nan, False],
+        "tribal block groups": [np.nan, "tribal_block_groups", np.nan, False],
+        "tribal census tracts": [np.nan, "tribal_census_tracts", np.nan, False],
+        "tribal subdivisions": [np.nan, "tribal_subdivisions_national", "tsub", False],
+        "state": ["state", "states", "st", True],
+        "county": ["county", "counties", "cty", True],
+        "tract": ["tract", "tracts", "trct", True],
+        "block group": ["block group", "block_groups", "bgrp", True],
+        "zip code": ["zcta", "zctas", "zcta", True],
+        "block": ["block", "blocks", "tabblk2010", True],
+        "place": ["place", "places", "stplc", True],
+        "congressional district": [
+            "congressional district",
+            "congressional_districts",
+            "stcd116",
+            True,
+        ],
+        "puma": ["public use micodata area", "pumas", np.nan, True],
+        "state senate district": [
+            "state legislative district (upper chamber)",
+            "state_legislative_districts",
+            "stsldl",
+            True,
+        ],  # house="upper"
+        "state house district": [
+            "state legislative district (lower chamber)",
+            "state_legislative_districts",
+            "stsldu",
+            True,
+        ],  # house="lower"
+        "native area": [
+            "american indian area/alaska native area/hawaiian home land",
+            "native_areas",
+            "trib",
+            True,
+        ],
+        "county subdivision": [
+            "county subdivision",
+            "county_subdivisions",
+            "ctycsub",
+            True,
+        ],
+        "csa": [
+            "combined statistical area",
+            "combined_statistical_areas",
+            np.nan,
+            True,
+        ],
+        "ua": ["urban area", "urban_areas", np.nan, True],
+        "elementary school district": [
+            "school district (elementary)",
+            "school_districts",
+            "stschool",
+            True,
+        ],  # type="elementary"
+        "secondary school district": [
+            "school district (secondary)",
+            "school_districts",
+            "stsecon",
+            True,
+        ],  # type="secondary"
+        "unified school district": [
+            "school district (unified)",
+            "school_districts",
+            "stschool",
+            True,
+        ],  # type="unified"
+        "necta": [
+            "new england city and town area",
+            "new_england",
+            "necta",
+            True,
+        ],  # type="necta"
+        "combined necta": [
+            "combined new england city and town area",
+            "new_england",
+            np.nan,
+            True,
+        ],  # type="combined"
+        "usa": ["us", "nation", np.nan, True],
+        "region": ["region", "regions", np.nan, True],
+        "division": ["division", "divisions", np.nan, True],
+        "anrc": [
+            "alaska native regional corporation",
+            "alaska_native_regional_corporations",
+            "stanrc",
+            True,
+        ],
+        "voting district": ["voting district", "voting_districts", np.nan, True],
+        "reservation": [
+            "american indian area/alaska native area (reservation or statistical entity only)",
+            "native_areas",
+            "trib",
+            False,
+        ],
+        "off-reservation trust": [
+            "american indian area (off-reservation trust land only)/hawaiian home land",
+            "native_areas",
+            "trib",
+            False,
+        ],
+        "cbsa": [
+            "metropolitan statistical area/micropolitan statistical_area",
+            "core_based_statistical_areas",
+            "cbsa",
+            False,
+        ],
+    },
+    orient="index",
+    columns=["census_geog", "tiger_fun", "xwalk_agg", "auto_census"],
+)
+__GEOGS__ = __GEOGS__.reset_index().rename(columns={"index": "level"})
 
 # %% ACS
 
 # class Census(rputils.WrappedDF):
 #     '''
-#     WrappedDF for US Census data -- stores state, year, and geographic level 
+#     WrappedDF for US Census data -- stores state, year, and geographic level
 #     as metadata.
 #     '''
-    
+
 #     _metadata = ["__meta__"]
-    
+
 #     def __init__(self, *args, **kwargs):
 #         '''
 #         Store Census data.
 
 #         Parameters
 #         ----------
-#         *args, **kwargs : 
+#         *args, **kwargs :
 #             Used to initialize a pandas dataframe.
 #         state : str, optional
-#             Required metadata attribute: the state for the data. 
+#             Required metadata attribute: the state for the data.
 #         year : int, optional
 #             Required metadata attribute: the year for the data.
 #         level : str, optional
-#             Required metadata attribute: the geographic level for the data 
+#             Required metadata attribute: the geographic level for the data
 #             (e.g. block group, tract).
 #         geom : gpd.GeoSeries
-#             Required metadata attribute: geometry associated with the table. 
+#             Required metadata attribute: geometry associated with the table.
 #             The index of this geoseries should match the index of the table.
-            
+
 #         See also
 #         --------
 #         `rputils.WrappedDF`, `rputils.DFMeta`
@@ -166,7 +275,7 @@ __GEOGS__ = __GEOGS__.reset_index().rename(columns={"index":"level"})
 #     @property
 #     def _constructor(self):
 #         return Census
-    
+
 #     @classmethod
 #     def dl_census(cls, survey, get_geom=False, **kwargs):
 #         '''
@@ -175,13 +284,13 @@ __GEOGS__ = __GEOGS__.reset_index().rename(columns={"index":"level"})
 #         Parameters
 #         ----------
 #         survey : str
-#             The geography to download. Must be a survey name referenced in a 
+#             The geography to download. Must be a survey name referenced in a
 #             `tidycensus::get_{}` function.
 #         get_geom : bool, optional
 #             Should a geometry be returned with this data? The default is False.
 #         **kwargs
-#             Passed to `tidycensus::get_{survey}`. Most commonly, these will 
-#             include "geography", "table", "variables", "state", "county", and 
+#             Passed to `tidycensus::get_{survey}`. Most commonly, these will
+#             include "geography", "table", "variables", "state", "county", and
 #             "year".
 
 #         Returns
@@ -206,7 +315,7 @@ __GEOGS__ = __GEOGS__.reset_index().rename(columns={"index":"level"})
 #                     row.census_geog = [geog]
 #                 else:
 #                     row =__GEOGS__[np.logical_and(__GEOGS__.census_geog == geog,
-#                                                   ~__GEOGS__.census_geog.isna())] 
+#                                                   ~__GEOGS__.census_geog.isna())]
 #                 if len(row) == 1:
 #                     kwargs["geography"] = geog
 #                 else:
@@ -223,9 +332,9 @@ __GEOGS__ = __GEOGS__.reset_index().rename(columns={"index":"level"})
 #             else:
 #                 geom_opt = "from tiger" #means it's either reservation, off-res, or cbsa
 #         else:
-#             geom_opt = "no geom" 
+#             geom_opt = "no geom"
 #         # Load the survey data using tidycensus. If there are any errors from the
-#         # **kwargs, we'll let R handle them. 
+#         # **kwargs, we'll let R handle them.
 #         if geom_opt == "no geom" or geom_opt == "from tiger":
 #             # download
 #             with localconverter(ro.default_converter + none_converter):
@@ -251,7 +360,7 @@ __GEOGS__ = __GEOGS__.reset_index().rename(columns={"index":"level"})
 #             # data
 #             sf_df = st_drop_geometry(sf_obj)
 #             with localconverter(ro.default_converter + pandas2ri.converter):
-#                 pd_df = ro.conversion.rpy2py(sf_df) 
+#                 pd_df = ro.conversion.rpy2py(sf_df)
 #             idcol = [c for c in pd_df.columns if bool(re.search("^GEOID",c))][0]
 #             pd_df = pd_df.set_index(idcol)
 #             # geom
@@ -259,7 +368,7 @@ __GEOGS__ = __GEOGS__.reset_index().rename(columns={"index":"level"})
 #             sf_crs = st_crs(sf_obj)
 #             gpd_gs = [shapely.wkt.loads(g) for g in sf_geometry]
 #             pyproj_crs = pyproj.crs.CRS(list(list(sf_crs)[1])[0])
-#             geom_meta = gpd.GeoSeries(gpd_gs, crs=pyproj_crs, index=pd_df.index)          
+#             geom_meta = gpd.GeoSeries(gpd_gs, crs=pyproj_crs, index=pd_df.index)
 #         # Class it
 #         try:
 #             state = kwargs["state"]
@@ -289,12 +398,12 @@ __GEOGS__ = __GEOGS__.reset_index().rename(columns={"index":"level"})
 
 #         Parameters
 #         ----------
-#         *args, **kwargs : 
+#         *args, **kwargs :
 #             Used to initialize a pandas dataframe.
 #         state : str, optional
 #             Required metadata attribute: the state for the data.
-        
-            
+
+
 #         See also
 #         --------
 #         `rputils.WrappedDF`, `rputils.DFMeta`
@@ -302,7 +411,7 @@ __GEOGS__ = __GEOGS__.reset_index().rename(columns={"index":"level"})
 #         Returns
 #         -------
 #         XWalk :
-#             pandas dataframe of geography crosswalk data, with the following 
+#             pandas dataframe of geography crosswalk data, with the following
 #             metadata stored as attributes in table's `__meta__` attribute:
 #                 - `state`: state for the data
 
@@ -319,8 +428,8 @@ __GEOGS__ = __GEOGS__.reset_index().rename(columns={"index":"level"})
 
 #     @property
 #     def _constructor(self):
-#         return XWalk        
-    
+#         return XWalk
+
 #     @classmethod
 #     def dl_xwalk(cls, ST):
 #         '''
@@ -370,19 +479,19 @@ __GEOGS__ = __GEOGS__.reset_index().rename(columns={"index":"level"})
 
 #         Parameters
 #         ----------
-#         *args, **kwargs : 
+#         *args, **kwargs :
 #             Used to initialize a pandas dataframe.
 #         state : str, optional
 #             Required metadata attribute: the state for the data.
 #         year : int, optional
 #             Required metadata attribute: the year for the data.
 #         level : str, optional
-#             Required metadata attribute: the geographic level for the data 
+#             Required metadata attribute: the geographic level for the data
 #             (e.g. block group, tract).
 #         geom : gpd.GeoSeries
-#             Required metadata attribute: geometry associated with the table. 
-#             The index of this geoseries should match the index of the table. 
-            
+#             Required metadata attribute: geometry associated with the table.
+#             The index of this geoseries should match the index of the table.
+
 #         See also
 #         --------
 #         `rputils.WrappedDF`, `rputils.DFMeta`
@@ -411,9 +520,9 @@ __GEOGS__ = __GEOGS__.reset_index().rename(columns={"index":"level"})
 #     @property
 #     def _constructor(self):
 #         return LODES
-    
+
 #     @classmethod
-#     def dl_lodes(cls, file, ST, TYPE, YEAR, SEG=None, PART=None, 
+#     def dl_lodes(cls, file, ST, TYPE, YEAR, SEG=None, PART=None,
 #                  aggregate=None, get_geom=False):
 #         '''
 #         Download block-level employment data from LODES.
@@ -425,23 +534,23 @@ __GEOGS__ = __GEOGS__.reset_index().rename(columns={"index":"level"})
 #             converted to lower-case if not provided as such.
 #         ST : str
 #             2-letter postal code for a chosen state; see notes for options and
-#             definitions. Will be converted to lower-case if not provided as 
+#             definitions. Will be converted to lower-case if not provided as
 #             such. Required for all files.
 #         TYPE : str
 #             Job type; see notes for options and definitions. Will be converted
-#             to upper-case alphanumeric if not provided as such. Required for 
+#             to upper-case alphanumeric if not provided as such. Required for
 #             all files.
 #         YEAR : int
-#             4-digit year for a chosen year; see notes for options. Required for 
+#             4-digit year for a chosen year; see notes for options. Required for
 #             all files.
 #         SEG : str, optional
-#             Segment of the workforce; see notes for options and definitions. 
-#             Will be converted to upper-case alphanumeric if not provided as 
-#             such. Only relevant for "rac" and "wac" files, is otherwise 
+#             Segment of the workforce; see notes for options and definitions.
+#             Will be converted to upper-case alphanumeric if not provided as
+#             such. Only relevant for "rac" and "wac" files, is otherwise
 #             ignored if not None.
 #         PART : str
-#             Part of the state file; see notes for options and definitions. Will 
-#             be converted to lower-case if not provided as such. Only relevant 
+#             Part of the state file; see notes for options and definitions. Will
+#             be converted to lower-case if not provided as such. Only relevant
 #             for "od" files, is otherwise ignored if not None.
 #         aggregate : str
 #             Geographic level at which to report the data (e.g. block group,
@@ -453,11 +562,11 @@ __GEOGS__ = __GEOGS__.reset_index().rename(columns={"index":"level"})
 #         Notes
 #         -----
 #         1. options for `file` are:
-#             1. "od": Origin-Destination data, jobs totals are associated with 
+#             1. "od": Origin-Destination data, jobs totals are associated with
 #             both a home Census Block and a work Census Block
-#             2. "rac": Residence Area Characteristic data, jobs are totaled by 
+#             2. "rac": Residence Area Characteristic data, jobs are totaled by
 #             home Census Block
-#             3: "wac": Workplace Area Characteristic data, jobs are totaled by 
+#             3: "wac": Workplace Area Characteristic data, jobs are totaled by
 #             work Census Block
 
 #         2. options for `ST` are:
@@ -480,7 +589,7 @@ __GEOGS__ = __GEOGS__.reset_index().rename(columns={"index":"level"})
 #             10. "SI03": workers in All Other Services industry sectors
 
 #         4. options for `PART` are:
-#             1. "main": includes jobs with both workplace and residence in the 
+#             1. "main": includes jobs with both workplace and residence in the
 #             state
 #             2. "aux": includes jobs with the workplace in the state and the
 #             residence outside of the state
@@ -494,9 +603,9 @@ __GEOGS__ = __GEOGS__.reset_index().rename(columns={"index":"level"})
 #             5. "JT04": All Federal Jobs
 #             6. "JT05": Federal Primary Jobs
 
-#         6. options for `YEAR` are generally 2002 to current year minus 3 for 
+#         6. options for `YEAR` are generally 2002 to current year minus 3 for
 #         most files/states (LODES data is release on a 2-year lag every
-#         December, so 2019 LODES will be available December 2021). Exceptions 
+#         December, so 2019 LODES will be available December 2021). Exceptions
 #         include:
 #             1. Alaska has no OD or WAC data for 2017-2018
 #             2. Arizona has no OD or WAC data for 2002-2003
@@ -514,7 +623,7 @@ __GEOGS__ = __GEOGS__.reset_index().rename(columns={"index":"level"})
 #         variable definitions for the OD, RAC, and WAC files, please see the
 #         LODES technical documentation at:
 #         https://lehd.ces.census.gov/data/lodes/LODES7/LODESTechDoc7.5.pdf
-        
+
 #         Returns
 #         -------
 #         pd.DataFrame
@@ -547,7 +656,7 @@ __GEOGS__ = __GEOGS__.reset_index().rename(columns={"index":"level"})
 #                     if SEG is None:
 #                         SEG_message = "'SEG' cannot be None if 'file' is 'rac' or 'wac'"
 #                     else:
-#                         SEG = SEG.upper() 
+#                         SEG = SEG.upper()
 #                         if SEG in ["S000","SA01","SA02","SA03","SE01",
 #                                    "SE02","SE03","SI01","SI02","SI03"]:
 #                             SEG_message = ""
@@ -576,19 +685,19 @@ __GEOGS__ = __GEOGS__.reset_index().rename(columns={"index":"level"})
 #                     if file_message == "":
 #                         if file in ["od","wac"]:
 #                             YEAR_bool = np.any([
-#                                 np.logical_and(YEAR in np.arange(2002,2017), 
+#                                 np.logical_and(YEAR in np.arange(2002,2017),
 #                                                ST == "ak"),
-#                                 np.logical_and(YEAR in np.arange(2004,__LODES_YEAR__+1), 
+#                                 np.logical_and(YEAR in np.arange(2004,__LODES_YEAR__+1),
 #                                                ST == "az"),
-#                                 np.logical_and(YEAR in np.arange(2003,__LODES_YEAR__+1), 
+#                                 np.logical_and(YEAR in np.arange(2003,__LODES_YEAR__+1),
 #                                                ST == "ar"),
-#                                 np.logical_and(YEAR in np.arange(2010,__LODES_YEAR__+1), 
+#                                 np.logical_and(YEAR in np.arange(2010,__LODES_YEAR__+1),
 #                                                ST == "dc"),
-#                                 np.logical_and(YEAR in np.arange(2011,__LODES_YEAR__+1), 
+#                                 np.logical_and(YEAR in np.arange(2011,__LODES_YEAR__+1),
 #                                                ST == "ma"),
-#                                 np.logical_and(YEAR in np.arange(2004,__LODES_YEAR__+1), 
+#                                 np.logical_and(YEAR in np.arange(2004,__LODES_YEAR__+1),
 #                                                ST == "ms"),
-#                                 np.logical_and(YEAR in np.arange(2003,__LODES_YEAR__+1), 
+#                                 np.logical_and(YEAR in np.arange(2003,__LODES_YEAR__+1),
 #                                                ST == "nh"),
 #                                 np.logical_and(YEAR in np.arange(2002,__LODES_YEAR__+1),
 #                                                ST not in ["ak","az","ar","dc","ma","ms","nh"])
@@ -601,14 +710,14 @@ __GEOGS__ = __GEOGS__.reset_index().rename(columns={"index":"level"})
 #                             if YEAR in np.arange(2002,__LODES_YEAR__+1):
 #                                 YEAR_message = ""
 #                             else:
-#                                 YEAR_message = f"{YEAR} is an invalid 'YEAR' input"    
+#                                 YEAR_message = f"{YEAR} is an invalid 'YEAR' input"
 #                     else:
 #                         YEAR_message = "'YEAR' cannot be assessed because of invalid 'file'"
 #                 else:
 #                     YEAR_message = f"'YEAR' is {type(YEAR)}, not int"
 #             else:
 #                 ST_message = f"{ST} is an invalid 'ST' input"
-#                 YEAR_message = "'YEAR' cannot be assessed because of invalid 'ST'"   
+#                 YEAR_message = "'YEAR' cannot be assessed because of invalid 'ST'"
 #         else:
 #             ST_message = f"'ST' is {type(ST)}, not str"
 #             YEAR_message = "'YEAR' cannot be assessed because of invalid 'ST'"
@@ -623,10 +732,10 @@ __GEOGS__ = __GEOGS__.reset_index().rename(columns={"index":"level"})
 #         else:
 #             TYPE_message = f"'TYPE' is {type(TYPE)}, not str"
 #         # Organize the error messages
-#         messages = [file_message, ST_message, PART_message, 
+#         messages = [file_message, ST_message, PART_message,
 #                     SEG_message, TYPE_message, YEAR_message]
 #         errors = [" ".join(["-->", m]) for m in messages if m != ""]
-#         # Raise errors, or download 
+#         # Raise errors, or download
 #         if len(errors) > 0:
 #             msg = "\n".join(["The following errors are present in the inputs:",
 #                              "\n".join(errors)])
@@ -683,9 +792,9 @@ __GEOGS__ = __GEOGS__.reset_index().rename(columns={"index":"level"})
 #         else:
 #             geom_meta = gpd.GeoSeries()
 #         # Finalize
-#         return cls(data=lodes, state=ST.upper(), year=YEAR, 
+#         return cls(data=lodes, state=ST.upper(), year=YEAR,
 #                    level=aggregate, geom=geom_meta)
-    
+
 # %% Tiger
 
 # Tiger isn't a class bc we don't subclass geopandas (apparently...). So
@@ -747,9 +856,3 @@ __GEOGS__ = __GEOGS__.reset_index().rename(columns={"index":"level"})
 #     gdf.__meta__ = meta
 #     # Return the gdf with metadata
 #     return gdf
-
-        
-            
-            
-            
-        

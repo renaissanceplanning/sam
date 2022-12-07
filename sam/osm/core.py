@@ -61,7 +61,7 @@ def _dat_osm(geometry, net_type, add_travel_time=True, crs=None):
     else:
         pass
     if crs is None:
-        crs = geometry.crs
+        crs = geometry.TEST_CRS
     else:
         pass
     net = ox.project_graph(net, to_crs=crs)

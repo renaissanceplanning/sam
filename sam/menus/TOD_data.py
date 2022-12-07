@@ -7,7 +7,7 @@ import geopandas as gpd
 import osmnx as ox 
 
 from sam.parcels import download_fl_parcels  
-from sam.acs import acs
+from sam.acs import ACS
 from sam.lodes import lodes
 from sam.tiger import Tiger as tiger
 from sam.lihtc import pull_lihtc
@@ -34,7 +34,7 @@ def extract_fips(gdf):
             names.
     """
     #TODO increase persicion to single county
-    gdf = gdf.to_crs(county_shapes.crs)
+    gdf = gdf.to_crs(county_shapes.TEST_CRS)
     county = county_shapes[county_shapes.intersects(gdf.dissolve().geometry[0])]
     counties = county['COUNTYFP'].unique().tolist()
     states = county['STATEFP'].unique().tolist()
@@ -132,13 +132,13 @@ def pull_TOD_data(summary_areas,
     
     # TODO use the get attribute method and a list
     
-    methods = [func for func in dir(acs) 
-               if callable(getattr(acs, func)) 
+    methods = [func for func in dir(ACS)
+               if callable(getattr(ACS, func))
                and not func.startswith("__")]
     
     for method in methods:
-        df = getattr(acs, method)(state=state, 
-                                  year=years['acs_year'], 
+        df = getattr(ACS, method)(state=state,
+                                  year=years['acs_year'],
                                   county=counties)
         if df.empty == False:
             df.to_csv(os.path.join(acs_dir, f'{method}.csv'),
