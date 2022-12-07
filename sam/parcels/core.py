@@ -2,8 +2,9 @@ import pandas as pd
 import geopandas as gpd
 import numpy as np
 from datetime import date
-from sam.config.ref_config import par_recode
+from sam.config.ref_config import PAR_RECODE
 from sam.download.fl_parcels import fdor_gis_and_tax, fdor_availability, process_parcels
+
 
 # Helper Functions
 # checks if a object can be a int
@@ -20,15 +21,16 @@ def extract_urls(county, year):
     county_urls = fdor_availability(df=urls_df, county=county, year=year)
 
     gis_url = county_urls.loc[
-        (county_urls.TEST_YEAR == year)
+        (county_urls.year == year)
         & (county_urls.file == "GIS")
         & county_urls.url.str.contains("pin")
     ][["url"]].squeeze()
     nal_url = county_urls.loc[
-	    (county_urls.TEST_YEAR == year) &
-	    (county_urls.file == 'TaxRoll') &
-	    (county_urls.url.str.contains('DBF'))][['url']].squeeze()
-    
+        (county_urls.year == year)
+        & (county_urls.file == "TaxRoll")
+        & (county_urls.url.str.contains("DBF"))
+    ][["url"]].squeeze()
+
     return gis_url, nal_url
 
 
@@ -75,11 +77,11 @@ def download_fl_parcels(county, crs, year=None, config=None):
     print(f"nal_total {parcels['nal_total']}")
     print(f"result_total {parcels['result_total']}")
     # add a join for recoded DOR UC
-    # parcels['result'] = parcels['result'].merge(par_recode)
+    # parcels['result'] = parcels['result'].merge(PAR_RECODE)
 
     parcels["result"]["DOR_UC"] = parcels["result"]["DOR_UC"].astype(np.int64)
 
-    return parcels["result"].merge(par_recode)
+    return parcels["result"].merge(PAR_RECODE)
 
 
 # Test

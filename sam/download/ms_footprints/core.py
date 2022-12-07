@@ -8,11 +8,12 @@ Created on Mon Dec  5 10:01:19 2022
 # %% Imports and globals
 
 import geopandas as gpd
-import pandas as pd
+from sam.config import STATE_DF
+
+URL_BASE = "https://usbuildingdata.blob.core.windows.net/usbuildings-v2"
+
 
 # %% Functions
-
-
 def dl_ms_building_footprints(state, **kwargs):
     """
     Download the Microsoft US Buildings Footprints polygons for a state.
@@ -46,63 +47,7 @@ def dl_ms_building_footprints(state, **kwargs):
         Polygons of building footprints in `state` (in EPSG:4326).
 
     """
-    # States by name, usps, and fips
-    STATE_DF = pd.DataFrame(
-        [
-            ("Alabama", "AL", "01"),
-            ("Alaska", "AK", "02"),
-            ("Arizona", "AZ", "04"),
-            ("Arkansas", "AR", "05"),
-            ("California", "CA", "06"),
-            ("Colorado", "CO", "08"),
-            ("Connecticut", "CT", "09"),
-            ("Delaware", "DE", "10"),
-            ("District of Columbia", "DC", "11"),
-            ("Florida", "FL", "12"),
-            ("Georgia", "GA", "13"),
-            ("Hawaii", "HI", "15"),
-            ("Idaho", "ID", "16"),
-            ("Illinois", "IL", "17"),
-            ("Indiana", "IN", "18"),
-            ("Iowa", "IA", "19"),
-            ("Kansas", "KS", "20"),
-            ("Kentucky", "KY", "21"),
-            ("Louisiana", "LA", "22"),
-            ("Maine", "ME", "23"),
-            ("Maryland", "MD", "24"),
-            ("Massachusetts", "MA", "25"),
-            ("Michigan", "MI", "26"),
-            ("Minnesota", "MN", "27"),
-            ("Mississippi", "MS", "28"),
-            ("Missouri", "MO", "29"),
-            ("Montana", "MT", "30"),
-            ("Nebraska", "NE", "31"),
-            ("Nevada", "NV", "32"),
-            ("New Hampshire", "NH", "33"),
-            ("New Jersey", "NJ", "34"),
-            ("New Mexico", "NM", "35"),
-            ("New York", "NY", "36"),
-            ("North Carolina", "NC", "37"),
-            ("North Dakota", "ND", "38"),
-            ("Ohio", "OH", "39"),
-            ("Oklahoma", "OK", "40"),
-            ("Oregon", "OR", "41"),
-            ("Pennsylvania", "PA", "42"),
-            ("Rhode Island", "RI", "44"),
-            ("South Carolina", "SC", "45"),
-            ("South Dakota", "SD", "46"),
-            ("Tennessee", "TN", "47"),
-            ("Texas", "TX", "48"),
-            ("Utah", "UT", "49"),
-            ("Vermont", "VT", "50"),
-            ("Virginia", "VA", "51"),
-            ("Washington", "WA", "53"),
-            ("West Virginia", "WV", "54"),
-            ("Wisconsin", "WI", "55"),
-            ("Wyoming", "WY", "56"),
-        ],
-        columns=["name", "usps", "fips"],
-    )
+
     # Grab the appropriate row for the state using the given expression
     if isinstance(state, str):
         # State is properly typed
@@ -135,7 +80,6 @@ def dl_ms_building_footprints(state, **kwargs):
             f"{state} is not a valid state name, USPS code, or " "FIPS number"
         )
     # Set the download URL using the formatted state name
-    URL_BASE = "https://usbuildingdata.blob.core.windows.net/usbuildings-v2"
     file = f"{state_msbf}.geojson.zip"
     url = f"{URL_BASE}/{file}"
     # Download the shape and return
@@ -169,15 +113,13 @@ def focal_area_for_latest_release():
         Polygons for the focal area for the latest release (in EPSG:4326).
 
     """
-    URL_BASE = "https://usbuildingdata.blob.core.windows.net/usbuildings-v2"
     file = "US_areas_L13.geojson"
     url = f"{URL_BASE}/{file}"
     faflr = gpd.read_file(url)
     return faflr
 
 
-# TODO: better CRS? 5070 covers ~continental~ US, but we may want more
-# comprehensive support for AK and HI
+# TODO: better CRS? 5070 covers ~continental~ US, but we may want more comprehensive support for AK and HI
 def isin_focal_area(gdf):
     """
     Check how much of a region lies within the focal area for the latest

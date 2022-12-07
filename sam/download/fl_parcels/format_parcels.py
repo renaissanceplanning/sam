@@ -22,6 +22,7 @@ import zipfile
 import pyproj
 from shapely.validation import make_valid
 
+
 # Helper Functions
 def validate_directory(path_or_directory):
     """
