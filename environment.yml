@@ -2,17 +2,26 @@ name: sam
 channels: 
   - conda-forge
 dependencies:
-  - python=3.7
   - r
-  - geopandas
-  - pandas
-  - numpy
   - osmnx
-  - networkx
-  - rpy2
+  - rpy2=3.4.5
+  - bs4
   - r-tidycensus
-  - pandana # this can be dropped if/when osmnx downloader class shifts to dependency on gary
-  - osmnx # see above
+  - r-tigris
+  - r-sf
+  - r-lwgeom
+  - pip
+  - pip:
+    - us
+    - -e ../../packages/rputils
+    - -e ../../packages/algi
+    - -e ../../packages/gary
+#    - -e ../../packages/emma
+#    - -e ../../packages/biff
+#    - -e ../../packages/roxy
+#    - -e ../../packages/sophia
+
+rp_dependencies:
   - pip
   - pip:
     - us

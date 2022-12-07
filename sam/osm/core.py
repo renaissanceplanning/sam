@@ -12,20 +12,21 @@ import networkx as nx
 import numpy as np
 import osmnx as ox
 
-from rputils.download.osm import dl_osm_network
+from sam.download.osm import dl_osm_network
 
 # %% Globals
 
 # TODO: hierarchies for highway types
 
-_NODES_FIELDS_ = ["x","y"]
-_EDGES_FIELDS_ = ["highway","length","speed_kph","travel_time"]
-_OBJ_TYPES_ = ["nx","pandana","gdf"]
+_NODES_FIELDS_ = ["x", "y"]
+_EDGES_FIELDS_ = ["highway", "length", "speed_kph", "travel_time"]
+_OBJ_TYPES_ = ["nx", "pandana", "gdf"]
 
 # %% Helper Functions
 
+
 def _dat_osm(geometry, net_type, add_travel_time=True, crs=None):
-    '''
+    """
     Download, Add travel time to, and Transform an OSM newtork.
 
     Parameters
@@ -38,7 +39,7 @@ def _dat_osm(geometry, net_type, add_travel_time=True, crs=None):
         `dl_osm_network`.
     crs : Any, optional
         The CRS for the network; can be anything accepted by the
-        `ox.project_graph()` function, e.g. an integer EPSG code. The 
+        `ox.project_graph()` function, e.g. an integer EPSG code. The
         default is None, in which case the projection is inherited from
         `geometry`.
     add_travel_time : bool
@@ -51,34 +52,35 @@ def _dat_osm(geometry, net_type, add_travel_time=True, crs=None):
     -------
     nx.MultiDiGraph
 
-    '''
-    net = dl_osm_network(geometry=geometry,
-                         net_type=net_type,
-                         trim_components=True)
+    """
+    net = dl_osm_network(geometry=geometry, net_type=net_type, trim_components=True)
     if add_travel_time == True:
         net = ox.add_edge_speeds(net)
         net = ox.add_edge_travel_times(net)
     else:
         pass
     if crs is None:
-        crs = geometry.crs
+        crs = geometry.TEST_CRS
     else:
         pass
     net = ox.project_graph(net, to_crs=crs)
     return net
 
+
 # %% Class
 
+
 class OSMNetwork(nx.MultiDiGraph):
-    '''
+    """
     Standardized downloader for OSM networks
-    '''
+    """
+
     def __init__(self, net):
         return super().__init__(net)
-    
+
     @classmethod
     def walk(cls, geometry, add_travel_time=True, crs=None):
-        '''
+        """
         Download an OSM walk newtork.
 
         Parameters
@@ -89,14 +91,15 @@ class OSMNetwork(nx.MultiDiGraph):
         -------
         OSMNetwork (subclass of nx.MultiDiGraph)
 
-        '''
-        net = _dat_osm(geometry=geometry, net_type="walk",
-                       add_travel_time=add_travel_time, crs=crs)
+        """
+        net = _dat_osm(
+            geometry=geometry, net_type="walk", add_travel_time=add_travel_time, crs=crs
+        )
         return cls(net)
-    
+
     @classmethod
     def bike(cls, geometry, add_travel_time=True, crs=None):
-        '''
+        """
         Download an OSM walk newtork.
 
         Parameters
@@ -107,14 +110,15 @@ class OSMNetwork(nx.MultiDiGraph):
         -------
         OSMNetwork (subclass of nx.MultiDiGraph)
 
-        '''
-        net = _dat_osm(geometry=geometry, net_type="bike",
-                       add_travel_time=add_travel_time, crs=crs)
+        """
+        net = _dat_osm(
+            geometry=geometry, net_type="bike", add_travel_time=add_travel_time, crs=crs
+        )
         return cls(net)
-    
+
     @classmethod
     def drive(cls, geometry, add_travel_time=True, crs=None):
-        '''
+        """
         Download an OSM walk newtork.
 
         Parameters
@@ -125,21 +129,24 @@ class OSMNetwork(nx.MultiDiGraph):
         -------
         OSMNetwork (subclass of nx.MultiDiGraph)
 
-        '''
-        net = _dat_osm(geometry=geometry, net_type="drive",
-                       add_travel_time=add_travel_time, crs=crs)
+        """
+        net = _dat_osm(
+            geometry=geometry,
+            net_type="drive",
+            add_travel_time=add_travel_time,
+            crs=crs,
+        )
         return cls(net)
-    
-    
+
     def to_gdf(self, trim=False):
-        '''
+        """
         Convert `OSMNetwork` from `nx.MultiDiGraph` to `gpd.GeoDataFrame`.
-        
+
         Parameters
         ----------
         trim : bool
             Should attributes be trimmed for clarity? If yes, "nodes" will
-            only retain x and y coordinate attributes, and "edges" will 
+            only retain x and y coordinate attributes, and "edges" will
             retain only highway type, length (in meters), speed (in kph, if
             present), and travel time (in seconds, if present). The default
             is False.
@@ -151,28 +158,29 @@ class OSMNetwork(nx.MultiDiGraph):
         edges : gpd.GeoDataFrame
             Edges lines, with the u/v/key as the index.
 
-        '''
+        """
         nodes, edges = ox.graph_to_gdfs(self)
         # TODO: hierarchy the highway types?
-        edges = edges.reset_index().drop(columns='osmid')
- 
-        edges['highway'] = ['-'.join(np.sort(hwy)) if isinstance(hwy, list)
-                        else hwy
-                        for hwy in edges.highway]
-            
+        edges = edges.reset_index().drop(columns="osmid")
+
+        edges["highway"] = [
+            "-".join(np.sort(hwy)) if isinstance(hwy, list) else hwy
+            for hwy in edges.highway
+        ]
+
         if trim == True:
             nf = [f for f in _NODES_FIELDS_ if f in nodes.columns]
             ef = [f for f in _EDGES_FIELDS_ if f in edges.columns]
-            nodes = nodes[nf+["geometry"]]
-            edges = edges[ef+["geometry"]]
+            nodes = nodes[nf + ["geometry"]]
+            edges = edges[ef + ["geometry"]]
         else:
             pass
         return (nodes, edges)
-    
+
     # TODO: should we let gary handle this?
     def to_pandana(self):
-        '''
-        Convert `OSMNetwork` from `nx.MultiDiGraph` to 
+        """
+        Convert `OSMNetwork` from `nx.MultiDiGraph` to
         `pandana.network.Netowrk`.
 
         Returns
@@ -182,21 +190,23 @@ class OSMNetwork(nx.MultiDiGraph):
             The network is loaded with "length" (in meters) and "travel_time"
             (in seconds, if present) as impedances.
 
-        '''
+        """
         nodes, edges = self.to_gdf()
         edges = edges.reset_index()
-        imps = [f for f in ["length","travel_time"] if f in edges.columns]
-        return pandana.network.Network(node_x=nodes.x,
-                                       node_y=nodes.y,
-                                       edge_from=edges.u,
-                                       edge_to=edges.v,
-                                       edge_weights=edges[imps],
-                                       twoway=False)
-                                   
+        imps = [f for f in ["length", "travel_time"] if f in edges.columns]
+        return pandana.network.Network(
+            node_x=nodes.x,
+            node_y=nodes.y,
+            edge_from=edges.u,
+            edge_to=edges.v,
+            edge_weights=edges[imps],
+            twoway=False,
+        )
+
     def to_shp(self, save_dir, prefix, trim=True):
-        '''
+        """
         Save `OSMNetwork` as nodes and edges shapefiles.
-        
+
         Parameters
         ----------
         save_dir : path
@@ -206,24 +216,24 @@ class OSMNetwork(nx.MultiDiGraph):
         trim : bool
             Should attributes be trimmed for clarity? If yes, "nodes" will
             retain a unique ID, along with x and y coordinate attributes;
-            "edges" will retain u/v/key, highway type, length (in meters), 
-            speed (in kph, if present), and travel time (in seconds, if 
+            "edges" will retain u/v/key, highway type, length (in meters),
+            speed (in kph, if present), and travel time (in seconds, if
             present). The default is False.
 
         Returns
         -------
         None.
 
-        '''
+        """
         nodes, edges = self.to_gdf(trim=trim)
         nodes_path = os.path.join(save_dir, f"{prefix}_nodes.shp")
         edges_path = os.path.join(save_dir, f"{prefix}_edges.shp")
         nodes.reset_index().to_file(nodes_path)
         edges.reset_index().to_file(edges_path)
-    
+
     def to_pickle(self, save_path, obj_type="nx"):
-        '''
-        Pickle an `OSMNetwork` in a given Python representation for easy 
+        """
+        Pickle an `OSMNetwork` in a given Python representation for easy
         reading in future python analyses.
 
         Parameters
@@ -239,7 +249,7 @@ class OSMNetwork(nx.MultiDiGraph):
         -------
         None.
 
-        '''
+        """
         if obj_type == nx:
             obj = self.copy()
         elif obj_type == "gdf":
@@ -247,15 +257,6 @@ class OSMNetwork(nx.MultiDiGraph):
         elif obj_type == "pandana":
             obj = self.to_pandana()
         else:
-            raise ValueError(f"{obj_type} must be one of "\
-                             f"{', '.join(_OBJ_TYPES_)}")
+            raise ValueError(f"{obj_type} must be one of " f"{', '.join(_OBJ_TYPES_)}")
         with open(save_path, "wb") as dst:
             pickle.dump(obj, dst)
-        
-    
-    
-        
-    
-    
-    
-    

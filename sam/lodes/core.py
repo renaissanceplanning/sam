@@ -6,11 +6,13 @@ Created on Fri Feb 18 15:42:42 2022
 """
 
 import re
+
 # import us
 import numpy as np
 import pandas as pd
 
-from rputils.download.census import dl_lodes, dl_xwalk
+from sam.download.census import dl_lodes, dl_xwalk
+
 
 # Helper functions
 def _dlfm_lodes_ac(file, state, year, idcol):
@@ -33,24 +35,25 @@ def _dlfm_lodes_ac(file, state, year, idcol):
     pd.DataFrame
 
     """
-    df = dl_lodes(file=file, ST=state, TYPE="JT00", 
-                  YEAR=year, SEG="S000", PART=None)
+    df = dl_lodes(file=file, ST=state, TYPE="JT00", YEAR=year, SEG="S000", PART=None)
     df[idcol] = df[idcol].astype(str)
     df = df.drop(columns="createdate")
     return df
+
 
 @pd.api.extensions.register_dataframe_accessor("lodes")
 class lodes:
     """
     Download LODES data
     """
+
     def __init__(self, pandas_obj):
         self._obj = pandas_obj
-        
+
     # @property
     # def datastate(self):
     #     return self.__datastate__
-        
+
     def xwalk(state):
         """
         Download the geography crosswalk for a state.
@@ -66,9 +69,9 @@ class lodes:
         df = df.drop(columns=["blklatdd", "blklondd", "createdate"])
         # df.lodes.__dict__['__datastate__'] = state
         return df
-    
+
     # TODO add built in aggregate and filters
-    def rac(state, year, aggregate = None):
+    def rac(state, year, aggregate=None):
         """
         Download LODES residence area characteristics data (for all jobs in all
         segments)
@@ -152,7 +155,7 @@ class lodes:
         keepname : bool
             Should the name of the aggregate geography be retained? Helpful
             for aggregtions to areas commonly referred to by name, e.g.
-            counties, but not to much for places commonly referred to by ID,
+            COUNTIES, but not to much for places commonly referred to by ID,
             e.g. tracts. The default is False, in which case only the ID will
             be retained.
 
@@ -164,7 +167,7 @@ class lodes:
         # TODO add handleing for fips to string (fix bug with OD)
         # lodes_st = us.states.lookup(self.__datastate__)
         # XWalk_st = us.states.lookup(XWalk.lodes.__datastate__)
-        
+
         # if lodes_st == XWalk_st:
         #     pass
         # else:
@@ -176,8 +179,7 @@ class lodes:
             c
             for c in XWalk.columns
             if np.logical_and(
-                bool(re.search("blk", c)) == False, 
-                bool(re.search("name$", c)) == False
+                bool(re.search("blk", c)) == False, bool(re.search("name$", c)) == False
             )
         ]
         if to in agg_opts:
@@ -200,15 +202,15 @@ class lodes:
         for c, p in zip(lid, pref):
             xwjid = "".join([p, xwid])
             xw = xw.add_prefix(p)
-            
+
             if isinstance(df[c], object):
                 df[c] = df[c].astype(np.int64)
-            
+
             if isinstance(xw[xwjid], object):
                 xw[xwjid] = xw[xwjid].astype(np.int64)
-                
+
             df = pd.merge(df, xw, left_on=c, right_on=xwjid)
-            df = df.drop(columns = [c, xwjid])
+            df = df.drop(columns=[c, xwjid])
         smz_cols = [c for c in df.columns if c not in gbid]
         smz = df.groupby(gbid)[smz_cols].sum().reset_index()
         return smz
