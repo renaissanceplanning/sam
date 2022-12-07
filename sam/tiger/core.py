@@ -8,7 +8,7 @@ Created on Thu Jan 27 17:01:13 2022
 import re
 import geopandas as gpd
 
-from rputils.download.census import dl_tiger
+from sam.download.census import dl_tiger
 
 # %% Helper functions
 
@@ -77,7 +77,7 @@ def _dtt_nation(geom, year, crs=None, trim=False, keepname=False):
     gpd.GeoDataFrame
 
     '''
-    ts = dl_tiger(geom="blocks", year=year)
+    ts = dl_tiger(geom=geom, year=year)
     return _tt(ts, crs=crs, trim=trim, keepname=keepname)
     
 
@@ -112,7 +112,7 @@ def _dtt_state(geom, year, state=None, crs=None,
     gpd.GeoDataFrame
 
     '''
-    ts = dl_tiger(geom="blocks", state=state, year=year)
+    ts = dl_tiger(geom=geom, state=state, year=year)
     return _tt(ts, crs=crs, trim=trim, keepname=keepname)
 
 def _dtt_county(geom, year, county=None, state=None, crs=None, 
@@ -150,7 +150,7 @@ def _dtt_county(geom, year, county=None, state=None, crs=None,
     gpd.GeoDataFrame
 
     '''
-    ts = dl_tiger(geom="blocks", state=state, county=county, year=year)
+    ts = dl_tiger(geom=geom, state=state, county=county, year=year)
     return _tt(ts, crs=crs, trim=trim, keepname=keepname)
 
 
@@ -160,11 +160,11 @@ class Tiger(gpd.GeoDataFrame):
     '''
     Download TIGER shapes.
     '''
-    def __init__(gdf):
+    def __init__(self, gdf):
         return super().__init__(gdf)
     
     @classmethod
-    def blocks(cls, state, year, county=None, crs=None, trim=False):
+    def blocks(cls, state, year=2019, county=None, crs=None, trim=False):
         '''
         Download US Census blocks.
 

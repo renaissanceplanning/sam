@@ -8,17 +8,22 @@ Created on Mon Feb 21 14:21:22 2022
 import re
 import pandas as pd
 import numpy as np
+import sam.config.acs_config as acs_cfg
 
-from rputils.download.census import dl_census
+from sam.download.census import dl_census
 
-from sam.config.acs_config import * #TODO: is this right?
+# TODO: rent and value methods
+# TODO: meta data handling (also lodes)
 
-#TODO: rent and value methods
+state = "VA"
+county = ["51003", "51540"]
+county_names = ["Charlottesville", "Albemarle"]
+year = 2019
 
-# %% Helper functions
 
+# Helper functions
 def _check_breaks(config, breaks=None):
-    '''
+    """
     Validate breaks provided for numeric reclassification of numeric ACS
     variables.
 
@@ -27,7 +32,7 @@ def _check_breaks(config, breaks=None):
     config : ACSConfig
         The config for the variable of interest.
     breaks : iterable of numerics, optional
-        Break points for numeric reclassification (None if aliasing or a preset 
+        Break points for numeric reclassification (None if aliasing or a preset
         reclassification is to be used instead). Breaks will be assessed
         in rolling pairs as `>=, <`.
 
@@ -42,29 +47,35 @@ def _check_breaks(config, breaks=None):
     iterable of numerics, or None
         A copy of `breaks` is returned if all breaks are valid.
 
-    '''
+    """
     if breaks is None:
         return breaks
     else:
-        if config.reclass == True:
+        if config._reclass_ == True:
             if all(np.isin(breaks, config.lb)):
                 return breaks
             else:
-                raise ValueError("Invalid breaks provided; breaks must "\
-                                 "be a subset of: "\
-                                 "{', '.join(np.sort(np.unique(config.lb)))}")
+                raise ValueError(
+                    "Invalid breaks provided; breaks must "
+                    "be a subset of: "
+                    "{', '.join(np.sort(np.unique(config.lb)))}"
+                )
         else:
             raise ValueError("Reclass not supported for this variable")
 
+
+# TODO fix break bug
+
+
 def _check_name(config, name=None):
-    '''
-    Validate name provided for aliasing or preset reclassification of ACS 
+    """
+    Validate name provided for aliasing or preset reclassification of ACS
     variables.
 
     Parameters
     ----------
     config : ACSConfig
-        The config for the variable of interest.    
+        The config for the variable of interest.
     name : str, or None
         Name of the aliasing or preset to use. Note that for all ACS downloads
         in `sam`, the aliasing option is "full", which returns all levels of
@@ -82,15 +93,15 @@ def _check_name(config, name=None):
     str, or None
         A copy of `name` is returned if it is valid.
 
-    '''
+    """
     if name is None or name in config.opts:
         return name
     else:
-        raise ValueError("Invalid name; must be one of: "\
-                         f"{', '.join(config._opts_)}")
+        raise ValueError("Invalid name; must be one of: " f"{', '.join(config._opts_)}")
+
 
 def _combine_levels(df, idcol, config, breaks=None, name="full"):
-    '''
+    """
     Perform aliasing, preset reclassification, or numeric reclassification of
     ACS variables
 
@@ -103,13 +114,13 @@ def _combine_levels(df, idcol, config, breaks=None, name="full"):
     config : ACSConfig
         Config for the variable represented in `df`.
     breaks : iterable of numerics, or None
-        Break points for numeric reclassification. One of `breaks` and `name` 
+        Break points for numeric reclassification. One of `breaks` and `name`
         must be provided; the other must be None. Breaks will be assessed
         in rolling pairs as `>=, <`. The default is None.
     name : TYPE, optional
         Name of the aliasing or preset to use. Note that for all ACS downloads
         in `sam`, the aliasing option is "full", which returns all levels of
-        the variable of interest. One of `breaks` and `name` must be provided; 
+        the variable of interest. One of `breaks` and `name` must be provided;
         the other must be None. The default is "full", indicating aliasing
         will be used.
 
@@ -118,45 +129,45 @@ def _combine_levels(df, idcol, config, breaks=None, name="full"):
     pandas.DataFrame
         Aliased or reclassified ACS data from `df`.
 
-    '''
+    """
     if breaks is not None and name is None:
-        dt = df.pivot(index=idcol,
-                      columns="variable",
-                      values="estimate")
+        dt = df.pivot(index=idcol, columns="variable", values="estimate")
         dt = dt.reset_index().drop(columns="variable")
         pref = df.alias.iloc[0].split("_")[0]
-        breaks = [0] + np.sort(breaks).tolist()  + [np.inf]
+        breaks = [0] + np.sort(breaks).tolist() + [np.inf]
         cols = [idcol]
-        for i in np.arange(len(breaks)-1):
+        for i in np.arange(len(breaks) - 1):
             l = breaks[i]
-            u = breaks[i+1]
-            if u == np.inf: 
+            u = breaks[i + 1]
+            if u == np.inf:
                 col = f"{pref}_{l}p"
             else:
-                if u-l == 1:
+                if u - l == 1:
                     col = f"{pref}_{l}"
                 else:
                     col = f"{pref}_{l}_{u}"
-            idx = config.index[np.logical_and(config.lb >= l, 
-                                              config.lb < u)].tolist()
+            idx = config._df_.index[
+                np.logical_and(config._df_.lb >= l, config.lb < u)
+            ].tolist()
             dt[col] = dt[idx].sum(axis=1)
             cols.append(col)
         dt = dt[cols]
     elif breaks is None and name is not None:
-        cfg = config.reset_index().rename(columns={"index":"variable"})
-        cfg = cfg[["variable",name]]
+        cfg = config._df_.reset_index().rename(columns={"index": "variable"})
+        cfg = cfg[["variable", name]]
         dt = df.merge(cfg, on="variable", how="inner")
-        dt = dt.groupby([idcol,name])[["estimate"]].sum().reset_index()
-        dt = dt.pivot_wider(index=idcol, columns=name, value="estimate")
-        dt = dt.reset_index().drop(columns=name)
+        dt = dt.groupby([idcol, name])[["estimate"]].sum().reset_index()
+        dt = dt.pivot(index=idcol, columns=name, values="estimate")
+        dt = dt.reset_index()  # .drop(columns=name)
     else:
-        raise ValueError("One of breaks and name must be provided, and "\
-                         "the other must be None")
+        raise ValueError(
+            "One of breaks and name must be provided, and " "the other must be None"
+        )
     return dt
 
-def _discrete_processing(geography, config, state, year, 
-                         county=None, name="full"):
-    '''
+
+def _discrete_processing(geography, config, state, year, county=None, name="full"):
+    """
     Download ACS data, and perform aliasing or preset reclassification for
     discrete ACS variables
 
@@ -171,7 +182,7 @@ def _discrete_processing(geography, config, state, year,
     year : int
         Year for the data; passed to `dl_census`.
     county : str, iterable of str, or None
-        County or counties for the data, if any; passed to `dl_census`. The 
+        County or counties for the data, if any; passed to `dl_census`. The
         default is None, in which case the entire state's worth of data is
         returned.
     name : str
@@ -185,19 +196,25 @@ def _discrete_processing(geography, config, state, year,
     pd.DataFrame
         Aliased or reclassified ACS data from `df`.
 
-    '''
-    name = _check_name(name, config)
-    df = dl_census("acs", geography=geography,
-                   table=config, year=year,
-                   state=state, county=county)
-    idcol = [c for c in df.columns if bool(re.search("^GEOID",c))][0]
-    tab = _combine_levels(df, idcol=idcol, config=config, 
-                          breaks=None, name=name)
-    return tab
-    
-def _numeric_processing(geography, config, state, year, county=None,
-                        breaks=None, name="full"):
-    '''
+    """
+    # name = _check_name(config, name)
+    df = dl_census(
+        "acs",
+        geography=geography,
+        table=config._table_,
+        year=year,
+        state=state,
+        county=county,
+    )
+    idcol = [c for c in df.columns if bool(re.search("^GEOID", c))][0]
+    tbl = _combine_levels(df, idcol=idcol, config=config, breaks=None, name=name)
+    return tbl
+
+
+def _numeric_processing(
+    geography, config, state, year, county=None, breaks=None, name="full"
+):
+    """
     Download ACS data, and perform aliasing or numeric reclassification for
     "numeric" ACS variables
 
@@ -214,7 +231,7 @@ def _numeric_processing(geography, config, state, year, county=None,
     config : ACSConfig
         Config for the variable of interest
     breaks : iterable of numerics, or None
-        Break points for numeric reclassification. One of `breaks` and `name` 
+        Break points for numeric reclassification. One of `breaks` and `name`
         must be provided; the other must be None. Breaks will be assessed
         in rolling pairs as `>=, <`. The default is None.
     name : str, or None
@@ -229,37 +246,40 @@ def _numeric_processing(geography, config, state, year, county=None,
     pd.DataFrame
         Aliased or reclassified ACS data from `df`.
 
-    '''
-    breaks = _check_breaks(breaks, config)
-    name = _check_name(name, config)
-    df = dl_census("acs", geography=geography,
-                   table=config, year=year,
-                   state=state, county=county)
-    idcol = [c for c in df.columns if bool(re.search("^GEOID",c))][0]
-    tab = _combine_levels(df, idcol=idcol, config=config, 
-                          breaks=breaks, name=name)
-    return tab
-    
-# %% Class
+    """
+    breaks = _check_breaks(config=config, breaks=breaks)
+    # name = _check_name(name, config)
+    df = dl_census(
+        "acs",
+        geography=geography,
+        table=config._table_,
+        year=year,
+        state=state,
+        county=county,
+    )
+    idcol = [c for c in df.columns if bool(re.search("^GEOID", c))][0]
+    tbl = _combine_levels(df, idcol=idcol, config=config, breaks=breaks, name=name)
+    return tbl
 
-class ACS(pd.DataFrame):
-    '''
+
+# Class
+@pd.api.extensions.register_dataframe_accessor("acs")
+class ACS:
+    """
     Download ACS data
-    '''
-    def __init__(self, df, univ):
-        super().__init__(df)
-        self._universe_ = univ
-        
-    @classmethod
-    def sex(cls, state, year, county=None, geography="block group", 
-            name="full"):
-        '''
+    """
+
+    def __init__(self, pandas_obj):
+        self._obj = pandas_obj
+
+    def sex(state, year, county=None, geography="block group", name="full"):
+        """
         Download ACS sex data (universe: total population).
 
         Parameters
         ----------
         see `sam.acs._discrete_processing`
-        
+
         Notes
         -----
         Options include:
@@ -269,23 +289,28 @@ class ACS(pd.DataFrame):
         -------
         ACS (subclass of pd.DataFrame)
 
-        '''
-        cfg = _SEX_CONFIG_
-        tab = _discrete_processing(geography=geography, config=cfg, 
-                                   state=state, year=year, county=county,
-                                   name=name)
-        return cls(tab, univ=cfg._universe_)
-    
-    @classmethod
-    def age(cls, state, year, county=None, geography="block group", 
-            breaks=None, name="full"):
-        '''
+        """
+        cfg = acs_cfg._SEX_CONFIG_
+        tbl = _discrete_processing(
+            geography=geography,
+            config=cfg,
+            state=state,
+            year=year,
+            county=county,
+            name=name,
+        )
+        return tbl
+
+    def age(
+        state, year, county=None, geography="block group", breaks=None, name="full"
+    ):
+        """
         Download ACS age data (universe: total population).
 
         Parameters
         ----------
         see `sam.acs._numeric_processing`
-        
+
         Notes
         -----
         Options include:
@@ -300,27 +325,33 @@ class ACS(pd.DataFrame):
         -------
         ACS (subclass of pd.DataFrame)
 
-        '''
-        cfg = _AGE_CONFIG_
-        tab = _numeric_processing(geography=geography, config=cfg, 
-                                  state=state, year=year, county=county,
-                                  breaks=breaks, name=name)
-        return cls(tab, univ=cfg._universe_)
-    
-    @classmethod
-    def hh_income(cls, state, year, county=None, geography="block group",
-                  breaks=None, name="full"):
-        '''
+        """
+        cfg = acs_cfg._AGE_CONFIG_
+        tbl = _numeric_processing(
+            geography=geography,
+            config=cfg,
+            state=state,
+            year=year,
+            county=county,
+            breaks=breaks,
+            name=name,
+        )
+        return tbl
+
+    def hh_income(
+        state, year, county=None, geography="block group", breaks=None, name="full"
+    ):
+        """
         Download ACS household income data (universe: total households).
 
         Parameters
         ----------
         see `sam.acs._numeric_processing`
-        
+
         Notes
         -----
         Options include:
-            1. `name = "full"`: <10, [10,15), [15,20), [20,25), [25,30), 
+            1. `name = "full"`: <10, [10,15), [15,20), [20,25), [25,30),
             [30,35), [35,40), [40,45), [45,50), [50,60), [60,75), [75,100),
             [100,125), [125,150), [150,200), >=200 (in thousands)
             2. `breaks = [...]`: valid break points include 10, 15, 20, 25, 30,
@@ -330,24 +361,30 @@ class ACS(pd.DataFrame):
         -------
         ACS (subclass of pd.DataFrame)
 
-        '''
-        cfg = _INCOME_CONFIG_
-        tab = _numeric_processing(geography=geography, config=cfg, 
-                                  state=state, year=year, county=county,
-                                  breaks=breaks, name=name)
-        return cls(tab, univ=cfg._universe_)
-    
-    @classmethod
-    def ratio_of_income_to_poverty_level(cls, state, year, county=None, geography="block group", 
-                                         breaks=None, name="full"):
-        '''
+        """
+        cfg = acs_cfg._INCOME_CONFIG_
+        tbl = _numeric_processing(
+            geography=geography,
+            config=cfg,
+            state=state,
+            year=year,
+            county=county,
+            breaks=breaks,
+            name=name,
+        )
+        return tbl
+
+    def ratio_of_income_to_poverty_level(
+        state, year, county=None, geography="block group", breaks=None, name="full"
+    ):
+        """
         Download ACS ratio of income to poverty level data (universe:
         population for whom poverty status can be determined).
 
         Parameters
         ----------
         see `sam.acs._numeric_processing`
-        
+
         Notes
         -----
         Options include:
@@ -360,51 +397,61 @@ class ACS(pd.DataFrame):
         -------
         ACS (subclass of pd.DataFrame)
 
-        '''
-        cfg = _RIP_CONFIG_
-        tab = _numeric_processing(geography=geography, config=cfg, 
-                                  state=state, year=year, county=county,
-                                  breaks=breaks, name=name)
-        return cls(tab, univ=cfg._universe_)
-    
-    @classmethod
-    def hh_vehicles(cls, state, year, county=None, geography="block group", 
-                    breaks=None, name="full"):
-        '''
-        Download ACS household vehicles data (universe: total households).
+        """
+        cfg = acs_cfg._RIP_CONFIG_
+        tbl = _numeric_processing(
+            geography=geography,
+            config=cfg,
+            state=state,
+            year=year,
+            county=county,
+            breaks=breaks,
+            name=name,
+        )
+        return tbl
+
+    def hh_vehicles(
+        state, year, county=None, geography="block group", breaks=None, name="full"
+    ):
+        """
+        Download ACS household vehicles' data (universe: total households).
 
         Parameters
         ----------
         see `sam.acs._numeric_processing`
-        
+
         Notes
         -----
         Options include:
             1. `name = "full"`: 0, 1, 2, 3, 4, >=5
-            2. `breaks = [...]`: valid break points include 0, 1, 2, 3, 4, 
+            2. `breaks = [...]`: valid break points include 0, 1, 2, 3, 4,
             and 5
 
         Returns
         -------
         ACS (subclass of pd.DataFrame)
 
-        '''
-        cfg = _VEHICLES_CONFIG_
-        tab = _numeric_processing(geography=geography, config=cfg, 
-                                  state=state, year=year, county=county,
-                                  breaks=breaks, name=name)
-        return cls(tab, univ=cfg._universe_)
-    
-    @classmethod
-    def tenure(cls, state, year, county=None, geography="block group", 
-               name="full"):
-        '''
+        """
+        cfg = acs_cfg._VEHICLES_CONFIG_
+        tbl = _numeric_processing(
+            geography=geography,
+            config=cfg,
+            state=state,
+            year=year,
+            county=county,
+            breaks=breaks,
+            name=name,
+        )
+        return tbl
+
+    def tenure(state, year, county=None, geography="block group", name="full"):
+        """
         Download ACS tenure data (universe: total households).
 
         Parameters
         ----------
         see `sam.acs._discrete_processing`
-        
+
         Notes
         -----
         Options include:
@@ -414,26 +461,31 @@ class ACS(pd.DataFrame):
         -------
         ACS (subclass of pd.DataFrame)
 
-        '''
-        cfg = _TENURE_CONFIG_
-        tab = _discrete_processing(geography=geography, config=cfg, 
-                                   state=state, year=year, county=county,
-                                   name=name)
-        return cls(tab, univ=cfg._universe_)
-    
-    @classmethod
-    def disability_status(cls, state, year, county=None, geography="block group", 
-                          name="full"):
-        '''
+        """
+        cfg = acs_cfg._TENURE_CONFIG_
+        tbl = _discrete_processing(
+            geography=geography,
+            config=cfg,
+            state=state,
+            year=year,
+            county=county,
+            name=name,
+        )
+        return tbl
+
+    def disability_status(
+        state, year, county=None, geography="block group", name="full"
+    ):
+        """
         Download ACS disability status data (universe for block group level
-        data: civilian 18+ population for whom poverty status can be 
-        determined; universe for higher level data: civilian 
+        data: civilian 18+ population for whom poverty status can be
+        determined; universe for higher level data: civilian
         non-institutionalized population).
 
         Parameters
         ----------
         see `sam.acs._discrete_processing`
-        
+
         Notes
         -----
         Options include:
@@ -444,26 +496,31 @@ class ACS(pd.DataFrame):
         -------
         ACS (subclass of pd.DataFrame)
 
-        '''
+        """
         if geography == "block group":
-            cfg = _DISABILITY_BG_CONFIG_
+            cfg = acs_cfg._DISABILITY_BG_CONFIG_
         else:
-            cfg = _DISABILITY_CONFIG_
-        tab = _discrete_processing(geography=geography, config=cfg, 
-                                   state=state, year=year, county=county,
-                                   name=name)
-        return cls(tab, univ=cfg._universe_)
-    
-    @classmethod
-    def hh_size(cls, state, year, county=None, geography="block group", 
-            breaks=None, name="full"):
-        '''
+            cfg = acs_cfg._DISABILITY_CONFIG_
+        tbl = _discrete_processing(
+            geography=geography,
+            config=cfg,
+            state=state,
+            year=year,
+            county=county,
+            name=name,
+        )
+        return tbl
+
+    def hh_size(
+        state, year, county=None, geography="block group", breaks=None, name="full"
+    ):
+        """
         Download ACS household size data (universe: total households.
 
         Parameters
         ----------
         see `sam.acs._numeric_processing`
-        
+
         Notes
         -----
         Options include:
@@ -475,25 +532,31 @@ class ACS(pd.DataFrame):
         -------
         ACS (subclass of pd.DataFrame)
 
-        '''
-        cfg = _SIZE_CONFIG_
-        tab = _numeric_processing(geography=geography, config=cfg, 
-                                  state=state, year=year, county=county,
-                                  breaks=breaks, name=name)
-        return cls(tab, univ=cfg._universe_)
-    
-    @classmethod
-    def hh_workers(cls, state, year, county=None, geography="block group", 
-                   breaks=None, name="full"):
-        '''
+        """
+        cfg = acs_cfg._SIZE_CONFIG_
+        tbl = _numeric_processing(
+            geography=geography,
+            config=cfg,
+            state=state,
+            year=year,
+            county=county,
+            breaks=breaks,
+            name=name,
+        )
+        return tbl
+
+    def hh_workers(
+        state, year, county=None, geography="block group", breaks=None, name="full"
+    ):
+        """
         Download ACS household number of workers data (universe for block
-        group level data: family households; universe for higher level data: 
+        group level data: family households; universe for higher level data:
         total households).
 
         Parameters
         ----------
         see `sam.acs._numeric_processing`
-        
+
         Notes
         -----
         Options include:
@@ -504,20 +567,24 @@ class ACS(pd.DataFrame):
         -------
         ACS (subclass of pd.DataFrame)
 
-        '''
+        """
         if geography == "block group":
-            cfg = _WORKERS_BG_CONFIG_
+            cfg = acs_cfg._WORKERS_BG_CONFIG_
         else:
-            cfg = _WORKERS_CONFIG_
-        tab = _numeric_processing(geography=geography, config=cfg, 
-                                  state=state, year=year, county=county,
-                                  breaks=breaks, name=name)
-        return cls(tab, univ=cfg._universe_)
-    
-    @classmethod
-    def education(cls, state, year, county=None, geography="block group", 
-                  name="full"):
-        '''
+            cfg = acs_cfg._WORKERS_CONFIG_
+        tbl = _numeric_processing(
+            geography=geography,
+            config=cfg,
+            state=state,
+            year=year,
+            county=county,
+            breaks=breaks,
+            name=name,
+        )
+        return tbl
+
+    def education(state, year, county=None, geography="block group", name="full"):
+        """
         Download ACS educational attainment data (universe for block group
         level data: 25+ population; universe for higher level data: 18+
         population).
@@ -525,43 +592,46 @@ class ACS(pd.DataFrame):
         Parameters
         ----------
         see `sam.acs._discrete_processing`
-        
+
         Notes
         -----
         Options include:
-            1. `name = "full"`: <9th grade (lths), 9th-12th grade (shs), 
+            1. `name = "full"`: <9th grade (lths), 9th-12th grade (shs),
             high school graduate or equivalency (hs), some college but no
             degree (scnd), Associate's degree (assc), Bachelor's degree (bach),
             graduate or professional degree (gradprof)
             2. `name = "basic": <12th grade (lths), high school graduate or
             equivalency (hs), some college or Associate's degree (scndassc),
-            Bachelor's degree (bach), graduate or professional 
+            Bachelor's degree (bach), graduate or professional
             degree (gradprof)
 
         Returns
         -------
         ACS (subclass of pd.DataFrame)
 
-        '''
+        """
         if geography == "block group":
-            cfg = _EDUCATION_BG_CONFIG_
+            cfg = acs_cfg._EDUCATION_BG_CONFIG_
         else:
-            cfg = _EDUCATION_CONFIG_
-        tab = _discrete_processing(geography=geography, config=cfg, 
-                                   state=state, year=year, county=county,
-                                   name=name)
-        return cls(tab, univ=cfg._universe_)
-    
-    @classmethod
-    def race(cls, state, year, county=None, geography="block group", 
-             name="full"):
-        '''
+            cfg = acs_cfg._EDUCATION_CONFIG_
+        tbl = _discrete_processing(
+            geography=geography,
+            config=cfg,
+            state=state,
+            year=year,
+            county=county,
+            name=name,
+        )
+        return tbl
+
+    def race(state, year, county=None, geography="block group", name="full"):
+        """
         Download ACS race data (universe: total population).
 
         Parameters
         ----------
         see `sam.acs._discrete_processing`
-        
+
         Notes
         -----
         Options include:
@@ -573,23 +643,26 @@ class ACS(pd.DataFrame):
         -------
         ACS (subclass of pd.DataFrame)
 
-        '''
-        cfg = _RACE_CONFIG_
-        tab = _discrete_processing(geography=geography, config=cfg, 
-                                   state=state, year=year, county=county,
-                                   name=name)
-        return cls(tab, univ=cfg._universe_)
-    
-    @classmethod
-    def ethnicity(cls, state, year, county=None, geography="block group", 
-                  name="full"):
-        '''
+        """
+        cfg = acs_cfg._RACE_CONFIG_
+        tbl = _discrete_processing(
+            geography=geography,
+            config=cfg,
+            state=state,
+            year=year,
+            county=county,
+            name=name,
+        )
+        return tbl
+
+    def ethnicity(state, year, county=None, geography="block group", name="full"):
+        """
         Download ACS ethnicity data (universe: total population).
 
         Parameters
         ----------
         see `sam.acs._discrete_processing`
-        
+
         Notes
         -----
         Options include:
@@ -599,60 +672,65 @@ class ACS(pd.DataFrame):
         -------
         ACS (subclass of pd.DataFrame)
 
-        '''
-        cfg = _ETHNICITY_CONFIG_
-        tab = _discrete_processing(geography=geography, config=cfg, 
-                                   state=state, year=year, county=county,
-                                   name=name)
-        return cls(tab, univ=cfg._universe_)
-        return cls(tab, univ=cfg._universe_)
-    
-    @classmethod
-    def minority_status(cls, state, year, county=None, geography="block group", 
-            name="full"):
-        '''
+        """
+        cfg = acs_cfg._ETHNICITY_CONFIG_
+        tbl = _discrete_processing(
+            geography=geography,
+            config=cfg,
+            state=state,
+            year=year,
+            county=county,
+            name=name,
+        )
+        return tbl
+
+    def minority_status(state, year, county=None, geography="block group", name="full"):
+        """
         Download ACS minority status data (universe: total population).
 
         Parameters
         ----------
         see `sam.acs._discrete_processing`
-        
+
         Notes
         -----
         Options include:
-            1. `name = "full"`: non-white OR hispanic (mnty), white AND 
+            1. `name = "full"`: non-white OR hispanic (mnty), white AND
             non-hispanic (nonmnty)
 
         Returns
         -------
         ACS (subclass of pd.DataFrame)
 
-        '''
-        cfg = _MINORITY_CONFIG_
-        tab = _discrete_processing(geography=geography, config=cfg, 
-                                   state=state, year=year, county=county,
-                                   name=name)
-        return cls(tab, univ=cfg._universe_)
-    
-    @classmethod
-    def mode_share(cls, state, year, county=None, geography="block group", 
-                   name="full"):
-        '''
+        """
+        cfg = acs_cfg._MINORITY_CONFIG_
+        tbl = _discrete_processing(
+            geography=geography,
+            config=cfg,
+            state=state,
+            year=year,
+            county=county,
+            name=name,
+        )
+        return tbl
+
+    def mode_share(state, year, county=None, geography="block group", name="full"):
+        """
         Download ACS mode share data (universe: 16+ working population).
 
         Parameters
         ----------
         see `sam.acs._discrete_processing`
-        
+
         Notes
         -----
         Options include:
-            1. `name = "full"`: all car/truck/van (car), drove alone (car_1), 
-            all carpool (car_2p), 2-person carpool (car_2p_2), 3-person carpool 
-            (car_2p_3), 4-person carpool (car_2p_4), 5- or 6-person carpool 
-            (car_2p_56), 7+-person carpool (car_2p_7p), all public 
+            1. `name = "full"`: all car/truck/van (car), drove alone (car_1),
+            all carpool (car_2p), 2-person carpool (car_2p_2), 3-person carpool
+            (car_2p_3), 4-person carpool (car_2p_4), 5- or 6-person carpool
+            (car_2p_56), 7+-person carpool (car_2p_7p), all public
             transportation (tran), bus (tran_bus), subway or elevated rail
-            (tran_ser), long-distance train or commuter rail (tran_ldtcr), 
+            (tran_ser), long-distance train or commuter rail (tran_ldtcr),
             light rail/streetcar/trolley (tran_lrst), ferry (tran_ferry),
             taxicab (taxi), motorcycle (motorcycle), bike (bike), walk (walk),
             other mode of transportation (other), worked from home (wfh)
@@ -662,79 +740,168 @@ class ACS(pd.DataFrame):
         All columns will be represented as shares. Regardless of the choice of
         `name`, an additional column "trips" will be provided to indicated the
         total number of commutes. This column may be multiplied by a shares
-        column to return the number of trips for that mode.            
+        column to return the number of trips for that mode.
 
         Returns
         -------
         ACS (subclass of pd.DataFrame)
 
-        '''
-        cfg = _MODE_SHARE_CONFIG_
-        tab = _discrete_processing(geography=geography, config=cfg, 
-                                   state=state, year=year, county=county,
-                                   name=name)
-        tab = tab.drop(columns="")
-        for c in tab.columns:
-            if bool(re.search("^GEOID",c)) or c == "trips":
+        """
+        cfg = acs_cfg._MODE_SHARE_CONFIG_
+        tbl = _discrete_processing(
+            geography=geography,
+            config=cfg,
+            state=state,
+            year=year,
+            county=county,
+            name=name,
+        )
+        # tbl = tbl.drop(columns="")
+        for c in tbl.columns:
+            if bool(re.search("^GEOID", c)) or c == "trips":
                 pass
             else:
-                tab[c] = tab[c] / tab["trips"]
-        return cls(tab, univ=cfg._universe_)
-    
-    @classmethod
-    def totals(cls, state, year, county=None, geography="block group",
-               name="full"):
-        '''
-        Download ACS total population, households, and housing units data 
-        
+                tbl[c] = tbl[c] / tbl["trips"]
+        return tbl
+
+    def totals(state, year, county=None, geography="block group", name="full"):
+        """
+        Download ACS total population, households, and housing units data
+
         This will download 3 separate tables for each statistic, and bind
         them all into a singular table of totals
-        
+
         Parameters
         ----------
         see `sam.acs._discrete_processing`
-        
+
         Notes
         -----
         Options include:
             1. `name = "full"`: total population (pop), total households (hh),
-            total housing units (hu)          
+            total housing units (hu)
 
         Returns
         -------
         ACS (subclass of pd.DataFrame)
 
-        '''
-        cfgs = [_TOT_POP_CONFIG_, _TOT_HH_CONFIG_, _TOT_HU_CONFIG_]
-        tab = [_discrete_processing(geography=geography, config=cfg, 
-                                    state=state, year=year, county=county,
-                                    name=name) for cfg in cfgs]
-        idcol = [c for c in tab[0].columns if bool(re.search("^GEOID",c))][0]
-        tab = [df.set_index(idcol) for df in tab]
-        tab = pd.concat(tab, axis=1).reset_index()
-        return cls(tab, univ="totals")
-    
-    def to_csv(self, save_path):
-        '''
-        Save ACS data as a .csv.
+        """
+        cfgs = [
+            acs_cfg._TOT_POP_CONFIG_,
+            acs_cfg._TOT_HH_CONFIG_,
+            acs_cfg._TOT_HU_CONFIG_,
+        ]
+        tbl = [
+            _discrete_processing(
+                geography=geography,
+                config=cfg,
+                state=state,
+                year=year,
+                county=county,
+                name=name,
+            )
+            for cfg in cfgs
+        ]
+        idcol = [c for c in tbl[0].columns if bool(re.search("^GEOID", c))][0]
+        tbl = [df.set_index(idcol) for df in tbl]
+        tbl = pd.concat(tbl, axis=1).reset_index()
+        return tbl
+
+    def rent(
+        state, year, county=None, geography="block group", breaks=None, name="full"
+    ):
+        """
+        Download ACS rent data (universe: Renter-occupied housing units).
 
         Parameters
         ----------
-        save_path : str
-            Path to which to save the .csv.
+        see `sam.acs._numeric_processing`
+
+        Notes
+        -----
+        Options include:
+            1. `name = "full"`: full names for bins
+            2. `breaks = [...]`: only lower bound of bin
 
         Returns
         -------
-        None.
+        ACS (subclass of pd.DataFrame)
 
-        '''
-        self.to_csv(save_path)
-        
-        
-    
-    
-        
-            
-                
-                
-        
+        """
+        cfg = acs_cfg._RENT_CONFIG_
+        tbl = _numeric_processing(
+            geography=geography,
+            config=cfg,
+            state=state,
+            year=year,
+            county=county,
+            breaks=breaks,
+            name=name,
+        )
+        return tbl
+
+    def value(
+        state, year, county=None, geography="block group", breaks=None, name="full"
+    ):
+        """
+        Download ACS housing value data (universe: Owner-occupied Housing Units).
+
+        Parameters
+        ----------
+        see `sam.acs._numeric_processing`
+
+        Notes
+        -----
+        Options include:
+            1. `name = "full"`: full names for bins
+            2. `breaks = [...]`: only lower bound of bin
+
+        Returns
+        -------
+        ACS (subclass of pd.DataFrame)
+
+        """
+        cfg = acs_cfg._VALUE_CONFIG_
+        tbl = _numeric_processing(
+            geography=geography,
+            config=cfg,
+            state=state,
+            year=year,
+            county=county,
+            breaks=breaks,
+            name=name,
+        )
+        return tbl
+
+    def cost(
+        state, year, county=None, geography="block group", breaks=None, name="full"
+    ):
+        """
+        Download ACS housing cost data (universe: Owner-occupied Housing Units).
+
+        Parameters
+        ----------
+        see `sam.acs._numeric_processing`
+
+        Notes
+        -----
+        Options include:
+            1. `name = "full"`: full names for bins
+            2. `breaks = [...]`: only lower bound of bin
+
+        Returns
+        -------
+        ACS (subclass of pd.DataFrame)
+
+        """
+        cfg = acs_cfg._COST_CONFIG_
+        tbl = _numeric_processing(
+            geography=geography,
+            config=cfg,
+            state=state,
+            year=year,
+            county=county,
+            breaks=breaks,
+            name=name,
+        )
+        return tbl

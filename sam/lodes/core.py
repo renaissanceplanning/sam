@@ -6,14 +6,15 @@ Created on Fri Feb 18 15:42:42 2022
 """
 
 import re
+
+# import us
 import numpy as np
 import pandas as pd
 
-from rputils.download.census import dl_lodes, dl_xwalk
-
-# %% Helper functions
+from sam.download.census import dl_lodes, dl_xwalk
 
 
+# Helper functions
 def _dlfm_lodes_ac(file, state, year, idcol):
     """
     DownLoad and ForMat an LODES area characteristics file.
@@ -40,65 +41,37 @@ def _dlfm_lodes_ac(file, state, year, idcol):
     return df
 
 
-# %% Class
-
-
-class XWalk(pd.DataFrame):
-    """
-    Download a state's geography crosswalk.
-    """
-
-    def __init__(self, df, ST):
-        super().__init__(df)
-        self.__datastate__ = ST
-
-    @classmethod
-    def xwalk(cls, state):
-        """
-        Download the geography crosswalk for a state.
-
-        Parameters
-        ----------
-        state : str
-            2-letter postal code for a chosen state.
-
-        Returns
-        -------
-        pd.DataFrame
-
-        """
-        df = dl_xwalk(ST=state)
-        df = df.drop(columns=["blklatdd", "blklondd", "createdate"])
-        return cls(df, state)
-
-    def to_csv(self, save_path):
-        """
-        Save crosswalk data as a .csv.
-
-        Parameters
-        ----------
-        save_path : str
-            Path to which to save the .csv.
-
-        Returns
-        -------
-        None.
-
-        """
-        self.to_csv(save_path, index=False)
-
-
-class LODES(pd.DataFrame):
+@pd.api.extensions.register_dataframe_accessor("lodes")
+class lodes:
     """
     Download LODES data
     """
 
-    def __init__(self, df, ST):
-        super().__init__(df)
-        self.__datastate__ = ST
+    def __init__(self, pandas_obj):
+        self._obj = pandas_obj
 
-    @classmethod
-    def rac(cls, state, year):
+    # @property
+    # def datastate(self):
+    #     return self.__datastate__
+
+    def xwalk(state):
+        """
+        Download the geography crosswalk for a state.
+        Parameters
+        ----------
+        state : str
+            2-letter postal code for a chosen state.
+        Returns
+        -------
+        pd.DataFrame
+        """
+        df = dl_xwalk(ST=state)
+        df = df.drop(columns=["blklatdd", "blklondd", "createdate"])
+        # df.lodes.__dict__['__datastate__'] = state
+        return df
+
+    # TODO add built in aggregate and filters
+    def rac(state, year, aggregate=None):
         """
         Download LODES residence area characteristics data (for all jobs in all
         segments)
@@ -113,10 +86,11 @@ class LODES(pd.DataFrame):
 
         """
         df = _dlfm_lodes_ac(file="rac", state=state, year=year, idcol="h_geocode")
-        return cls(df=df, ST=state)
+        # df.lodes.__dict__['__datastate__'] = state
+        # df.lodes.__dict__['__datayear__'] = year
+        return df
 
-    @classmethod
-    def wac(cls, state, year):
+    def wac(state, year):
         """
         Download LODES workplace area characteristics data (for all jobs in all
         segments)
@@ -131,10 +105,11 @@ class LODES(pd.DataFrame):
 
         """
         df = _dlfm_lodes_ac(file="wac", state=state, year=year, idcol="w_geocode")
-        return cls(df=df, ST=state)
+        # df.lodes.__dict__['__datastate__'] = state
+        # df.lodes.__dict__['__datayear__'] = year
+        return df
 
-    @classmethod
-    def od(cls, state, year):
+    def od(state, year):
         """
         Download LODES origin-destiantion data (for all jobs in all segments)
 
@@ -160,11 +135,11 @@ class LODES(pd.DataFrame):
         df["h_geocode"] = df.h_geocode.astype(str)
         df["w_geocode"] = df.w_geocode.astype(str)
         df = df.drop(columns="createdate")
-        return cls(df=df, ST=state)
+        # df.lodes.__dict__['__datastate__'] = state
+        # df.lodes.__dict__['__datayear__'] = year
+        return df
 
-
-
-    # TODO: set this as LODES? or is it already?
+    # TODO: set this as LODES? or is it already? fix od aggregate add for futher calls
     def aggregate(self, XWalk, to, keepname=False):
         """
         Aggregate LODES data up from the block level to a higher geographic
@@ -180,7 +155,7 @@ class LODES(pd.DataFrame):
         keepname : bool
             Should the name of the aggregate geography be retained? Helpful
             for aggregtions to areas commonly referred to by name, e.g.
-            counties, but not to much for places commonly referred to by ID,
+            COUNTIES, but not to much for places commonly referred to by ID,
             e.g. tracts. The default is False, in which case only the ID will
             be retained.
 
@@ -189,13 +164,17 @@ class LODES(pd.DataFrame):
         pd.DataFrame
 
         """
-        if self.__datastate__ == XWalk.__datastate__:
-            pass
-        else:
-            raise ValueError(
-                "LODES state != XWalk state; "
-                f"{self.__datastate__} and {XWalk.__datastate__}"
-            )
+        # TODO add handleing for fips to string (fix bug with OD)
+        # lodes_st = us.states.lookup(self.__datastate__)
+        # XWalk_st = us.states.lookup(XWalk.lodes.__datastate__)
+
+        # if lodes_st == XWalk_st:
+        #     pass
+        # else:
+        #     raise ValueError(
+        #         "LODES state != XWalk state; "
+        #         f"{lodes_st} and {XWalk_st}"
+        #     )
         agg_opts = [
             c
             for c in XWalk.columns
@@ -215,31 +194,23 @@ class LODES(pd.DataFrame):
             xwalk_cols = [xwid, to, "".join([to, "name"])]
         else:
             xwalk_cols = [xwid, to]
-        lid = [c for c in ["w_geocode", "h_geocode"] if c in self.columns]
+        lid = [c for c in ["w_geocode", "h_geocode"] if c in self._obj.columns]
         pref = ["".join([c.split("_")[0], "_"]) for c in lid]
         gbid = ["".join([p, c]) for p in pref for c in xwalk_cols[1:]]
-        df = self.copy()
+        df = self._obj.copy()
         xw = XWalk[xwalk_cols]
         for c, p in zip(lid, pref):
             xwjid = "".join([p, xwid])
-            df = pd.merge(df, xw.add_prefix(p), left_on=c, right_on=xwjid)
-            df = df.drop(xwjid)
+            xw = xw.add_prefix(p)
+
+            if isinstance(df[c], object):
+                df[c] = df[c].astype(np.int64)
+
+            if isinstance(xw[xwjid], object):
+                xw[xwjid] = xw[xwjid].astype(np.int64)
+
+            df = pd.merge(df, xw, left_on=c, right_on=xwjid)
+            df = df.drop(columns=[c, xwjid])
         smz_cols = [c for c in df.columns if c not in gbid]
         smz = df.groupby(gbid)[smz_cols].sum().reset_index()
         return smz
-
-    def to_csv(self, save_path):
-        """
-        Save LODES data as a .csv.
-
-        Parameters
-        ----------
-        save_path : str
-            Path to which to save the .csv.
-
-        Returns
-        -------
-        None.
-
-        """
-        self.to_csv(save_path, index=False)
