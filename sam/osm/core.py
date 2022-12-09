@@ -25,7 +25,7 @@ _OBJ_TYPES_ = ["nx", "pandana", "gdf"]
 # %% Helper Functions
 
 
-def _dat_osm(geometry, net_type, add_travel_time=True, crs=None):
+def _dat_osm(geometry, net_type, add_travel_time=True, crs=None, **kwargs):
     """
     Download, Add travel time to, and Transform an OSM newtork.
 
@@ -47,13 +47,17 @@ def _dat_osm(geometry, net_type, add_travel_time=True, crs=None):
         the `ox.add_edge_speeds()` function will be used to add a speed to
         each edge, and the `ox.add_edge_travel_times()` function will be
         used to add a travel time to each edge. The default is True.
+    kwargs:
+        Keyword arguments to pass to `gary.trim_components` if trimming the
+        downloaded osm network.
 
     Returns
     -------
     nx.MultiDiGraph
 
     """
-    net = dl_osm_network(geometry=geometry, net_type=net_type, trim_components=True)
+    net = dl_osm_network(
+        geometry=geometry, net_type=net_type, trim_components=True, **kwargs)
     if add_travel_time == True:
         net = ox.add_edge_speeds(net)
         net = ox.add_edge_travel_times(net)
@@ -79,7 +83,7 @@ class OSMNetwork(nx.MultiDiGraph):
         return super().__init__(net)
 
     @classmethod
-    def walk(cls, geometry, add_travel_time=True, crs=None):
+    def walk(cls, geometry, add_travel_time=True, crs=None, **kwargs):
         """
         Download an OSM walk newtork.
 
@@ -93,12 +97,12 @@ class OSMNetwork(nx.MultiDiGraph):
 
         """
         net = _dat_osm(
-            geometry=geometry, net_type="walk", add_travel_time=add_travel_time, crs=crs
+            geometry=geometry, net_type="walk", add_travel_time=add_travel_time, crs=crs, **kwargs
         )
         return cls(net)
 
     @classmethod
-    def bike(cls, geometry, add_travel_time=True, crs=None):
+    def bike(cls, geometry, add_travel_time=True, crs=None, **kwargs):
         """
         Download an OSM walk newtork.
 
@@ -112,12 +116,12 @@ class OSMNetwork(nx.MultiDiGraph):
 
         """
         net = _dat_osm(
-            geometry=geometry, net_type="bike", add_travel_time=add_travel_time, crs=crs
+            geometry=geometry, net_type="bike", add_travel_time=add_travel_time, crs=crs, **kwargs
         )
         return cls(net)
 
     @classmethod
-    def drive(cls, geometry, add_travel_time=True, crs=None):
+    def drive(cls, geometry, add_travel_time=True, crs=None, **kwargs):
         """
         Download an OSM walk newtork.
 
@@ -135,6 +139,7 @@ class OSMNetwork(nx.MultiDiGraph):
             net_type="drive",
             add_travel_time=add_travel_time,
             crs=crs,
+            **kwargs
         )
         return cls(net)
 
