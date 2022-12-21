@@ -30,6 +30,7 @@ def extract_urls(county, year):
             (county_urls.year == year)
             & (county_urls.file == "TaxRoll")
             & (county_urls.url.str.contains("DBF"))
+            & (county_urls.url.str.contains("Final"))
         ][["url"]].squeeze()
         
         if (type(gis_url) != str) or (type(gis_url) != str): #checks to ensure that strings not sereis are returned

@@ -483,7 +483,7 @@ def fdor_gis_and_tax():
         if c == "":
             try:
                 cfl = fl[fl.co_no == n]
-                assoc = np.unique(cfl.TEST_COUNTY)[0]
+                assoc = np.unique(cfl.county)[0]
                 county_final.append(assoc)
             except:
                 county_final.append("")
@@ -498,7 +498,9 @@ def fdor_gis_and_tax():
 
     # Bind data
     df = pd.DataFrame(
-        {"file": file, "year": years, "county": county_final, "url": urls}
+        {"file": file, "year": years, "county": county_final, 
+         "numbers": co_nos, "url": urls 
+         }
     )
 
     # Done
