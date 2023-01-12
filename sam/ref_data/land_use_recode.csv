@@ -1,105 +1,105 @@
-DOR_UC,SPC_LU,GEN_LU,GN_VA_LU,DIV_CLASS,NRES_ENERGY,RES_NRES,Tourism,CE_Buliding
-0,VACANT RESIDENTIAL,Residential,Vacant/Undeveloped,vacant,NA,VAC,No,Multifamily Residential
-1,SINGLE FAMILY RESIDENTIAL,Residential,Single-family,sf,NA,RES,No,Single Family Residential 
-2,MOBILE HOME,Residential,Single-family,sf,NA,RES,No,Multifamily Residential
-3,MULTI-FAMILY 10 OR MORE,Residential,Multifamily,mf,NA,RES,No,Multifamily Residential
-4,CONDOMINIUM,Residential,Single-family,sf,NA,RES,No,Multifamily Residential
-5,COOPERATIVES,Residential,Multifamily,mf,NA,RES,No,Multifamily Residential
-6,RETIREMENT HOMES,Residential,Multifamily,mf,NA,RES,No,Multifamily Residential
-7,MISCELLANEOUS RESIDENTIAL,Residential,Multifamily,mf,NA,RES,No,Multifamily Residential
-8,MULTI-FAMILY LESS THAN 10,Residential,Multifamily,mf,NA,RES,No,Multifamily Residential
-9,RESIDENTIAL COMMON ELEMENTS/AREAS,Residential,Other,other,NA,RES,No,Multifamily Residential
-10,VACANT COMMERCIAL,Commercial,Vacant/Undeveloped,vacant,NA,VAC,No,Retail 
-11,"STORES, ONE STORY",Commercial,Commercial/Retail,shopping,Retail store ,NRES,No,Retail 
-12,"COMMERCIAL, MIXED USE",Commercial,Commercial/Retail,shopping,Strip shopping center ,NRES,No,Mixed Use
-13,DEPARTMENT STORE,Commercial,Commercial/Retail,shopping,Retail store ,NRES,No,Retail 
-14,SUPERMARKETS,Commercial,Commercial/Retail,grocery,Grocery store or food market ,NRES,No,Retail 
-15,REGIONAL SHOPPING CENTER,Commercial,Commercial/Retail,shopping,Enclosed mall ,NRES,Yes,Retail 
-16,COMMUNITY SHOPPING CENTER,Commercial,Commercial/Retail,shopping,Strip shopping center ,NRES,Yes,Retail 
-17,"OFFICE, ONE STORY",Commercial,Office,office,Administrative or professional,NRES,No,Office
-18,"OFFICE, MULTI-STORY",Commercial,Office,office,Administrative or professional,NRES,No,Office
-19,PROFESSIONAL BUILDING,Commercial,Office,office,Administrative or professional,NRES,No,Office
-20,"AIRPORTS, TERMINALS, PIERS",Commercial,Other,other,,NRES,Yes,Retail 
-21,"RESTAURANTS, CAFETERIAS",Commercial,Commercial/Retail,restaurant,Restaurant or cafeteria ,NRES,No,Retail 
-22,DRIVE-IN RESTAURANTS,Commercial,Commercial/Retail,restaurant,Fast food ,NRES,No,Retail 
-23,FINANCIAL INSTITUTIONS,Commercial,Office,office,Bank or other financial ,NRES,No,Office
-24,INSURANCE COMPANY OFFICES,Commercial,Office,office,Bank or other financial ,NRES,No,Office
-25,REPAIR SERVICE SHOPS,Commercial,Commercial/Retail,auto,Repair shop ,NRES,No,Retail 
-26,SERVICE STATIONS,Commercial,Commercial/Retail,auto,Vehicle service or repair ,NRES,No,Retail 
-27,"AUTO SALES, REPAIR, ETC",Commercial,Commercial/Retail,auto,Vehicle dealership ,NRES,No,Retail 
-28,"PARKING LOTS, MH PARKS, ETC",Commercial,Commercial/Retail,auto,NA,NRES,No,Parking Lot
-29,"WHOLESALE, PRODUCE, MFG",Commercial,Commercial/Retail,shopping,Distribution or shipping center,NRES,No,Retail 
-30,"FLORISTS, GREENHOUSES",Commercial,Commercial/Retail,shopping,Warehouse and storage ,NRES,No,Retail 
-31,"DRIVE-IN THEATER, OPEN STADIUM",Commercial,Commercial/Retail,entertainment,Other assembly ,NRES,Yes,Retail 
-32,ENCLOSED THEATER/AUDITORIUM,Commercial,Commercial/Retail,entertainment,Entertainment or culture,NRES,Yes,Retail 
-33,"NIGHT CLUBS, LOUNGES, BARS",Commercial,Commercial/Retail,entertainment,"Bar, pub, or lounge",NRES,No,Retail 
-34,"BOWLING ALLEYS, RINKS, ARENAS",Commercial,Commercial/Retail,entertainment,Entertainment or culture,NRES,No,Retail 
-35,TOURIST ATTRACTIONS,Commercial,Other,entertainment,Recreation ,NRES,Yes,Retail 
-36,CAMPS,Commercial,Other,other,NA,NRES,Yes,Retail 
-37,RACE TRACKS,Commercial,Other,entertainment,Other assembly ,NRES,Yes,Retail 
-38,"GOLF COURSE, DRIVING RANGE",Commercial,Other,entertainment,NA,NRES,Yes,Retail 
-39,"HOTELS, MOTELS",Commercial,Commercial/Retail,lodging,Hotel ,NRES,Yes,Hotel
-40,VACANT INDUSTRIAL,Industrial,Vacant/Undeveloped,vacant,Warehouse and storage ,VAC,No,Industrial
-41,LIGHT MANUFACTURING,Industrial,Industrial/Manufacturing,industrial,Distribution or shipping center,NRES,No,Industrial
-42,HEAVY INDUSTRIAL,Industrial,Industrial/Manufacturing,industrial,Distribution or shipping center,NRES,No,Industrial
-43,"LUMBER YARDS, SAWMILLS",Industrial,Industrial/Manufacturing,industrial,Warehouse and storage ,NRES,No,Industrial
-44,PACKING PLANTS,Industrial,Industrial/Manufacturing,industrial,Refrigerated ,NRES,No,Industrial
-45,"CANNERY, BREWERY, WINERY",Industrial,Industrial/Manufacturing,industrial,Refrigerated ,NRES,Yes,Industrial
-46,OTHER FOOD PROCESSING,Industrial,Industrial/Manufacturing,industrial,Refrigerated ,NRES,No,Industrial
-47,MINERAL PROCESSING,Industrial,Industrial/Manufacturing,industrial,Warehouse and storage ,NRES,No,Industrial
-48,"WAREHOUSING, DISTRIBUTION TERMINALS",Industrial,Industrial/Manufacturing,industrial,Distribution or shipping center,NRES,No,Industrial
-49,OPEN STORAGE,Industrial,Industrial/Manufacturing,industrial,Warehouse,NRES,No,Industrial
-50,IMPROVED AGRICULTURAL,Agricultural,Other,ag,NA,AG/OPEN,No,Open Space
-51,CROPLAND CLASS I,Agricultural,Other,ag,NA,AG/OPEN,No,Open Space
-52,CROPLAND CLASS II,Agricultural,Other,ag,NA,AG/OPEN,No,Open Space
-53,CROPLAND CLASS III,Agricultural,Other,ag,NA,AG/OPEN,No,Open Space
-54,TIMBERLAND INDEX 90+,Agricultural,Other,ag,NA,AG/OPEN,No,Open Space
-55,TIMBERLAND INDEX 80-89,Agricultural,Other,ag,NA,AG/OPEN,No,Open Space
-56,TIMBERLAND INDEX 70-79,Agricultural,Other,ag,NA,AG/OPEN,No,Open Space
-57,TIMBERLAND INDEX 60-69,Agricultural,Other,ag,NA,AG/OPEN,No,Open Space
-58,TIMBERLAND INDEX 50-59,Agricultural,Other,ag,NA,AG/OPEN,No,Open Space
-59,TIMBERLAND NOT CLASSIFIED,Agricultural,Other,ag,NA,AG/OPEN,No,Open Space
-60,GRAZING LAND CLASS I,Agricultural,Other,ag,NA,AG/OPEN,No,Open Space
-61,GRAZING LAND CLASS II,Agricultural,Other,ag,NA,AG/OPEN,No,Open Space
-62,GRAZING LAND CLASS III,Agricultural,Other,ag,NA,AG/OPEN,No,Open Space
-63,GRAZING LAND CLASS IV,Agricultural,Other,ag,NA,AG/OPEN,No,Open Space
-64,GRAZING LAND CLASS V,Agricultural,Other,ag,NA,AG/OPEN,No,Open Space
-65,GRAZING LAND CLASS VI,Agricultural,Other,ag,NA,AG/OPEN,No,Open Space
-66,"ORCHARD GROVES, CITRUS, ETC",Agricultural,Other,ag,NA,AG/OPEN,No,Open Space
-67,"POULTRY, BEES, TROPICAL FISH, RABBITS",Agricultural,Other,ag,NA,AG/OPEN,No,Open Space
-68,"DAIRIES, FEED LOTS",Agricultural,Other,ag,NA,AG/OPEN,No,Open Space
-69,"ORNAMENTALS, MISCELLANEOUS AG",Agricultural,Other,ag,NA,AG/OPEN,No,Open Space
-70,VACANT INSTITUTIONAL,Institutional,Vacant/Undeveloped,vacant,Public assembly ,VAC,No,Institutional 
-71,"CHURCHES, TEMPLES",Institutional,Other,misc,Religious worship ,NRES,No,Institutional 
-72,PRIVATE SCHOOLS & COLLEGES,Institutional,Other,education,College or university ,NRES,No,Institutional 
-73,PRIVATELY OWNED HOSPITALS,Institutional,Other,healthcare,Inpatient ,NRES,No,Institutional 
-74,HOMES FOR THE AGED,Institutional,Other,misc,Nursing home or assisted living,NRES,No,Institutional 
-75,"ORPHANAGES, NON-PROFIT SERVICE",Institutional,Other,misc,Other lodging ,NRES,No,Institutional 
-76,"MORTUARY, CEMETERY, CREMATORIUM",Institutional,Other,misc,Other ,NRES,No,Institutional 
-77,"CLUBS, LODGES, UNION HALLS",Institutional,Other,misc,Social or meeting ,NRES,No,Institutional 
-78,"SANITARIUM, CONVALESCENT & REST HOME",Institutional,Other,misc,Nursing home or assisted living,NRES,No,Institutional 
-79,"CULTURAL ORG, FACILITIES",Institutional,Other,misc,Entertainment or culture,NRES,No,Institutional 
-80,VACANT GOVERNMENTAL,Governmental,Vacant/Undeveloped,vacant,Other public order ,VAC,No,Institutional 
-81,MILITARY,Governmental,Other,other,NA,NRES,No,Institutional 
-82,"FOREST, PARKS, RECREATIONAL",Governmental,Other,other,NA,AG/OPEN,Yes,Institutional 
-83,PUBLIC COUNTY SCHOOLS,Governmental,Other,education,K-12 ,NRES,No,Institutional 
-84,COLLEGES,Governmental,Other,education,College or university ,NRES,No,Institutional 
-85,HOSPITALS,Governmental,Other,healthcare,Inpatient ,NRES,No,Institutional 
-86,COUNTIES - OTHER,Governmental,Other,civic,Other public order ,NRES,No,Institutional 
-87,STATE - OTHER,Governmental,Other,civic,Other public order ,NRES,No,Institutional 
-88,FEDERAL - OTHER,Governmental,Other,civic,Other public order ,NRES,No,Institutional 
-89,MUNICIPAL - OTHER,Governmental,Other,civic,Other public order ,NRES,No,Institutional 
-90,LEASEHOLD INTERESTS,Miscellaneous,Other,other,Other ,NRES,No,Industrial
-91,UTILITY,Miscellaneous,Other,other,Other ,NRES,No,Industrial
-92,"MINING, PETROLEUM, GAS LANDS",Miscellaneous,Other,other,NA,AG/OPEN,No,Industrial
-93,SUBSURFACE RIGHTS,Miscellaneous,Other,other,NA,NRES,No,NA
-94,RIGHT-OF-WAY,Miscellaneous,Other,other,NA,NRES,No,NA
-95,"RIVERS, LAKES, SUBMERGED LAND",Miscellaneous,Other,other,NA,AG/OPEN,No,Open Space
-96,"SEWAGE DISPOSAL, WASTE LANDS",Miscellaneous,Other,other,NA,AG/OPEN,No,Open Space
-97,OUTDOOR RECREATIONAL,Miscellaneous,Other,other,NA,AG/OPEN,Yes,Open Space
-98,CENTRALLY ASSESSED,Centrally Assessed,Other,other,NA,NRES,No,Open Space
-99,ACREAGE NOT AG CLASSIFIED,Non Agricultural,Other,other,NA,AG/OPEN,No,Open Space
-100,NON CLASSIFIED RESIDENTIAL,Residential,Other,other,NA,RES,No,Multifamily Residential
-101,NON CLASSIFIED RESIDENTIAL,Residential,Other,other,NA,RES,No,Multifamily Residential
-102,NON CLASSIFIED RESIDENTIAL,Residential,Other,other,NA,RES,No,Multifamily Residential
-999,NA,NA,NA,other,NA,AG/OPEN,No,NA
+DOR_UC,SPC_LU,GEN_LU,GN_VA_LU,DIV_CLASS,NRES_ENERGY,RES_NRES,Tourism,CE_Buliding,NAISC_Code
+0,VACANT RESIDENTIAL,Residential,Vacant/Undeveloped,vacant,NA,VAC,No,Multifamily Residential,NA
+1,SINGLE FAMILY RESIDENTIAL,Residential,Single-family,sf,NA,RES,No,"Single Family Residential ",NA
+2,MOBILE HOME,Residential,Single-family,sf,NA,RES,No,Multifamily Residential,NA
+3,MULTI-FAMILY 10 OR MORE,Residential,Multifamily,mf,NA,RES,No,Multifamily Residential,NA
+4,CONDOMINIUM,Residential,Single-family,sf,NA,RES,No,Multifamily Residential,NA
+5,COOPERATIVES,Residential,Multifamily,mf,NA,RES,No,Multifamily Residential,NA
+6,RETIREMENT HOMES,Residential,Multifamily,mf,NA,RES,No,Multifamily Residential,NA
+7,MISCELLANEOUS RESIDENTIAL,Residential,Multifamily,mf,NA,RES,No,Multifamily Residential,NA
+8,MULTI-FAMILY LESS THAN 10,Residential,Multifamily,mf,NA,RES,No,Multifamily Residential,NA
+9,RESIDENTIAL COMMON ELEMENTS/AREAS,Residential,Other,other,NA,RES,No,Multifamily Residential,NA
+10,VACANT COMMERCIAL,Commercial,Vacant/Undeveloped,vacant,NA,VAC,No,"Retail ",44-45
+11,"STORES, ONE STORY",Commercial,Commercial/Retail,shopping,"Retail store ",NRES,No,"Retail ",44-45
+12,"COMMERCIAL, MIXED USE",Commercial,Commercial/Retail,shopping,"Strip shopping center ",NRES,No,Mixed Use,44-45
+13,DEPARTMENT STORE,Commercial,Commercial/Retail,shopping,"Retail store ",NRES,No,"Retail ",44-45
+14,SUPERMARKETS,Commercial,Commercial/Retail,grocery,"Grocery store or food market ",NRES,No,"Retail ",44-45
+15,REGIONAL SHOPPING CENTER,Commercial,Commercial/Retail,shopping,"Enclosed mall ",NRES,Yes,"Retail ",44-45
+16,COMMUNITY SHOPPING CENTER,Commercial,Commercial/Retail,shopping,"Strip shopping center ",NRES,Yes,"Retail ",44-45
+17,"OFFICE, ONE STORY",Commercial,Office,office,Administrative or professional,NRES,No,Office,Office
+18,"OFFICE, MULTI-STORY",Commercial,Office,office,Administrative or professional,NRES,No,Office,Office
+19,PROFESSIONAL BUILDING,Commercial,Office,office,Administrative or professional,NRES,No,Office,54
+20,"AIRPORTS, TERMINALS, PIERS",Commercial,Other,other,,NRES,Yes,"Retail ",48-49
+21,"RESTAURANTS, CAFETERIAS",Commercial,Commercial/Retail,restaurant,"Restaurant or cafeteria ",NRES,No,"Retail ",72
+22,DRIVE-IN RESTAURANTS,Commercial,Commercial/Retail,restaurant,"Fast food ",NRES,No,"Retail ",72
+23,FINANCIAL INSTITUTIONS,Commercial,Office,office,"Bank or other financial ",NRES,No,Office,52
+24,INSURANCE COMPANY OFFICES,Commercial,Office,office,"Bank or other financial ",NRES,No,Office,52
+25,REPAIR SERVICE SHOPS,Commercial,Commercial/Retail,auto,"Repair shop ",NRES,No,"Retail ",54
+26,SERVICE STATIONS,Commercial,Commercial/Retail,auto,"Vehicle service or repair ",NRES,No,"Retail ",54
+27,"AUTO SALES, REPAIR, ETC",Commercial,Commercial/Retail,auto,"Vehicle dealership ",NRES,No,"Retail ",44-45
+28,"PARKING LOTS, MH PARKS, ETC",Commercial,Commercial/Retail,auto,NA,NRES,No,Parking Lot,22
+29,"WHOLESALE, PRODUCE, MFG",Commercial,Commercial/Retail,shopping,Distribution or shipping center,NRES,No,"Retail ",42
+30,"FLORISTS, GREENHOUSES",Commercial,Commercial/Retail,shopping,"Warehouse and storage ",NRES,No,"Retail ",11
+31,"DRIVE-IN THEATER, OPEN STADIUM",Commercial,Commercial/Retail,entertainment,"Other assembly ",NRES,Yes,"Retail ",71
+32,ENCLOSED THEATER/AUDITORIUM,Commercial,Commercial/Retail,entertainment,Entertainment or culture,NRES,Yes,"Retail ",71
+33,"NIGHT CLUBS, LOUNGES, BARS",Commercial,Commercial/Retail,entertainment,"Bar, pub, or lounge",NRES,No,"Retail ",71
+34,"BOWLING ALLEYS, RINKS, ARENAS",Commercial,Commercial/Retail,entertainment,Entertainment or culture,NRES,No,"Retail ",71
+35,TOURIST ATTRACTIONS,Commercial,Other,entertainment,"Recreation ",NRES,Yes,"Retail ",71
+36,CAMPS,Commercial,Other,other,NA,NRES,Yes,"Retail ",71
+37,RACE TRACKS,Commercial,Other,entertainment,"Other assembly ",NRES,Yes,"Retail ",71
+38,"GOLF COURSE, DRIVING RANGE",Commercial,Other,entertainment,NA,NRES,Yes,"Retail ",71
+39,"HOTELS, MOTELS",Commercial,Commercial/Retail,lodging,"Hotel ",NRES,Yes,Hotel,72
+40,VACANT INDUSTRIAL,Industrial,Vacant/Undeveloped,vacant,"Warehouse and storage ",VAC,No,Industrial,31-33
+41,LIGHT MANUFACTURING,Industrial,Industrial/Manufacturing,industrial,Distribution or shipping center,NRES,No,Industrial,31-33
+42,HEAVY INDUSTRIAL,Industrial,Industrial/Manufacturing,industrial,Distribution or shipping center,NRES,No,Industrial,31-33
+43,"LUMBER YARDS, SAWMILLS",Industrial,Industrial/Manufacturing,industrial,"Warehouse and storage ",NRES,No,Industrial,11
+44,PACKING PLANTS,Industrial,Industrial/Manufacturing,industrial,"Refrigerated ",NRES,No,Industrial,48-49
+45,"CANNERY, BREWERY, WINERY",Industrial,Industrial/Manufacturing,industrial,"Refrigerated ",NRES,Yes,Industrial,31-33
+46,OTHER FOOD PROCESSING,Industrial,Industrial/Manufacturing,industrial,"Refrigerated ",NRES,No,Industrial,31-33
+47,MINERAL PROCESSING,Industrial,Industrial/Manufacturing,industrial,"Warehouse and storage ",NRES,No,Industrial,21
+48,"WAREHOUSING, DISTRIBUTION TERMINALS",Industrial,Industrial/Manufacturing,industrial,Distribution or shipping center,NRES,No,Industrial,48-49
+49,OPEN STORAGE,Industrial,Industrial/Manufacturing,industrial,Warehouse,NRES,No,Industrial,48-49
+50,IMPROVED AGRICULTURAL,Agricultural,Other,ag,NA,AG/OPEN,No,Open Space,11
+51,CROPLAND CLASS I,Agricultural,Other,ag,NA,AG/OPEN,No,Open Space,11
+52,CROPLAND CLASS II,Agricultural,Other,ag,NA,AG/OPEN,No,Open Space,11
+53,CROPLAND CLASS III,Agricultural,Other,ag,NA,AG/OPEN,No,Open Space,11
+54,TIMBERLAND INDEX 90+,Agricultural,Other,ag,NA,AG/OPEN,No,Open Space,11
+55,TIMBERLAND INDEX 80-89,Agricultural,Other,ag,NA,AG/OPEN,No,Open Space,11
+56,TIMBERLAND INDEX 70-79,Agricultural,Other,ag,NA,AG/OPEN,No,Open Space,11
+57,TIMBERLAND INDEX 60-69,Agricultural,Other,ag,NA,AG/OPEN,No,Open Space,11
+58,TIMBERLAND INDEX 50-59,Agricultural,Other,ag,NA,AG/OPEN,No,Open Space,11
+59,TIMBERLAND NOT CLASSIFIED,Agricultural,Other,ag,NA,AG/OPEN,No,Open Space,11
+60,GRAZING LAND CLASS I,Agricultural,Other,ag,NA,AG/OPEN,No,Open Space,11
+61,GRAZING LAND CLASS II,Agricultural,Other,ag,NA,AG/OPEN,No,Open Space,11
+62,GRAZING LAND CLASS III,Agricultural,Other,ag,NA,AG/OPEN,No,Open Space,11
+63,GRAZING LAND CLASS IV,Agricultural,Other,ag,NA,AG/OPEN,No,Open Space,11
+64,GRAZING LAND CLASS V,Agricultural,Other,ag,NA,AG/OPEN,No,Open Space,11
+65,GRAZING LAND CLASS VI,Agricultural,Other,ag,NA,AG/OPEN,No,Open Space,11
+66,"ORCHARD GROVES, CITRUS, ETC",Agricultural,Other,ag,NA,AG/OPEN,No,Open Space,11
+67,"POULTRY, BEES, TROPICAL FISH, RABBITS",Agricultural,Other,ag,NA,AG/OPEN,No,Open Space,11
+68,"DAIRIES, FEED LOTS",Agricultural,Other,ag,NA,AG/OPEN,No,Open Space,11
+69,"ORNAMENTALS, MISCELLANEOUS AG",Agricultural,Other,ag,NA,AG/OPEN,No,Open Space,11
+70,VACANT INSTITUTIONAL,Institutional,Vacant/Undeveloped,vacant,"Public assembly ",VAC,No,"Institutional ",Institutional 
+71,"CHURCHES, TEMPLES",Institutional,Other,misc,"Religious worship ",NRES,No,"Institutional ",62
+72,PRIVATE SCHOOLS & COLLEGES,Institutional,Other,education,"College or university ",NRES,No,"Institutional ",61
+73,PRIVATELY OWNED HOSPITALS,Institutional,Other,healthcare,"Inpatient ",NRES,No,"Institutional ",62
+74,HOMES FOR THE AGED,Institutional,Other,misc,Nursing home or assisted living,NRES,No,"Institutional ",62
+75,"ORPHANAGES, NON-PROFIT SERVICE",Institutional,Other,misc,"Other lodging ",NRES,No,"Institutional ",62
+76,"MORTUARY, CEMETERY, CREMATORIUM",Institutional,Other,misc,"Other ",NRES,No,"Institutional ",62
+77,"CLUBS, LODGES, UNION HALLS",Institutional,Other,misc,"Social or meeting ",NRES,No,"Institutional ",62
+78,"SANITARIUM, CONVALESCENT & REST HOME",Institutional,Other,misc,Nursing home or assisted living,NRES,No,"Institutional ",62
+79,"CULTURAL ORG, FACILITIES",Institutional,Other,misc,Entertainment or culture,NRES,No,"Institutional ",62
+80,VACANT GOVERNMENTAL,Governmental,Vacant/Undeveloped,vacant,"Other public order ",VAC,No,"Institutional ",92
+81,MILITARY,Governmental,Other,other,NA,NRES,No,"Institutional ",NA
+82,"FOREST, PARKS, RECREATIONAL",Governmental,Other,other,NA,AG/OPEN,Yes,"Institutional ",71
+83,PUBLIC COUNTY SCHOOLS,Governmental,Other,education,"K-12 ",NRES,No,"Institutional ",61
+84,COLLEGES,Governmental,Other,education,"College or university ",NRES,No,"Institutional ",61
+85,HOSPITALS,Governmental,Other,healthcare,"Inpatient ",NRES,No,"Institutional ",62
+86,COUNTIES - OTHER,Governmental,Other,civic,"Other public order ",NRES,No,"Institutional ",92
+87,STATE - OTHER,Governmental,Other,civic,"Other public order ",NRES,No,"Institutional ",92
+88,FEDERAL - OTHER,Governmental,Other,civic,"Other public order ",NRES,No,"Institutional ",92
+89,MUNICIPAL - OTHER,Governmental,Other,civic,"Other public order ",NRES,No,"Institutional ",92
+90,LEASEHOLD INTERESTS,Miscellaneous,Other,other,"Other ",NRES,No,Industrial,92
+91,UTILITY,Miscellaneous,Other,other,"Other ",NRES,No,Industrial,22
+92,"MINING, PETROLEUM, GAS LANDS",Miscellaneous,Other,other,NA,AG/OPEN,No,Industrial,21
+93,SUBSURFACE RIGHTS,Miscellaneous,Other,other,NA,NRES,No,NA,21
+94,RIGHT-OF-WAY,Miscellaneous,Other,other,NA,NRES,No,NA,NA
+95,"RIVERS, LAKES, SUBMERGED LAND",Miscellaneous,Other,other,NA,AG/OPEN,No,Open Space,NA
+96,"SEWAGE DISPOSAL, WASTE LANDS",Miscellaneous,Other,other,NA,AG/OPEN,No,Open Space,NA
+97,OUTDOOR RECREATIONAL,Miscellaneous,Other,other,NA,AG/OPEN,Yes,Open Space,NA
+98,CENTRALLY ASSESSED,Centrally Assessed,Other,other,NA,NRES,No,Open Space,NA
+99,ACREAGE NOT AG CLASSIFIED,Non Agricultural,Other,other,NA,AG/OPEN,No,Open Space,NA
+100,NON CLASSIFIED RESIDENTIAL,Residential,Other,other,NA,RES,No,Multifamily Residential,NA
+101,NON CLASSIFIED RESIDENTIAL,Residential,Other,other,NA,RES,No,Multifamily Residential,NA
+102,NON CLASSIFIED RESIDENTIAL,Residential,Other,other,NA,RES,No,Multifamily Residential,NA
+999,NA,NA,NA,other,NA,AG/OPEN,No,NA,NA
