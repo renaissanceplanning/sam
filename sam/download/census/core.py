@@ -182,7 +182,7 @@ def dl_census(survey, **kwargs):
         Table of survey data according to any specifications in the `kwargs`.
 
     """
-    if "county" in kwargs:
+    if ("county" in kwargs) & (kwargs['county'] is not None):
         if isinstance(kwargs["county"], list):
             kwargs["county"] = [
                 county[-3:] if is_int(county) & (len(county) > 3) else county
