@@ -24,7 +24,7 @@ def extract_urls(county, year):
         gis_url = county_urls.loc[
             (county_urls.year == year)
             & (county_urls.file == "GIS")
-            & (county_urls.url.str.contains("pin"))
+            & (county_urls.url.str.contains("pin\."))
         ][["url"]].squeeze()
         nal_url = county_urls.loc[
             (county_urls.year == year)
