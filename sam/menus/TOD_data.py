@@ -15,9 +15,8 @@ from sam.osm import OSMNetwork
 from sam.config import PAR_CONF
 from sam.config import COUNTIES as county_shapes
 
-# TODO adjust to handle multiple states, removed old function as it was inefficient
-# TODO get postal from county geojson?
-
+# TODO get postal from county geojson? I think this is done
+# TODO add pad and NLCD
 # TODO set up downloader to handle differing census geographies by 2030
 
 # helper functions and variables
