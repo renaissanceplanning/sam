@@ -16,7 +16,7 @@ from sam.config import PAR_CONF
 from sam.config import COUNTIES as county_shapes
 
 # TODO get postal from county geojson? I think this is done
-# TODO add pad and NLCD
+# TODO add pad and NLCD (NLCD needs default datasets to be incorporated)
 # TODO set up downloader to handle differing census geographies by 2030
 
 # helper functions and variables
@@ -34,7 +34,7 @@ def extract_fips(gdf):
             names.
     """
     # TODO increase persicion to single county
-    gdf = gdf.to_crs(county_shapes.TEST_CRS)
+    gdf = gdf.to_crs(county_shapes.crs)
     county = county_shapes[county_shapes.intersects(gdf.dissolve().geometry[0])]
     counties = county["COUNTYFP"].unique().tolist()
     states = county["STATEFP"].unique().tolist()
