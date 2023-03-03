@@ -1,0 +1,49 @@
+---
+title: "Submodules"
+---
+
+These submodules provide wrappers around the raw [downloader](downloaders.qmd) functions and provide a uniform API across all data sets. These functions are generally unneeded as the menus already download this data, however some projects may need different requirements than the defaults and these submodules provide a convient way to change these defaults.
+
+## ACS
+
+TBA
+
+## Config
+
+Holds the default configuration files for `sam`, provides good examples of how they are formatted but should not be editted directly.
+
+## LIHTC
+
+TBA
+
+## LODES
+
+TBA
+
+## NLCD
+
+TBA
+
+## PAD
+
+TBA
+
+## OSM
+
+TBA
+
+## Parcels
+
+TBA
+
+## Reference Data
+
+Provides useful datasets for cleaning. Do not edit.
+
+## SLD
+
+TBA
+
+## TIGER
+
+TBA

@@ -1,0 +1,21 @@
+project:
+  type: website
+
+website:
+  title: "SAM"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - menus.qmd
+      - submodules.qmd
+      - downloaders.qmd
+
+format:
+  html:
+    # theme: cosmo
+    css: bootstrap_custom.css
+    toc: true
+
+
+

@@ -1,0 +1,86 @@
+/* color scheme */
+
+/* logo */
+.skin-blue .main-header .logo {
+                      background-color: #3FBFBA;
+                      }
+
+/* logo when hovered */
+.skin-blue .main-header .logo:hover {
+                      background-color: #3FBFBA;
+                      }
+
+/* navbar (rest of the header) */
+#quarto-header {
+                      background-color: #3FBFBA;
+                      }    
+                      
+/* navbar (rest of the header) */
+.skin-blue .main-header .navbar {
+  background-color: #3FBFBA;
+  }   
+
+/* main sidebar */
+.skin-blue .main-sidebar {
+                      background-color: #3E4D54;
+                      }
+
+/* active selected tab in the sidebarmenu */
+.skin-blue .main-sidebar .sidebar .sidebar-menu .active a{
+                      background-color: #252e32 ;
+                      border-left: 3px solid #3FBFBA;
+                      }
+
+/* other links in the sidebarmenu */
+.skin-blue .main-sidebar .sidebar .sidebar-menu a{
+                      background-color: #3E4D54;
+                      color: #FFFFFF;
+                      }
+
+/* other links in the sidebarmenu when hovered */
+ .skin-blue .main-sidebar .sidebar .sidebar-menu a:hover{
+                      background-color: #3FBFBA;
+                      border-left: 3px solid #3FBFBA;
+                      }
+                      
+/* toggle button when hovered  */                    
+ .skin-blue .main-header .navbar .sidebar-toggle:hover{
+                      background-color: #2bd3cc ;
+                      }
+          
+
+/*fonts*/
+
+.main-header .logo {
+  font-family: "Nexa";
+  color: #BEB5AF;
+}
+
+.sidebar-menu li a {
+  font-family: "Nexa";
+}
+
+body { 
+  font-family: "Ciutadella"; 
+  color: #3E4D54;
+}
+
+.tab-content * { 
+  font-family: "Ciutadella"; 
+  color: #3E4D54;
+}
+
+#sidebarCollapsed h3{
+  font-family: "Nexa"; 
+  padding: 0.5ch;
+}
+
+#sidebarCollapsed .control-label {
+  font-family: "Ciutadella";
+  font-weight: lighter;
+}
+
+#sidebarCollapsed .selectize-dropdown-content {
+  font-family: "Ciutadella";
+  font-weight: lighter;
+}

@@ -1,0 +1,128 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "SAM Users’ Guide",
+    "section": "",
+    "text": "This website provides a user everything they need to know about the Standard Acquisition Methods (SAM) for commonly used datasets in planning applications python module.\nsam utilizes the rpy2 library to interface with R for downloading census data and preforming some spatial operations. Currently, there isn’t a direct way to reference these libraries from the project environment that is setup by default and the below steps are needed to ensure rputils can load the R libraries\n\nInstall R (download from here: https://cran.r-project.org/bin/windows/base/)\nOpen R terminal and run the following commands:\n\ninstall.packages(\"tigris\")\ninstall.packages(\"sf\")\ninstall.packages(\"lwgeom\")\ninstall.packages(\"tidycensus\")\nsam will now use your system R install as the default when trying to utilize the downloader tools\nFor general useage see menus page for the specific submodules see submodules and for the raw download functions see downloaders\nThe source code for sam can be viewed here https://github.com/renaissanceplanning/sam."
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "Menus",
+    "section": "",
+    "text": "For most non-technical users the menus submodule is sam’s one stop shop for data fetching. It provides a simple one line command to fetch all relevant data for a given project and set up a data directory. Currently only TOD projects are supported but future work will lead to additional menus which will be added to sam"
+  },
+  {
+    "objectID": "about.html#tod-menu",
+    "href": "about.html#tod-menu",
+    "title": "Menus",
+    "section": "TOD Menu",
+    "text": "TOD Menu\nThe current TOD menu will download:\n\nCensus Geography\nAmerican Community Survey (ACS) Data including:\n\nAge\nHousing Costs and Values\nDisability Status\nEducational Attainment\nRace and Ethnicity\nHousehold Income, Size, Vehicles, and Workers\nRatio of Income to Poverty Level\nRent Costs\nHousing Tenure\n\nLEHD Origin-Destination Employment Statistics (LODES):\n\nOrigin-Destination (OD)\nResidence Area Characteristics (RAC)\nWorkplace Area Characteristics (WAC)\n\nFlorida Department of Revenue Parcels\n\nEventually a national set will need to be found.\n\nOpen Street Map Networks and Nodes\n\nBike\nPedestrian\nDrive\n\nHUD Low Income Housing Tax Credit (LIHTC) Units\n\n\nCode\nThe TOD Menu (and all future menus) will use a unified API that makes calls easy. All menus need to be supplied a summary area geodataframe. This summary area can come from any relevant shapefile so long as it covers the full project extent, for example a set of station area polygons, corridor polygons, or even urban growth boundary will work so long as they include the whole project area.\nTo use the menus the following code needs to be run in python:\nimport geopandas as gpd\nfrom rputils import make_path\nfrom sam.menus import pull_TOD_data\n\nsum_area_path = make_path(\"path to shapefile\")\ndata_dir = make_path(\"path to sharepoint data dir\")\n\nsum_area = gpd.read_file(sum_area_path)\nprj_crs = sum_area.crs\n\npull_tod_data(\n    summary_areas=sum_area,\n    data_dir=data_dir,\n    prj_crs=prj_crs,\n)\nIt is worth noting that the coordinate system from the project (prj_crs) does not need to be the same as the summary area data frame and can be supplied in any format reconginzed by shapely however it is best practice to use teh summary area’s crs.\nThere are 3 additional arguments in the pull_tod_data function that can be modified:\n\nlodes_data: Which LODES tables to fetch. Defaults to all avaliable LODES data sets.\nlodes_level: Which geography to summarize LODES to. Defaults to Block Groups.\nyears (dict, optional): Years for parcel, acs, and lodes data. Defaults to most recent year avaliable."
+  },
+  {
+    "objectID": "menus.html",
+    "href": "menus.html",
+    "title": "Menus",
+    "section": "",
+    "text": "For most non-technical users the menus submodule is sam’s one stop shop for data fetching. It provides a simple one line command to fetch all relevant data for a given project and set up a data directory. Currently only TOD projects are supported but future work will lead to additional menus which will be added to sam"
+  },
+  {
+    "objectID": "menus.html#tod-menu",
+    "href": "menus.html#tod-menu",
+    "title": "Menus",
+    "section": "TOD Menu",
+    "text": "TOD Menu\nThe current TOD menu will download:\n\nCensus Geography\nAmerican Community Survey (ACS) Data including:\n\nAge\nHousing Costs and Values\nDisability Status\nEducational Attainment\nRace and Ethnicity\nHousehold Income, Size, Vehicles, and Workers\nRatio of Income to Poverty Level\nRent Costs\nHousing Tenure\n\nLEHD Origin-Destination Employment Statistics (LODES):\n\nOrigin-Destination (OD)\nResidence Area Characteristics (RAC)\nWorkplace Area Characteristics (WAC)\n\nFlorida Department of Revenue Parcels\n\nEventually a national set will need to be found.\n\nOpen Street Map Networks and Nodes\n\nBike\nPedestrian\nDrive\n\nHUD Low Income Housing Tax Credit (LIHTC) Units\n\n\nCode\nThe TOD Menu (and all future menus) will use a unified API that makes calls easy. All menus need to be supplied a summary area geodataframe. This summary area can come from any relevant shapefile so long as it covers the full project extent, for example a set of station area polygons, corridor polygons, or even urban growth boundary will work so long as they include the whole project area.\nTo use the menus the following code needs to be run in python:\nimport geopandas as gpd\nfrom rputils import make_path\nfrom sam.menus import pull_TOD_data\n\nsum_area_path = make_path(\"path to shapefile\")\ndata_dir = make_path(\"path to sharepoint data dir\")\n\nsum_area = gpd.read_file(sum_area_path)\nprj_crs = sum_area.crs\n\npull_tod_data(\n    summary_areas=sum_area,\n    data_dir=data_dir,\n    prj_crs=prj_crs,\n)\nIt is worth noting that the coordinate system from the project (prj_crs) does not need to be the same as the summary area data frame and can be supplied in any format reconginzed by shapely however it is best practice to use teh summary area’s crs.\nThere are 3 additional arguments in the pull_tod_data function that can be modified:\n\nlodes_data: Which LODES tables to fetch. Defaults to all avaliable LODES data sets.\nlodes_level: Which geography to summarize LODES to. Defaults to Block Groups.\nyears (dict, optional): Years for parcel, acs, and lodes data. Defaults to most recent year avaliable."
+  },
+  {
+    "objectID": "submodules.html",
+    "href": "submodules.html",
+    "title": "Submodules",
+    "section": "",
+    "text": "These submodules provide wrappers around the raw downloader functions and provide a uniform API across all data sets. These functions are generally unneeded as the menus already download this data, however some projects may need different requirements than the defaults and these submodules provide a convient way to change these defaults."
+  },
+  {
+    "objectID": "submodules.html#acs",
+    "href": "submodules.html#acs",
+    "title": "Submodules",
+    "section": "ACS",
+    "text": "ACS\nTBA"
+  },
+  {
+    "objectID": "submodules.html#config",
+    "href": "submodules.html#config",
+    "title": "Submodules",
+    "section": "Config",
+    "text": "Config\nHolds the default configuration files for sam, provides good examples of how they are formatted but should not be editted directly."
+  },
+  {
+    "objectID": "submodules.html#lihtc",
+    "href": "submodules.html#lihtc",
+    "title": "Submodules",
+    "section": "LIHTC",
+    "text": "LIHTC\nTBA"
+  },
+  {
+    "objectID": "submodules.html#lodes",
+    "href": "submodules.html#lodes",
+    "title": "Submodules",
+    "section": "LODES",
+    "text": "LODES\nTBA"
+  },
+  {
+    "objectID": "submodules.html#nlcd",
+    "href": "submodules.html#nlcd",
+    "title": "Submodules",
+    "section": "NLCD",
+    "text": "NLCD\nTBA"
+  },
+  {
+    "objectID": "submodules.html#pad",
+    "href": "submodules.html#pad",
+    "title": "Submodules",
+    "section": "PAD",
+    "text": "PAD\nTBA"
+  },
+  {
+    "objectID": "submodules.html#osm",
+    "href": "submodules.html#osm",
+    "title": "Submodules",
+    "section": "OSM",
+    "text": "OSM\nTBA"
+  },
+  {
+    "objectID": "submodules.html#parcels",
+    "href": "submodules.html#parcels",
+    "title": "Submodules",
+    "section": "Parcels",
+    "text": "Parcels\nTBA"
+  },
+  {
+    "objectID": "submodules.html#reference-data",
+    "href": "submodules.html#reference-data",
+    "title": "Submodules",
+    "section": "Reference Data",
+    "text": "Reference Data\nProvides useful datasets for cleaning. Do not edit."
+  },
+  {
+    "objectID": "submodules.html#sld",
+    "href": "submodules.html#sld",
+    "title": "Submodules",
+    "section": "SLD",
+    "text": "SLD\nTBA"
+  },
+  {
+    "objectID": "submodules.html#tiger",
+    "href": "submodules.html#tiger",
+    "title": "Submodules",
+    "section": "TIGER",
+    "text": "TIGER\nTBA"
+  },
+  {
+    "objectID": "downloaders.html",
+    "href": "downloaders.html",
+    "title": "Downloaders",
+    "section": "",
+    "text": "The raw downlaod functions, provide the most flexability to download the data but do not contain a uniform API and each function is different\nEventually will add the documentation."
+  }
+]

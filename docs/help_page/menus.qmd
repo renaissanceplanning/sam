@@ -1,0 +1,75 @@
+---
+title: "Menus"
+---
+
+For most non-technical users the `menus` submodule is `sam`'s one stop shop for data fetching. It provides a simple one line command to fetch all relevant data for a given project and set up a data directory. Currently only TOD projects are supported but future work will lead to additional menus which will be added to `sam`
+
+## TOD Menu
+
+The current TOD menu will download:
+
+- Census Geography
+
+- American Community Survey (ACS) Data including:
+
+    - Age
+    - Housing Costs and Values
+    - Disability Status
+    - Educational Attainment
+    - Race and Ethnicity
+    - Household Income, Size, Vehicles, and Workers
+    - Ratio of Income to Poverty Level
+    - Rent Costs
+    - Housing Tenure 
+
+- LEHD Origin-Destination Employment Statistics (LODES):
+
+    - Origin-Destination (OD) 
+    - Residence Area Characteristics (RAC)
+    - Workplace Area Characteristics (WAC)
+
+- Florida Department of Revenue Parcels
+    
+    - Eventually a national set will need to be found.
+
+- Open Street Map Networks and Nodes
+
+    - Bike
+    - Pedestrian
+    - Drive
+
+- HUD Low Income Housing Tax Credit (LIHTC) Units
+
+### Code
+
+The TOD Menu (and all future menus) will use a unified API that makes calls easy. All menus need to be supplied a summary area geodataframe. This summary area can come from any relevant shapefile so long as it covers the full project extent, for example a set of station area polygons, corridor polygons, or even urban growth boundary will work so long as they include the whole project area.
+
+To use the menus the following code needs to be run in python:
+
+``` py
+import geopandas as gpd
+from rputils import make_path
+from sam.menus import pull_TOD_data
+
+sum_area_path = make_path("path to shapefile")
+data_dir = make_path("path to sharepoint data dir")
+
+sum_area = gpd.read_file(sum_area_path)
+prj_crs = sum_area.crs
+
+pull_tod_data(
+    summary_areas=sum_area,
+    data_dir=data_dir,
+    prj_crs=prj_crs,
+)
+```
+
+It is worth noting that the coordinate system from the project (`prj_crs`) does not need to be the same as the summary area data frame and can be supplied in any format reconginzed by `shapely` however it is best practice to use teh summary area's crs.
+
+There are 3 additional arguments in the `pull_tod_data` function that can be modified:
+
+ - lodes_data: Which LODES tables to fetch. Defaults to all avaliable LODES data sets.
+
+ - lodes_level: Which geography to summarize LODES to.  Defaults to Block Groups.
+
+ - years (dict, optional): Years for parcel, acs, and lodes data. Defaults to most recent year avaliable.
