@@ -20,6 +20,7 @@ import rpy2.robjects as ro
 from rpy2.robjects import pandas2ri
 from rpy2.robjects.conversion import Converter, localconverter
 from rpy2.robjects.packages import importr
+from sam.config import is_int
 
 # Import tigris, sf, and lwgeom -- these are the packages we need functions from
 Rlibs = ["base", "tigris", "sf", "lwgeom", "tidycensus"]
@@ -34,16 +35,6 @@ def _none2null(none_obj):
 
 none_converter = Converter("None converter")
 none_converter.py2rpy.register(type(None), _none2null)
-
-
-# checks if a object can be a int
-def is_int(element):
-    try:
-        int(element)
-        return True
-    except ValueError:
-        return False
-
 
 # Define the global R functions
 st_geometry = ro.r["st_geometry"]

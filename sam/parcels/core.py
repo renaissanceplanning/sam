@@ -4,17 +4,7 @@ import numpy as np
 from datetime import date
 from sam.config.ref_config import PAR_RECODE
 from sam.download.fl_parcels import fdor_gis_and_tax, fdor_availability, process_parcels
-
-
-# Helper Functions
-# checks if a object can be a int
-def is_int(element):
-    try:
-        int(element)
-        return True
-    except ValueError:
-        return False
-
+from sam.config import is_int
 
 def extract_urls(county, year):
     urls_df = fdor_gis_and_tax()
