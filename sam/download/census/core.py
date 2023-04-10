@@ -88,8 +88,8 @@ __TIGRIS__ = [
 __TIDYCENSUS__ = ["acs", "decennial", "estimates", "flows", "pums"]
 
 # dl_lodes/dl_xwalk
-__LODES_YEAR__ = 2019
-__LODES_VERSION__ = 7
+__LODES_YEAR__ = 2020
+__LODES_VERSION__ = 8
 __LODES_URL__ = "https://lehd.ces.census.gov/data/lodes/LODES"
 
 
@@ -595,3 +595,34 @@ def dl_xwalk(ST):
             raise ValueError(f"{ST} is an invalid 'ST' input'")
     else:
         raise TypeError(f"'ST' is {type(ST)}, not str")
+
+if __name__ == "__main__":
+    rac = dl_lodes(file='rac', 
+                   ST="nc", 
+                   TYPE='JT00', 
+                   YEAR=2020, 
+                   SEG='S000', 
+                   PART='main')
+    
+    print(rac)
+    
+    wac = dl_lodes(file='wac', 
+                   ST="nc", 
+                   TYPE='JT00', 
+                   YEAR=2020, 
+                   SEG='S000', 
+                   PART='main')
+    
+    print(wac)
+    
+    od = dl_lodes(file='od', 
+                   ST="nc", 
+                   TYPE='JT00', 
+                   YEAR=2020, 
+                   SEG='S000', 
+                   PART='main')
+    
+    print(od)
+    
+    xw = dl_xwalk(ST='nc')
+    print(xw)
