@@ -7,17 +7,20 @@ import geopandas as gpd
 import numpy as np
 
 from sam.config import CRED, replica_regions, is_int
-from sam.config.replica_config import age_breaks, age_groups
+from sam.config import replica_config as rpc
 
 state = ['34']
 county = ['039', '024']
 
 def find_mega_region(state):
     """_summary_
-    # TODO deal with state being a list
     Args:
         state (_type_): _description_
     """
+    if isinstance(state, list):
+        state = state[0] 
+        # TODO fix to find multiple states in the same region return error if multi region
+    
     region = "".join(
         {i for i in replica_regions if state in replica_regions[i]}
         )
@@ -89,19 +92,46 @@ class Replica:
         self._stateSQL = state
         self._countySQL = county
         
-    def age(self, age_bins = age_breaks, labels = age_groups):
+    def sex(self):
         df = pandas_gbq.read_gbq(
             f"""
-            select person_id, BLOCKGROUP as GEOID, age
-            from `north_atlantic.north_atlantic_2021_Q4_population`
+            select person_id, BLOCKGROUP as GEOID, sex
+            from `{self._region}.{self._region}_2021_Q4_population`
             where 
-                left(BLOCKGROUP, 2) in {state} AND
-                substr(BLOCKGROUP, 3, 3) in {county}
+                left(BLOCKGROUP, 2) in {self._stateSQL} AND
+                substr(BLOCKGROUP, 3, 3) in {self._countySQL}
             """,
             project_id='replica-customer',
             credentials=CRED)
 
-        df['age_group'] = pd.cut(df['age'], bins=age_breaks, labels=age_groups)
+        df = df.groupby(["GEOID", "sex"]).agg(
+            n = ("person_id", 'size')
+        ).reset_index().pivot(
+            index=['GEOID'],
+            columns='sex',
+            values='n'
+        ).rename_axis(
+            None, axis=1
+        ).reset_index(
+        ).rename(columns={"M":"male", "F":"female"})
+        
+        return df
+    
+    def age(self, age_bins = rpc.age_breaks, labels = rpc.age_groups):
+        df = pandas_gbq.read_gbq(
+            f"""
+            select person_id, BLOCKGROUP as GEOID, age
+            from `{self._region}.{self._region}_2021_Q4_population`
+            where 
+                left(BLOCKGROUP, 2) in {self._stateSQL} AND
+                substr(BLOCKGROUP, 3, 3) in {self._countySQL}
+            """,
+            project_id='replica-customer',
+            credentials=CRED)
+
+        df['age_group'] = pd.cut(df['age'], 
+                                 bins=rpc.age_breaks, 
+                                 labels=rpc.age_groups)
 
         df = df.groupby(["GEOID", "age_group"]).agg(
             n = ("person_id", 'size')
@@ -113,26 +143,66 @@ class Replica:
         
         return df
 
-    def hh_income(self, age_bins = age_breaks, labels = age_groups):
+    def hh_income(self, 
+                  age_bins = rpc.hh_inc_breaks, 
+                  labels = rpc.hh_inc_groups):
         df = pandas_gbq.read_gbq(
             f"""
-            select person_id, BLOCKGROUP as GEOID, age
-            from `north_atlantic.north_atlantic_2021_Q4_population`
+            select household_id, BLOCKGROUP as GEOID, household_income
+            from `{self._region}.{self._region}_2021_Q4_population`
             where 
-                left(BLOCKGROUP, 2) in {state} AND
-                substr(BLOCKGROUP, 3, 3) in {county}
+                left(BLOCKGROUP, 2) in {self._stateSQL} AND
+                substr(BLOCKGROUP, 3, 3) in {self._countySQL}
             """,
             project_id='replica-customer',
             credentials=CRED)
 
-        df['age_group'] = pd.cut(df['age'], bins=age_breaks, labels=age_groups)
+        df['hh_inc_group'] = pd.cut(df['household_income'], 
+                                    bins=rpc.hh_inc_breaks, 
+                                    labels=rpc.hh_inc_groups)
 
-        df = df.groupby(["GEOID", "age_group"]).agg(
-            n = ("person_id", 'size')
+        df = df.groupby(["GEOID", "hh_inc_group"]).agg(
+            n = ("household_id", 'size')
         ).reset_index().pivot(
             index=['GEOID'],
-            columns='age_group',
+            columns='hh_inc_group',
             values='n'
         ).rename_axis(None, axis=1).reset_index()
         
         return df
+    
+    def hh_vehicles(self, 
+                    age_bins = rpc.hh_inc_breaks, 
+                    labels = rpc.hh_inc_groups):
+        df = pandas_gbq.read_gbq(
+            f"""
+            select household_id, BLOCKGROUP as GEOID, vehicles
+            from `{self._region}.{self._region}_2021_Q4_population`
+            where 
+                left(BLOCKGROUP, 2) in {self._stateSQL} AND
+                substr(BLOCKGROUP, 3, 3) in {self._countySQL}
+            """,
+            project_id='replica-customer',
+            credentials=CRED)
+
+
+
+        df = df.groupby(["GEOID", "vehicles"]).agg(
+                n = ("household_id", 'size')
+        ).reset_index().pivot(
+            index=['GEOID'],
+            columns='vehicles',
+            values='n'
+        ).rename_axis(
+            None, axis=1
+        ).reset_index(
+        ).rename(columns={"zero":"veh_0", 
+                          "1":"veh_1", 
+                          "2":"veh_2", 
+                          "3_plus":"veh_3p", 
+                          "GQ":"group_quarter"}
+                 )
+        
+        return df
+    
+nj = Replica(state=state, county=county, year=2020)
