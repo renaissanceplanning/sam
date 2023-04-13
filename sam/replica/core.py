@@ -13,9 +13,19 @@ state = ['34']
 county = ['039', '024']
 
 def find_mega_region(state):
-    """_summary_
+    """
+    Return the mega region where the given state is located.
+
     Args:
-        state (_type_): _description_
+        state (str or list): The state name or list of state names to search for. 
+            If a list is provided, only the first element is used.
+
+    Returns:
+        str: The mega region code where the state is located, as a string.
+
+    Raises:
+        ValueError: If the given state or its mega region is not found in the list of known
+            mega regions.
     """
     if isinstance(state, list):
         state = state[0] 
@@ -234,11 +244,11 @@ class Replica:
         ).rename_axis(None, axis=1).reset_index()
         return df
     
-    def ratio_of_income_to_poverty_level():
-        """
-        Currently no data in replica
-        """
-        return print('Currently no data in replica')
+    # def ratio_of_income_to_poverty_level():
+    #     """
+    #     Currently no data in replica
+    #     """
+    #     return print('Currently no data in replica')
     
     def hh_vehicles(self):
         df = pandas_gbq.read_gbq(
