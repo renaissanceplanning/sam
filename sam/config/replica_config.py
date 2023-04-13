@@ -46,3 +46,6 @@ hh_inc_groups = [
     'inc_60_75', 'inc_75_100', 'inc_100_125', 'inc_125_150', 'inc_150_200',
     'inc_200p'			
 ]
+
+hh_workers_breaks = [-1, 0, 1, 2, 100]
+hh_workers_labels = ['wrk_0', 'wrk_1', 'wrk_2', 'wrk_3p']
