@@ -7,7 +7,6 @@ Created on Mon Feb 21 14:19:35 2022
 
 # TODO: rent and value
 # TODO: aggregates for rent value vehicles
-
 # TODO: change lb to lower_bound
 
 import numpy as np
@@ -88,6 +87,64 @@ _AGE_CONFIG_ = ACSConfig(
             "B01001_047": ["age_75_79", 75],
             "B01001_048": ["age_80_84", 80],
             "B01001_049": ["age_85p", 85],  # TODO figure out appropriate levels
+        },
+        orient="index",
+        columns=["full", "lb"],
+    ),
+    table="B01001",
+    univ="Total population",
+)
+
+_AGE_BY_SEX_CONFIG_ = ACSConfig(
+    pd.DataFrame.from_dict(
+        {
+            "B01001_003": ["male_age_0_4", 0],
+            "B01001_004": ["male_age_5_9", 5],
+            "B01001_005": ["male_age_10-14", 10],
+            "B01001_006": ["male_age_15_17", 15],
+            "B01001_007": ["male_age_18_19", 18],
+            "B01001_008": ["male_age_20", 20],
+            "B01001_009": ["male_age_21", 21],
+            "B01001_010": ["male_age_22_24", 22],
+            "B01001_011": ["male_age_25_29", 25],
+            "B01001_012": ["male_age_30_34", 30],
+            "B01001_013": ["male_age_35_39", 35],
+            "B01001_014": ["male_age_40_44", 40],
+            "B01001_015": ["male_age_45_49", 45],
+            "B01001_016": ["male_age_50_54", 50],
+            "B01001_017": ["male_age_55_59", 55],
+            "B01001_018": ["male_age_60_61", 60],
+            "B01001_019": ["male_age_62_64", 62],
+            "B01001_020": ["male_age_65_66", 65],
+            "B01001_021": ["male_age_67_69", 67],
+            "B01001_022": ["male_age_70_74", 70],
+            "B01001_023": ["male_age_75_79", 75],
+            "B01001_024": ["male_age_80_84", 80],
+            "B01001_025": ["male_age_85p", 85],  # TODO figure out appropriate levels
+            
+            "B01001_027": ["female_age_0_4", 0],
+            "B01001_028": ["female_age_5_9", 5],
+            "B01001_029": ["female_age_10-14", 10],
+            "B01001_030": ["female_age_15_17", 15],
+            "B01001_031": ["female_age_18_19", 18],
+            "B01001_032": ["female_age_20", 20],
+            "B01001_033": ["female_age_21", 21],
+            "B01001_034": ["female_age_22_24", 22],
+            "B01001_035": ["female_age_25_29", 25],
+            "B01001_036": ["female_age_30_34", 30],
+            "B01001_037": ["female_age_35_39", 35],
+            "B01001_038": ["female_age_40_44", 40],
+            "B01001_039": ["female_age_45_49", 45],
+            "B01001_040": ["female_age_50_54", 50],
+            "B01001_041": ["female_age_55_59", 55],
+            "B01001_042": ["female_age_60_61", 60],
+            "B01001_043": ["female_age_62_64", 62],
+            "B01001_044": ["female_age_65_66", 65],
+            "B01001_045": ["female_age_67_69", 67],
+            "B01001_046": ["female_age_70_74", 70],
+            "B01001_047": ["female_age_75_79", 75],
+            "B01001_048": ["female_age_80_84", 80],
+            "B01001_049": ["female_age_85p", 85],  # TODO figure out appropriate levels
         },
         orient="index",
         columns=["full", "lb"],
