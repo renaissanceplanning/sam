@@ -14,33 +14,15 @@ from sam.lihtc import pull_lihtc
 from sam.osm import OSMNetwork
 from sam.config import PAR_CONF
 from sam.config import COUNTIES as county_shapes
+from sam.config import extract_fips, validate_data_dir
 
 # TODO get postal from county geojson? I think this is done
 # TODO add pad and NLCD (NLCD needs default datasets to be incorporated)
 # TODO set up downloader to handle differing census geographies by 2030
 
+
 # helper functions and variables
 expected = np.array(["parcel_year", "acs_year", "lodes_year"])
-
-
-def extract_fips(gdf):
-    """Finds the county level fips and names for a give geometry
-
-    Args:
-        gdf (gpd.GeoDataFrame): A gdf containing summary area polygons
-
-    Returns:
-        tuple: A tuple containing strings for state and county fips, and county
-            names.
-    """
-    # TODO increase persicion to single county
-    gdf = gdf.to_crs(county_shapes.crs)
-    county = county_shapes[county_shapes.intersects(gdf.dissolve().geometry[0])]
-    counties = county["COUNTYFP"].unique().tolist()
-    states = county["STATEFP"].unique().tolist()
-    county_names = county["NAME"].unique().tolist()
-    return states, counties, county_names
-
 
 # fetcher
 def pull_TOD_data(
@@ -100,7 +82,7 @@ def pull_TOD_data(
 
     # download lodes
 
-    # print("Downloading LODES...")
+    print("Downloading LODES...")
 
     postal = us.states.lookup(state[0]).abbr
     xw = lodes.xwalk(state=postal)
