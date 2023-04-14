@@ -125,7 +125,7 @@ class Replica:
         if len(county) > 1: 
             county = tuple(county) 
         else: 
-            county = repr(state).replace("[", "(").replace("]", ")")
+            county = repr(county).replace("[", "(").replace("]", ")")
             
         self._stateSQL = state
         self._countySQL = county
@@ -629,5 +629,116 @@ class Replica:
     # def cost():
     #     pass #may not have the data
     
+    def trip_table(self, 
+                   origin=True,
+                   mid_week=True, 
+                   link_ids=False,
+                   time="am",
+                   purpose="all"):
+        """
+        Returns a Pandas DataFrame containing Replica trip data for the 
+        specified geographic region, filtered by various parameters.
+
+        Args:
+            origin (bool): If True, filters trips with the region of interest 
+                as the origin. If False, filters trips with the region of 
+                interest as the destination. Defaults to True.
+            mid_week (bool): If True, pulls from the midweek table. If False, 
+                pulls from the weekend table. Defaults to True.
+            link_ids (bool): If True, includes link IDs in the output DataFrame. 
+                If False, does not include link IDs. Defaults to False. Adding
+                link ids increases the processing load from 50 gb to 400gb
+            time (str): One of "am", "pm", "md", or "all". If "am", 
+                filters trips that occurred between 6am and 10am. 
+                If "pm", filters trips that occurred between 4pm and 6pm. If 
+                "md", filters trips that occurred between 11am and 1pm. If 
+                "all", does not filter based on time of day. Defaults to "am".
+            purpose (str or list): One or more of "COMMERCIAL", "EAT", "HOME", 
+                "LODGING", "MAINTENANCE", or "OTHER". If a string, filters trips 
+                with the specified purpose. If a list, filters trips with any of 
+                the specified purposes. If "all", does not filter based on 
+                purpose. Defaults to "all".
+
+        Returns:
+            pandas.DataFrame: A DataFrame containing the following columns:
+        """
+        day = "saturday"
+        end = "destination"
+        
+        if mid_week:
+            day = "thursday"
+        
+        if origin:
+            end = "origin"
+        
+        columns = """
+        activity_id, person_id, household_id, mode, travel_purpose, tour_type,
+        previous_activity_type, timezone, start_time, end_time, start_local_hour,
+        end_local_hour, duration_minutes, distance_miles, vehicle_type,
+        vehicle_fuel_type, vehicle_fuel_technology, origin_bgrp, origin_bgrp_lat,
+        origin_bgrp_lng, destination_bgrp, destination_bgrp_lat, 
+        destination_bgrp_lng, origin_land_use_l1, origin_land_use_l2,
+        origin_building_use_l1, origin_building_use_l2, destination_land_use_l1, 
+        destination_land_use_l2, destination_building_use_l1, 
+        destination_building_use_l2
+        """
+        
+        if link_ids:
+            columns = """
+            activity_id, person_id, household_id, mode, travel_purpose, tour_type,
+            previous_activity_type, timezone, start_time, end_time, start_local_hour,
+            end_local_hour, duration_minutes, distance_miles, vehicle_type,
+            vehicle_fuel_type, vehicle_fuel_technology, origin_bgrp, origin_bgrp_lat,
+            origin_bgrp_lng, destination_bgrp, destination_bgrp_lat, 
+            destination_bgrp_lng, origin_land_use_l1, origin_land_use_l2,
+            origin_building_use_l1, origin_building_use_l2, destination_land_use_l1, 
+            destination_land_use_l2, destination_building_use_l1, 
+            destination_building_use_l2
+            """
+        
+        if time == "am":
+            time_filter = "start_local_hour >= 6 and start_local_hour <= 10"
+        elif time == "pm":
+            time_filter = "start_local_hour >= 16 and start_local_hour <= 18"
+        elif time == "md":
+            time_filter = "start_local_hour >= 11 and start_local_hour <= 13"
+        elif time == "all":
+            time_filter = "start_local_hour >= 0 and start_local_hour <= 23"
+        else:
+            raise ValueError("time must be one of am, pm, md, or all")
+        
+        valid_purposes = ['COMMERCIAL', 'EAT', 'HOME', 
+                          'LODGING', 'MAINTENANCE', 'OTHER']
+        
+        if isinstance(purpose, list):
+            for value in purpose:
+                if value not in valid_purposes:
+                    raise ValueError(f"values not in {valid_purposes}")
+            purpose_sql =  repr(purpose).replace("[", "(").replace("]", ")")
+            purpose_filter = f"travel_purpose in {purpose_sql}"
+        elif purpose == "all":
+            purpose_filter = "travel_purpose in ('COMMERCIAL', 'EAT', 'HOME', 'LODGING', 'MAINTENANCE', 'OTHER')"
+        elif purpose in valid_purposes:
+            purpose_filter = f"travel_purpose == '{purpose}'"
+        else:
+            raise ValueError(f"values not in {valid_purposes}")
+        
+        df = pandas_gbq.read_gbq(
+            f"""
+            select 
+                {columns}
+            from `{self._region}.{self._region}_2021_Q4_{day}_trip`
+            where 
+                left({end}_bgrp, 2) in {self._stateSQL} AND
+                substr({end}_bgrp, 3, 3) in {self._countySQL} AND
+                {time_filter} AND
+                {purpose_filter}
+            """,
+            project_id='replica-customer',
+            credentials=CRED)
+        
+        return df
+        
+    
 nj = Replica(state=state, county=county, year=2020)
-nj.mode_share()
+nj.trip_table(origin=False, purpose=["EAT", "COMMERCIAL"])
