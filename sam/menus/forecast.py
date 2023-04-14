@@ -73,6 +73,9 @@ def pull_forecast_data(
     for year in tqdm(list(range(acs_year, acs_year - back_years, -1))):
         age = ACS.age_by_sex(state=state, year=year, county=counties)
         age.to_csv(make_path(acs_dir, f"age_by_sex_{year}.csv"))
+        
+        total = ACS.totals(state=state, year=year, county=counties)
+        total.to_csv(make_path(acs_dir, f"totals_{year}.csv"))
     
     # download lodes
 
