@@ -12,6 +12,9 @@ from sam.config import replica_config as rpc
 state = ['34']
 county = ['039', '024']
 
+# TODO add rputils iterable
+# TODO add properties, getter and setter
+
 def find_mega_region(state):
     """
     Return the mega region where the given state is located.
@@ -35,7 +38,6 @@ def find_mega_region(state):
         {i for i in replica_regions if state in replica_regions[i]}
         )
     return region
-
 
 class Replica:
     """
@@ -633,7 +635,7 @@ class Replica:
                    origin=True,
                    mid_week=True, 
                    link_ids=False,
-                   time="am",
+                   time="am", #TODO add start and end hours
                    purpose="all"):
         """
         Returns a Pandas DataFrame containing Replica trip data for the 
@@ -741,4 +743,4 @@ class Replica:
         
     
 nj = Replica(state=state, county=county, year=2020)
-nj.trip_table(origin=False, purpose=["EAT", "COMMERCIAL"])
+nj.age()
