@@ -130,3 +130,5 @@ def pull_forecast_data(
     blocks = blocks.to_crs(prj_crs)
     blocks.to_file(os.path.join(shp_dir, "blocks.shp"))
     del blocks
+    
+    print("Done! Now go Download BAO")
