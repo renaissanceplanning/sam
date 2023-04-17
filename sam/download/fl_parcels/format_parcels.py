@@ -132,6 +132,13 @@ def dl_parcel_gis(gis_url, crs):
 
     if len(np.unique(gdf.PARCELNO)) < len(gdf.index):
         gdf = gdf.dissolve(by="PARCELNO").reset_index()
+    
+    # TODO add in the explode geometry method
+        
+    # remove non-polygons
+    # --------------
+    print("----> removing non-polygon geometries")
+    gdf = gdf.loc[gdf.geom_type.isin(['Polygon', 'MultiPolygon'])].copy()
 
     # reprojecting
     # ------------
