@@ -27,6 +27,7 @@ def pull_forecast_data(
     lodes_level="bgrp",
     main_year=None,
     back_years=3,
+    pull_parcels=True
     ):
     if main_year == None:
         main_year = datetime.date.today().year - 1
@@ -56,18 +57,19 @@ def pull_forecast_data(
     # pull parcels (only will work in florida for now)
     # also can only pull main year, other years must be requested
 
-    print("Downloading parcels...")
+    if pull_parcels:
+        print("Downloading parcels...")
 
-    parcels = pd.concat(
-        [
-            download_fl_parcels(
-                county=county, crs=prj_crs, year=main_year, config=PAR_CONF
-            )
-            for county in county_names
-        ]
-    )
-    parcels.to_file(os.path.join(par_dir, f'parcels_{main_year}.shp'))
-    del parcels
+        parcels = pd.concat(
+            [
+                download_fl_parcels(
+                    county=county, crs=prj_crs, year=main_year, config=PAR_CONF
+                )
+                for county in county_names
+            ]
+        )
+        parcels.to_file(os.path.join(par_dir, f'parcels_{main_year}.shp'))
+        del parcels
     
     print("Downloading ACS...")
     for year in tqdm(list(range(acs_year, acs_year - back_years, -1))):
@@ -110,7 +112,7 @@ def pull_forecast_data(
             )
             del od
 
-        del xw
+    del xw
     
     # pull shapes
 
