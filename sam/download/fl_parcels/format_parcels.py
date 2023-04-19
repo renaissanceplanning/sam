@@ -117,7 +117,12 @@ def dl_parcel_gis(gis_url, crs):
 
     gdf = gpd.read_file(gis_url)
     gdf = gdf.astype({"PARCELNO": str})
-
+    
+    # remove non-polygons
+    # --------------
+    print("----> removing non-polygon geometries")
+    gdf = gdf.loc[gdf.geom_type.isin(['Polygon', 'MultiPolygon'])].copy()
+    
     # Repair Geometries
     gdf["geometry"] = gdf.apply(
         lambda row: make_valid(row.geometry)
@@ -133,13 +138,15 @@ def dl_parcel_gis(gis_url, crs):
     if len(np.unique(gdf.PARCELNO)) < len(gdf.index):
         gdf = gdf.dissolve(by="PARCELNO").reset_index()
     
-    # TODO add in the explode geometry method
-        
-    # remove non-polygons
-    # --------------
-    print("----> removing non-polygon geometries")
-    gdf = gdf.loc[gdf.geom_type.isin(['Polygon', 'MultiPolygon'])].copy()
 
+    # remove geometry collections
+    # ------------
+    print("----> removing geometry collections")
+    if 'GeometryCollection' in gdf.geom_type.unique():
+        exploded = gdf.explode().reset_index()[list(gdf.columns)]
+        exploded = exploded.loc[exploded.geom_type != 'LineString'].copy()
+        gdf = exploded.dissolve(by='PARCELNO')
+        
     # reprojecting
     # ------------
     print("----> reprojecting")
