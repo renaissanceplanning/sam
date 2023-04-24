@@ -32,6 +32,7 @@ def pull_TOD_data(
     lodes_data=["rac", "wac", "od"],
     lodes_level="bgrp",
     years=None,
+    parcels=True
 ):
     """Download relevant data for a TOD study.
 
@@ -47,6 +48,7 @@ def pull_TOD_data(
             Defaults to current year - 3 for lodes, current year - 2 for ACS,
             and current year -1 for parcels. This should work most of the year,
             but the Florida Parcels can be difficult.
+        parcels (bool, optionsl): Download DOR Parcels.
 
     Raises:
         ValueError: Missing years values in the years dict.
@@ -152,19 +154,23 @@ def pull_TOD_data(
     del blocks
 
     # pull parcels (only will work in florida for now)
+    if parcels:
 
-    print("Downloading parcels...")
+        print("Downloading parcels...")
 
-    parcels = pd.concat(
-        [
-            download_fl_parcels(
-                county=county, crs=prj_crs, year=years["parcel_year"], config=PAR_CONF
+        parcels = pd.concat(
+            [
+                download_fl_parcels(
+                    county=county, crs=prj_crs, 
+                    year=years["parcel_year"], config=PAR_CONF
+                )
+                for county in county_names
+            ]
+        )
+        parcels.to_file(
+            os.path.join(par_dir, f'parcels_{years["parcel_year"]}.shp')
             )
-            for county in county_names
-        ]
-    )
-    parcels.to_file(os.path.join(par_dir, f'parcels_{years["parcel_year"]}.shp'))
-    del parcels
+        del parcels
 
     # pull networks
 
