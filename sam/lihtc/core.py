@@ -6,22 +6,7 @@ import pandas as pd
 from io import BytesIO
 from urllib import request
 from zipfile import ZipFile
-
-
-def is_int(element):
-    """Checks if value is int or could be converted to int
-
-    Args:
-        element (any): value to test cohersion on
-
-    Returns:
-        bool: True if is or is coercible to int
-    """
-    try:
-        int(element)
-        return True
-    except ValueError:
-        return False
+from sam.config import is_int
 
 def pull_lihtc(state, county, spatial=True, crs='EPSG:4326'):
     """Pull LIHTC from HUD

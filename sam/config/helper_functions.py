@@ -2,6 +2,13 @@ import os
 import geopandas as gpd
 from sam.config import COUNTIES as county_shapes
 
+def is_int(element):
+    try:
+        int(element)
+        return True
+    except ValueError:
+        return False
+
 def extract_fips(gdf):
     """Finds the county level fips and names for a give geometry
 
