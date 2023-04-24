@@ -337,6 +337,43 @@ class ACS:
             name=name,
         )
         return tbl
+    
+    def age_by_sex(
+        state, year, county=None, geography="block group", breaks=None, name="full"
+    ):
+        """
+        Download ACS age data (universe: total population).
+
+        Parameters
+        ----------
+        see `sam.acs._numeric_processing`
+
+        Notes
+        -----
+        Options include:
+            1. `name = "full"`: <=4, 5-9, 10-14, 15-17, 18-19, 20, 21, 22-24,
+            25-29, 30-34, 35-39, 40-44, 45-49, 50-54, 55-59, 60-61, 62-64,
+            65-66, 67-69, 70-74, 75-79, 80-84, >=85
+            2. `breaks = [...]`: valid break points include 5, 10, 15, 18, 20,
+            21, 22, 25, 30, 35, 40, 45, 50, 55, 60, 62, 65, 67, 70, 75, 80,
+            and 85
+
+        Returns
+        -------
+        ACS (subclass of pd.DataFrame)
+
+        """
+        cfg = acs_cfg._AGE_BY_SEX_CONFIG_
+        tbl = _numeric_processing(
+            geography=geography,
+            config=cfg,
+            state=state,
+            year=year,
+            county=county,
+            breaks=breaks,
+            name=name,
+        )
+        return tbl
 
     def hh_income(
         state, year, county=None, geography="block group", breaks=None, name="full"
