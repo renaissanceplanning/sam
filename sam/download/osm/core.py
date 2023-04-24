@@ -193,7 +193,7 @@ def dl_osm_network(
     else:
         nf = nets[0]
     if trim_components == True:
-        nf = gary.nx.trim_components(graph=nf, **kwargs)
+        nf = gary.trim_components(graph=nf, **kwargs)
     else:
         pass
     return nf

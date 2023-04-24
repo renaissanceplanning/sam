@@ -5,3 +5,5 @@ from .replica_config import replica_regions
 from .parcel_config import fl_par_config as PAR_CONF
 from .replica_config import credentials as CRED
 from .helper_functions import is_int
+from .helper_functions import validate_data_dir
+
