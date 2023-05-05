@@ -1,5 +1,6 @@
 import pandas_gbq 
 import pydata_google_auth 
+import datetime
 
 # if __name__ == "__main__":
 SCOPES = [ 
@@ -21,6 +22,14 @@ replica_regions = {
     'northeast': ["25", "23", "33", "44", "50"],
     'southwest':["04", "08", "35", "40", "48", "49"],
 }
+
+replica_coverage_years = list(
+    range(2019, datetime.date.today().year)
+    ) #TODO when 2023 q2 comes out this will need a fix
+replica_coverage_years.remove(2020)
+
+replica_pop_years = ["2019_Q4", "2021_Q2", "2021_Q4", "2022_Q2", "2022_Q4"]
+replica_parcel_years = ["2021_Q4", "2022_Q4"]
 
 age_breaks = [
    -1, 4, 9, 14, 17, 19, 20, 21, 24, 29, 34, 39, 44, 49, 55, 59, 61,

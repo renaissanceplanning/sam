@@ -8,6 +8,7 @@ import numpy as np
 
 from sam.config import CRED, replica_regions, is_int
 from sam.config import replica_config as rpc
+from shapely import wkt
 
 state = ['34']
 county = ['039', '024']
@@ -101,7 +102,7 @@ class Replica:
                     if is_int(ct):
                         ct = ct.zfill(3) 
                     else:
-                        raise ValueError("County must be in a fips code")  
+                        raise ValueError("County must be a fips code")  
                 
         else:   
             if isinstance(county, int):
@@ -111,7 +112,7 @@ class Replica:
                 if is_int(county):
                     county = [county.zfill(3) ]
                 else:
-                    raise ValueError("County must be in a fips code")
+                    raise ValueError("County must be a fips code")
         
         
         self._state = state
@@ -119,6 +120,7 @@ class Replica:
         self._region = find_mega_region(state)
         self._year = year
         
+        # format state and counties for SQL
         if len(state) > 1:
             state = tuple(state) 
         else: 
@@ -131,6 +133,27 @@ class Replica:
             
         self._stateSQL = state
         self._countySQL = county
+        
+        # Format year for SQL
+        if isinstance(year, int):
+            if year in rpc.replica_coverage_years:
+                self._yearSQL = f'{year}_Q4'
+            else:
+                raise ValueError(
+                    f'year must be after 2019, excluding 2020',
+                    f'current year is {year}'
+                )
+        elif isinstance(year, str):
+            if year in rpc.replica_pop_years:
+                self._yearSQL = year
+            else:
+                raise ValueError(
+                    f'year must be one of {rpc.replica_pop_years}'
+                )
+        else:
+            raise ValueError(
+                f'year must be a str or int, currnetly {type(year)}'
+                )
         
     def sex(self):
         """
@@ -740,7 +763,39 @@ class Replica:
             credentials=CRED)
         
         return df
-        
     
-nj = Replica(state=state, county=county, year=2020)
-nj.age()
+    def employment():
+        """_summary_ #TODO fill out to RAC standard
+        """
+        pass
+    
+    def parcels(self):
+        if self._yearSQL not in rpc.replica_parcel_years:
+            raise ValueError(
+                f'Parcels only available for {rpc.replica_parcel_years}',
+                f'not {self._yearSQL}'
+            )
+            
+        # f"""
+        # select *
+        # from `nationwide_landuse.landuse_parcels_{self._yearSQL}`
+        # where 
+        #     left(BLOCKGROUP, 2) in {self._stateSQL} AND
+        #     substr(BLOCKGROUP, 3, 3) in {self._countySQL}
+        # """
+        df = pandas_gbq.read_gbq(
+            f"""
+            select *
+            from `nationwide_landuse.landuse_parcels_{self._yearSQL}`
+            where 
+                left(BLOCKGROUP, 2) in {self._stateSQL} AND
+                substr(BLOCKGROUP, 3, 3) in {self._countySQL}
+            """,
+            project_id='replica-customer',
+            credentials=CRED)
+        df['geometry'] = df.geometry.apply(wkt.loads)
+        gdf = gpd.GeoDataFrame(df, geometry='geometry')
+        return gdf
+        
+nj = Replica(state=state, county=county, year=2022)
+test = nj.parcels()
