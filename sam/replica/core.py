@@ -10,9 +10,8 @@ from sam.config import CRED, replica_regions, is_int
 from sam.config import replica_config as rpc
 from shapely import wkt
 
-state = ['34']
-county = ['039', '024']
-
+# state = ['34']
+# county = ['039', '024']
 # TODO add rputils iterable
 # TODO add properties, getter and setter
 
@@ -769,20 +768,13 @@ class Replica:
         """
         pass
     
-    def parcels(self):
+    def parcels(self, crs='WGS84'):
         if self._yearSQL not in rpc.replica_parcel_years:
             raise ValueError(
                 f'Parcels only available for {rpc.replica_parcel_years}',
                 f'not {self._yearSQL}'
             )
             
-        # f"""
-        # select *
-        # from `nationwide_landuse.landuse_parcels_{self._yearSQL}`
-        # where 
-        #     left(BLOCKGROUP, 2) in {self._stateSQL} AND
-        #     substr(BLOCKGROUP, 3, 3) in {self._countySQL}
-        # """
         df = pandas_gbq.read_gbq(
             f"""
             select *
@@ -795,7 +787,8 @@ class Replica:
             credentials=CRED)
         df['geometry'] = df.geometry.apply(wkt.loads)
         gdf = gpd.GeoDataFrame(df, geometry='geometry')
+        gdf = gdf.to_crs(crs=crs)
         return gdf
         
-nj = Replica(state=state, county=county, year=2022)
-test = nj.parcels()
+# nj = Replica(state=state, county=county, year=2022)
+# test = nj.parcels()
