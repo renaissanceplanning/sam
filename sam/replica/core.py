@@ -785,7 +785,7 @@ class Replica:
             """,
             project_id='replica-customer',
             credentials=CRED)
-        df['geometry'] = df.geometry.apply(wkt.loads)
+        df['geometry'] = df.geometry.apply(wkt.loads) #TODO look at pure geopandas
         gdf = gpd.GeoDataFrame(df, geometry='geometry')
         gdf = gdf.to_crs(crs=crs)
         return gdf
