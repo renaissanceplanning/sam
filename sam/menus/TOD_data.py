@@ -109,7 +109,7 @@ def pull_TOD_data(
         od = lodes.od(state=postal, year=years["lodes_year"])
         # od = od.lodes.aggregate(XWalk=xw, to=lodes_level) TODO fix the aggregate method
         od.to_csv(
-            os.path.join(lodes_dir, f"rac_{years['lodes_year']}.csv"), index=False
+            os.path.join(lodes_dir, f"od_{years['lodes_year']}.csv"), index=False
         )
         del od
 
