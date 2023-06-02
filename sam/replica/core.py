@@ -8,6 +8,7 @@ import numpy as np
 
 from sam.config import CRED, replica_regions, is_int
 from sam.config import replica_config as rpc
+from sam.config.parcel_config import rep_parcel_shorten
 from shapely import wkt
 
 # state = ['34']
@@ -786,8 +787,10 @@ class Replica:
             project_id='replica-customer',
             credentials=CRED)
         df['geometry'] = df.geometry.apply(wkt.loads) #TODO look at pure geopandas
-        gdf = gpd.GeoDataFrame(df, geometry='geometry')
-        gdf = gdf.to_crs(crs=crs)
+        gdf = gpd.GeoDataFrame(df, geometry='geometry', crs="WGS84")
+        if crs != "WGS84":
+            gdf = gdf.to_crs(crs=crs)
+        gdf = gdf.rename(columns=rep_parcel_shorten)
         return gdf
         
 # nj = Replica(state=state, county=county, year=2022)

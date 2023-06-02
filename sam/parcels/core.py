@@ -2,8 +2,12 @@ import pandas as pd
 import geopandas as gpd
 import numpy as np
 from datetime import date
-from sam.config.ref_config import PAR_RECODE
-from sam.download.fl_parcels import fdor_gis_and_tax, fdor_availability, process_parcels
+from sam.config.ref_config import PAR_RECODE, FL_TO_REPLICA
+from sam.config.parcel_config import (fl_par_config, fl_par_config_csv,
+                                      fl_parcel_rename, fl_parcel_csv_rename,
+                                      rep_cols, rep_parcel_shorten)
+from sam.download.fl_parcels import (fdor_gis_and_tax, fdor_availability, 
+                                     process_parcels, process_parcels_csv)
 from sam.config import is_int
 
 def extract_urls(county, year):
@@ -56,7 +60,8 @@ def extract_urls(county, year):
 
 # Functions
 # TODO ensure it can accept fips
-def download_fl_parcels(county, crs, year=None, config=None):
+def download_fl_parcels(county, crs, year=None, 
+                        config=fl_par_config, replica=True):
     """Will download DOR parcels from Florida
 
     Args:
@@ -100,17 +105,32 @@ def download_fl_parcels(county, crs, year=None, config=None):
     # parcels['result'] = parcels['result'].merge(PAR_RECODE)
 
     parcels["result"]["DOR_UC"] = parcels["result"]["DOR_UC"].astype(np.int64)
+    
+    if replica:
+        parcels = parcels["result"].merge(FL_TO_REPLICA).copy()
+        parcels = parcels.rename(columns=fl_parcel_rename)
+        parcels['lat'] = parcels.centroid.y
+        parcels['lng'] = parcels.centroid.x
+        parcels['BLOCKGROUP'] = parcels['BLOCKGROUP'].str.zfill(12) 
+        parcels['TRACT'] = parcels['BLOCKGROUP'].str.slice(0, 10)
+        parcels = parcels[rep_cols]
+        parcels = parcels.rename(columns=rep_parcel_shorten)
+    
+    else:
+        parcels = parcels["result"].merge(PAR_RECODE).copy()
+    
+    return parcels
+
+def download_old_fl_parcels(gis_url, nal_url, crs, config=fl_par_config_csv):
+    parcels = process_parcels_csv(
+            gis_url=gis_url, nal_url=nal_url, transform_crs=crs, field_specs=config
+        )
+    print(f"gis_total {parcels['gis_total']}")
+    print(f"nal_total {parcels['nal_total']}")
+    print(f"result_total {parcels['result_total']}")
+    # add a join for recoded DOR UC
+    # parcels['result'] = parcels['result'].merge(PAR_RECODE)
+
+    parcels["result"]["DOR_UC"] = parcels["result"]["DOR_UC"].astype(np.int64)
 
     return parcels["result"].merge(PAR_RECODE)
-
-
-# Test
-# county='Madison'
-# year=2021
-# from sam.config.parcel_config import fl_par_config
-
-# download_fl_parcels(county=county,
-#                     crs="esri:102658",
-#                     year=year,
-#                     config=fl_par_config
-#                     )
