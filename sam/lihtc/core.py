@@ -67,7 +67,8 @@ def pull_lihtc(state, county, spatial=True, crs='EPSG:4326'):
     
     lihtc = lihtc.loc[
         ~lihtc.st2010.isnull() & ~lihtc.cnty2010.isnull() &
-        ~lihtc.st2010.isna() & ~lihtc.cnty2010.isna()
+        ~lihtc.st2010.isna() & ~lihtc.cnty2010.isna() & 
+        ~(lihtc.cnty2010 == ".")
     ].copy()
     
     lihtc.st2010 = lihtc.st2010.astype(str).str.zfill(2)

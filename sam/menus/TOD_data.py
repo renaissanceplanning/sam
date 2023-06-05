@@ -15,11 +15,13 @@ from sam.osm import OSMNetwork
 from sam.config import PAR_CONF
 from sam.config import COUNTIES as county_shapes
 from sam.config import extract_fips, validate_data_dir
+from sam.replica import Replica
 
 # TODO get postal from county geojson? I think this is done
 # TODO add pad and NLCD (NLCD needs default datasets to be incorporated)
 # TODO set up downloader to handle differing census geographies by 2030
-
+# TODO add alternatives for Replica data for non-parcel data and add trip downloaders
+# TODO replica year automation 
 
 # helper functions and variables
 expected = np.array(["parcel_year", "acs_year", "lodes_year"])
@@ -32,7 +34,7 @@ def pull_TOD_data(
     lodes_data=["rac", "wac", "od"],
     lodes_level="bgrp",
     years=None,
-    parcels=True
+    parcel_source="replica"
 ):
     """Download relevant data for a TOD study.
 
@@ -58,7 +60,7 @@ def pull_TOD_data(
         years = {
             "parcel_year": datetime.date.today().year - 1,
             "acs_year": datetime.date.today().year - 2,
-            "lodes_year": datetime.date.today().year - 3,
+            "lodes_year": datetime.date.today().year - 3
         }
     else:
         in_keys = np.array([key in years.keys() for key in expected])
@@ -152,21 +154,25 @@ def pull_TOD_data(
     blocks = blocks.to_crs(prj_crs)
     blocks.to_file(os.path.join(shp_dir, "blocks.shp"))
     del blocks
-
-    # pull parcels (only will work in florida for now)
-    if parcels:
-
+    
+    if parcel_source != None:
         print("Downloading parcels...")
-
-        parcels = pd.concat(
-            [
-                download_fl_parcels(
-                    county=county, crs=prj_crs, 
-                    year=years["parcel_year"], config=PAR_CONF
-                )
-                for county in county_names
-            ]
-        )
+        if parcel_source == "DOR":
+            parcels = pd.concat(
+                [
+                    download_fl_parcels(
+                        county=county, crs=prj_crs, 
+                        year=years["parcel_year"], config=PAR_CONF
+                    )
+                    for county in county_names
+                ]
+            )
+        else:
+            rep_fetch = Replica(state = state, 
+                                county=counties, 
+                                year=years['parcel_year'])
+            parcels = rep_fetch.parcels(crs=prj_crs)
+                
         parcels.to_file(
             os.path.join(par_dir, f'parcels_{years["parcel_year"]}.shp')
             )
