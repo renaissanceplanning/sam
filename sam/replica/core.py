@@ -733,7 +733,10 @@ class Replica:
             raise ValueError("time must be one of am, pm, md, or all")
         
         valid_purposes = ['COMMERCIAL', 'EAT', 'HOME', 
-                          'LODGING', 'MAINTENANCE', 'OTHER']
+                          'LODGING', 'MAINTENANCE', 'OTHER', 
+                          'RECREATION', 'REGION_DEPARTURE', 
+                          'SCHOOL', 'SHOP', 'SOCIAL', 'STAGE',
+                          'WORK', 'WORK FROM HOME']
         
         if isinstance(purpose, list):
             for value in purpose:
@@ -742,7 +745,8 @@ class Replica:
             purpose_sql =  repr(purpose).replace("[", "(").replace("]", ")")
             purpose_filter = f"travel_purpose in {purpose_sql}"
         elif purpose == "all":
-            purpose_filter = "travel_purpose in ('COMMERCIAL', 'EAT', 'HOME', 'LODGING', 'MAINTENANCE', 'OTHER')"
+            purpose_filter = (f"travel_purpose in {valid_purposes}"
+                              .replace("[", "(").replace("]", ")"))
         elif purpose in valid_purposes:
             purpose_filter = f"travel_purpose == '{purpose}'"
         else:
