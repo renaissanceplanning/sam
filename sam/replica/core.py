@@ -768,7 +768,7 @@ class Replica:
         
         return df
     
-    def employment():
+    def employment(self):
         """_summary_ #TODO fill out to RAC standard
         """
         pass
