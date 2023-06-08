@@ -3,6 +3,8 @@ channels:
   - conda-forge
 dependencies:
   - r
+  - conda-forge::pandas-gbq
+  - conda-forge::pydata-google-auth
   - osmnx
   - rpy2=3.4.5
   - bs4
