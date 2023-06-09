@@ -37,6 +37,7 @@ def validate_data_dir(data_dir):
     par_dir = os.path.join(raw_dir, "parcels")
     lih_dir = os.path.join(raw_dir, "lihtc")
 
-    for dire in [raw_dir, lodes_dir, acs_dir, shp_dir, net_dir, par_dir, lih_dir]:
+    for dire in [raw_dir, lodes_dir, acs_dir, 
+                 shp_dir, net_dir, par_dir, lih_dir]:
         if os.path.exists(dire) != True:
             os.mkdir(dire)
