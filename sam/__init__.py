@@ -17,4 +17,5 @@ from . import menus
 from . import osm
 from . import parcels
 from . import tiger
+from . import replica
 
