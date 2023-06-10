@@ -1,13 +1,13 @@
-import geopandas as gpd
-import pandas as pd
-import pandas_gbq
 import us
-from shapely import wkt
+import pandas_gbq 
 
-# from sam.config import CRED, replica_regions, is_int
+import pandas as pd
+import geopandas as gpd
+
 from sam.config import replica_regions, is_int, replica_config as rpc
 from sam.config.parcel_config import rep_parcel_shorten
-
+from shapely import wkt
+from sam.config import COUNTIES
 
 # state = ['34']
 # county = ['039', '024']
@@ -764,6 +764,11 @@ class Replica:
             project_id='replica-customer',
             credentials=CRED)
         
+        df['trip_start'] = "inside"
+
+        if origin != True:
+            df['trip_start'] = "outside"
+
         return df
     
     def employment(self):
@@ -794,6 +799,31 @@ class Replica:
             gdf = gdf.to_crs(crs=crs)
         gdf = gdf.rename(columns=rep_parcel_shorten)
         return gdf
-        
+
+    def network(self, crs='WGS84'):
+        df = pandas_gbq.read_gbq(
+            f"""
+            select *
+            from `{self._region}.{self._region}_2019_Q4_network_segments`
+            """,
+            project_id='replica-customer',
+            credentials=CRED)
+
+        df['geometry'] = df.geometry.apply(wkt.loads) #TODO look at pure geopandas
+        gdf = gpd.GeoDataFrame(df, geometry='geometry', crs="WGS84")
+
+        cnty = COUNTIES.loc[
+            COUNTIES.STATEFP.isin(self._state) &
+            COUNTIES.COUNTYFP.isin(self._county)
+        ].to_crs(crs="WGS84")
+
+        network = gdf.sjoin(cnty[['GEOID', 'geometry']])
+        if crs != "WGS84":
+            network = network.to_crs(crs=crs)
+
+        return network
+
+
+
 # nj = Replica(state=state, county=county, year=2022)
 # test = nj.parcels()

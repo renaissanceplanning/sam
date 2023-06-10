@@ -121,7 +121,8 @@ def download_fl_parcels(county, crs, year=None,
     
     return parcels
 
-def download_old_fl_parcels(gis_url, nal_url, crs, config=fl_par_config_csv):
+def download_old_fl_parcels(gis_url, nal_url, crs, 
+                            config=fl_par_config_csv, replica=True):
     parcels = process_parcels_csv(
             gis_url=gis_url, nal_url=nal_url, transform_crs=crs, field_specs=config
         )
@@ -133,4 +134,17 @@ def download_old_fl_parcels(gis_url, nal_url, crs, config=fl_par_config_csv):
 
     parcels["result"]["DOR_UC"] = parcels["result"]["DOR_UC"].astype(np.int64)
 
-    return parcels["result"].merge(PAR_RECODE)
+    if replica:
+        parcels = parcels["result"].merge(FL_TO_REPLICA).copy()
+        parcels = parcels.rename(columns=fl_parcel_rename)
+        parcels['lat'] = parcels.centroid.y
+        parcels['lng'] = parcels.centroid.x
+        parcels['BLOCKGROUP'] = parcels['BLOCKGROUP'].str.zfill(12) 
+        parcels['TRACT'] = parcels['BLOCKGROUP'].str.slice(0, 10)
+        parcels = parcels[rep_cols]
+        parcels = parcels.rename(columns=rep_parcel_shorten)
+    
+    else:
+        parcels = parcels["result"].merge(PAR_RECODE).copy()
+    
+    return parcels
