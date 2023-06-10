@@ -173,7 +173,7 @@ def dl_census(survey, **kwargs):
         Table of survey data according to any specifications in the `kwargs`.
 
     """
-    if ("county" in kwargs) & (kwargs['county'] is not None):
+    if ("county" in kwargs) & (kwargs["county"] is not None):
         if isinstance(kwargs["county"], list):
             kwargs["county"] = [
                 county[-3:] if is_int(county) & (len(county) > 3) else county
@@ -596,33 +596,19 @@ def dl_xwalk(ST):
     else:
         raise TypeError(f"'ST' is {type(ST)}, not str")
 
+
 if __name__ == "__main__":
-    rac = dl_lodes(file='rac', 
-                   ST="nc", 
-                   TYPE='JT00', 
-                   YEAR=2020, 
-                   SEG='S000', 
-                   PART='main')
-    
+    rac = dl_lodes(file="rac", ST="nc", TYPE="JT00", YEAR=2020, SEG="S000", PART="main")
+
     print(rac)
-    
-    wac = dl_lodes(file='wac', 
-                   ST="nc", 
-                   TYPE='JT00', 
-                   YEAR=2020, 
-                   SEG='S000', 
-                   PART='main')
-    
+
+    wac = dl_lodes(file="wac", ST="nc", TYPE="JT00", YEAR=2020, SEG="S000", PART="main")
+
     print(wac)
-    
-    od = dl_lodes(file='od', 
-                   ST="nc", 
-                   TYPE='JT00', 
-                   YEAR=2020, 
-                   SEG='S000', 
-                   PART='main')
-    
+
+    od = dl_lodes(file="od", ST="nc", TYPE="JT00", YEAR=2020, SEG="S000", PART="main")
+
     print(od)
-    
-    xw = dl_xwalk(ST='nc')
+
+    xw = dl_xwalk(ST="nc")
     print(xw)
