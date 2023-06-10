@@ -21,7 +21,7 @@ from sam.replica import Replica
 # TODO add pad and NLCD (NLCD needs default datasets to be incorporated)
 # TODO set up downloader to handle differing census geographies by 2030
 # TODO add alternatives for Replica data for non-parcel data and add trip downloaders
-# TODO replica year automation 
+# TODO replica year automation
 
 # helper functions and variables
 expected = np.array(["parcel_year", "acs_year", "lodes_year"])
@@ -34,7 +34,7 @@ def pull_TOD_data(
     lodes_data=["rac", "wac", "od"],
     lodes_level="bgrp",
     years=None,
-    parcel_source="replica"
+    parcel_source="replica",
 ):
     """Download relevant data for a TOD study.
 
@@ -60,7 +60,7 @@ def pull_TOD_data(
         years = {
             "parcel_year": datetime.date.today().year - 1,
             "acs_year": datetime.date.today().year - 2,
-            "lodes_year": datetime.date.today().year - 3
+            "lodes_year": datetime.date.today().year - 3,
         }
     else:
         in_keys = np.array([key in years.keys() for key in expected])
@@ -110,9 +110,7 @@ def pull_TOD_data(
     if "od" in lodes_data:
         od = lodes.od(state=postal, year=years["lodes_year"])
         # od = od.lodes.aggregate(XWalk=xw, to=lodes_level) TODO fix the aggregate method
-        od.to_csv(
-            os.path.join(lodes_dir, f"od_{years['lodes_year']}.csv"), index=False
-        )
+        od.to_csv(os.path.join(lodes_dir, f"od_{years['lodes_year']}.csv"), index=False)
         del od
 
     del xw
@@ -154,28 +152,26 @@ def pull_TOD_data(
     blocks = blocks.to_crs(prj_crs)
     blocks.to_file(os.path.join(shp_dir, "blocks.shp"))
     del blocks
-    
+
     if parcel_source != None:
         print("Downloading parcels...")
         if parcel_source == "DOR":
             parcels = pd.concat(
                 [
                     download_fl_parcels(
-                        county=county, crs=prj_crs, 
-                        year=years["parcel_year"], config=PAR_CONF
+                        county=county,
+                        crs=prj_crs,
+                        year=years["parcel_year"],
+                        config=PAR_CONF,
                     )
                     for county in county_names
                 ]
             )
         else:
-            rep_fetch = Replica(state = state, 
-                                county=counties, 
-                                year=years['parcel_year'])
+            rep_fetch = Replica(state=state, county=counties, year=years["parcel_year"])
             parcels = rep_fetch.parcels(crs=prj_crs)
-                
-        parcels.to_file(
-            os.path.join(par_dir, f'parcels_{years["parcel_year"]}.shp')
-            )
+
+        parcels.to_file(os.path.join(par_dir, f'parcels_{years["parcel_year"]}.shp'))
         del parcels
 
     # pull networks

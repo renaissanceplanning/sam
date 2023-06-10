@@ -57,7 +57,8 @@ def _dat_osm(geometry, net_type, add_travel_time=True, crs=None, **kwargs):
 
     """
     net = dl_osm_network(
-        geometry=geometry, net_type=net_type, trim_components=True, **kwargs)
+        geometry=geometry, net_type=net_type, trim_components=True, **kwargs
+    )
     if add_travel_time == True:
         net = ox.add_edge_speeds(net)
         net = ox.add_edge_travel_times(net)
@@ -97,7 +98,11 @@ class OSMNetwork(nx.MultiDiGraph):
 
         """
         net = _dat_osm(
-            geometry=geometry, net_type="walk", add_travel_time=add_travel_time, crs=crs, **kwargs
+            geometry=geometry,
+            net_type="walk",
+            add_travel_time=add_travel_time,
+            crs=crs,
+            **kwargs,
         )
         return cls(net)
 
@@ -116,7 +121,11 @@ class OSMNetwork(nx.MultiDiGraph):
 
         """
         net = _dat_osm(
-            geometry=geometry, net_type="bike", add_travel_time=add_travel_time, crs=crs, **kwargs
+            geometry=geometry,
+            net_type="bike",
+            add_travel_time=add_travel_time,
+            crs=crs,
+            **kwargs,
         )
         return cls(net)
 
@@ -139,7 +148,7 @@ class OSMNetwork(nx.MultiDiGraph):
             net_type="drive",
             add_travel_time=add_travel_time,
             crs=crs,
-            **kwargs
+            **kwargs,
         )
         return cls(net)
 

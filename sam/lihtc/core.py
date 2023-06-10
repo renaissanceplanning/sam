@@ -8,7 +8,8 @@ from urllib import request
 from zipfile import ZipFile
 from sam.config import is_int
 
-def pull_lihtc(state, county, spatial=True, crs='EPSG:4326'):
+
+def pull_lihtc(state, county, spatial=True, crs="EPSG:4326"):
     """Pull LIHTC from HUD
 
     Args:
@@ -41,50 +42,51 @@ def pull_lihtc(state, county, spatial=True, crs='EPSG:4326'):
                 state = [state.zfill(2)]
             else:
                 state = [us.states.lookup(state).fips]
-    
-    if isinstance(county, list):     
+
+    if isinstance(county, list):
         for ct in county:
             if isinstance(ct, int):
                 ct = str(ct).zfill(3)
             if isinstance(ct, str):
                 if is_int(ct):
-                    ct = ct.zfill(3) 
+                    ct = ct.zfill(3)
                 else:
-                    raise ValueError("County must be in a fips code")      
-    else:   
+                    raise ValueError("County must be in a fips code")
+    else:
         if isinstance(county, int):
             county = [str(county).zfill(3)]
-                
+
         if isinstance(county, str):
             if is_int(county):
-                county = [county.zfill(3) ]
+                county = [county.zfill(3)]
             else:
                 raise ValueError("County must be in a fips code")
-    
-    url = request.urlopen('https://lihtc.huduser.gov/lihtcpub.zip').read()
+
+    url = request.urlopen("https://lihtc.huduser.gov/lihtcpub.zip").read()
     files = ZipFile(BytesIO(url))
-    lihtc = pd.read_csv(files.open('LIHTCPUB.CSV'))
-    
+    lihtc = pd.read_csv(files.open("LIHTCPUB.CSV"))
+
     lihtc = lihtc.loc[
-        ~lihtc.st2010.isnull() & ~lihtc.cnty2010.isnull() &
-        ~lihtc.st2010.isna() & ~lihtc.cnty2010.isna() & 
-        ~(lihtc.cnty2010 == ".")
+        ~lihtc.st2010.isnull()
+        & ~lihtc.cnty2010.isnull()
+        & ~lihtc.st2010.isna()
+        & ~lihtc.cnty2010.isna()
+        & ~(lihtc.cnty2010 == ".")
     ].copy()
-    
+
     lihtc.st2010 = lihtc.st2010.astype(str).str.zfill(2)
     lihtc.cnty2010 = lihtc.cnty2010.astype(np.int64).astype(str).str.zfill(3)
-    
-    lihtc = lihtc.loc[
-        lihtc.st2010.isin(state) & lihtc.cnty2010.isin(county)
-        ].copy()
-    
+
+    lihtc = lihtc.loc[lihtc.st2010.isin(state) & lihtc.cnty2010.isin(county)].copy()
+
     if spatial:
         lihtc = gpd.GeoDataFrame(
-            lihtc, geometry=gpd.points_from_xy(lihtc.longitude, 
-                                               lihtc.latitude,
-                                               crs='EPSG:4326')
+            lihtc,
+            geometry=gpd.points_from_xy(
+                lihtc.longitude, lihtc.latitude, crs="EPSG:4326"
+            ),
         )
-        if crs != 'EPSG:4326':
+        if crs != "EPSG:4326":
             lihtc = lihtc.to_crs(crs=crs)
-        
+
     return lihtc

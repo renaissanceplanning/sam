@@ -3,17 +3,27 @@ import geopandas as gpd
 import numpy as np
 from datetime import date
 from sam.config.ref_config import PAR_RECODE, FL_TO_REPLICA
-from sam.config.parcel_config import (fl_par_config, fl_par_config_csv,
-                                      fl_parcel_rename, fl_parcel_csv_rename,
-                                      rep_cols, rep_parcel_shorten)
-from sam.download.fl_parcels import (fdor_gis_and_tax, fdor_availability, 
-                                     process_parcels, process_parcels_csv)
+from sam.config.parcel_config import (
+    fl_par_config,
+    fl_par_config_csv,
+    fl_parcel_rename,
+    fl_parcel_csv_rename,
+    rep_cols,
+    rep_parcel_shorten,
+)
+from sam.download.fl_parcels import (
+    fdor_gis_and_tax,
+    fdor_availability,
+    process_parcels,
+    process_parcels_csv,
+)
 from sam.config import is_int
+
 
 def extract_urls(county, year):
     urls_df = fdor_gis_and_tax()
     county_urls = fdor_availability(df=urls_df, county=county, year=year)
-    
+
     try:
         gis_url = county_urls.loc[
             (county_urls.year == year)
@@ -26,42 +36,44 @@ def extract_urls(county, year):
             & (county_urls.url.str.contains("DBF"))
             & (county_urls.url.str.contains("Final"))
         ][["url"]].squeeze()
-        
-        if (type(gis_url) != str) or (type(gis_url) != str): #checks to ensure that strings not sereis are returned
+
+        if (type(gis_url) != str) or (
+            type(gis_url) != str
+        ):  # checks to ensure that strings not sereis are returned
             raise ValueError(
-                f'None string url returned', 
-                f'gis type: {type(gis_url)}',
-                f'nal type: {type(nal_url)}'
-                )
-            
+                f"None string url returned",
+                f"gis type: {type(gis_url)}",
+                f"nal type: {type(nal_url)}",
+            )
+
     except:
         gis_url = county_urls.loc[
             (county_urls.year == year)
             & (county_urls.file == "GIS")
             & (county_urls.url.str.contains("pin\."))
-            & (county_urls.url.str.contains("condo")==False)
+            & (county_urls.url.str.contains("condo") == False)
         ][["url"]].squeeze()
         nal_url = county_urls.loc[
             (county_urls.year == year)
             & (county_urls.file == "TaxRoll")
             & (county_urls.url.str.contains(f"NAL {year}"))
         ][["url"]].squeeze()
-        
-        if (type(gis_url) != str) or (type(gis_url) != str): #checks to ensure that strings not sereis are returned
+
+        if (type(gis_url) != str) or (
+            type(gis_url) != str
+        ):  # checks to ensure that strings not sereis are returned
             raise ValueError(
-                f'None string url returned', 
-                f'gis type: {type(gis_url)}',
-                f'nal type: {type(nal_url)}'
-                )
-        
+                f"None string url returned",
+                f"gis type: {type(gis_url)}",
+                f"nal type: {type(nal_url)}",
+            )
 
     return gis_url, nal_url
 
 
 # Functions
 # TODO ensure it can accept fips
-def download_fl_parcels(county, crs, year=None, 
-                        config=fl_par_config, replica=True):
+def download_fl_parcels(county, crs, year=None, config=fl_par_config, replica=True):
     """Will download DOR parcels from Florida
 
     Args:
@@ -105,27 +117,29 @@ def download_fl_parcels(county, crs, year=None,
     # parcels['result'] = parcels['result'].merge(PAR_RECODE)
 
     parcels["result"]["DOR_UC"] = parcels["result"]["DOR_UC"].astype(np.int64)
-    
+
     if replica:
         parcels = parcels["result"].merge(FL_TO_REPLICA).copy()
         parcels = parcels.rename(columns=fl_parcel_rename)
-        parcels['lat'] = parcels.centroid.y
-        parcels['lng'] = parcels.centroid.x
-        parcels['BLOCKGROUP'] = parcels['BLOCKGROUP'].str.zfill(12) 
-        parcels['TRACT'] = parcels['BLOCKGROUP'].str.slice(0, 10)
+        parcels["lat"] = parcels.centroid.y
+        parcels["lng"] = parcels.centroid.x
+        parcels["BLOCKGROUP"] = parcels["BLOCKGROUP"].str.zfill(12)
+        parcels["TRACT"] = parcels["BLOCKGROUP"].str.slice(0, 10)
         parcels = parcels[rep_cols]
         parcels = parcels.rename(columns=rep_parcel_shorten)
-    
+
     else:
         parcels = parcels["result"].merge(PAR_RECODE).copy()
-    
+
     return parcels
 
-def download_old_fl_parcels(gis_url, nal_url, crs, 
-                            config=fl_par_config_csv, replica=True):
+
+def download_old_fl_parcels(
+    gis_url, nal_url, crs, config=fl_par_config_csv, replica=True
+):
     parcels = process_parcels_csv(
-            gis_url=gis_url, nal_url=nal_url, transform_crs=crs, field_specs=config
-        )
+        gis_url=gis_url, nal_url=nal_url, transform_crs=crs, field_specs=config
+    )
     print(f"gis_total {parcels['gis_total']}")
     print(f"nal_total {parcels['nal_total']}")
     print(f"result_total {parcels['result_total']}")
@@ -137,14 +151,14 @@ def download_old_fl_parcels(gis_url, nal_url, crs,
     if replica:
         parcels = parcels["result"].merge(FL_TO_REPLICA).copy()
         parcels = parcels.rename(columns=fl_parcel_rename)
-        parcels['lat'] = parcels.centroid.y
-        parcels['lng'] = parcels.centroid.x
-        parcels['BLOCKGROUP'] = parcels['BLOCKGROUP'].str.zfill(12) 
-        parcels['TRACT'] = parcels['BLOCKGROUP'].str.slice(0, 10)
+        parcels["lat"] = parcels.centroid.y
+        parcels["lng"] = parcels.centroid.x
+        parcels["BLOCKGROUP"] = parcels["BLOCKGROUP"].str.zfill(12)
+        parcels["TRACT"] = parcels["BLOCKGROUP"].str.slice(0, 10)
         parcels = parcels[rep_cols]
         parcels = parcels.rename(columns=rep_parcel_shorten)
-    
+
     else:
         parcels = parcels["result"].merge(PAR_RECODE).copy()
-    
+
     return parcels

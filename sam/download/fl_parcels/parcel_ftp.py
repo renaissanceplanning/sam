@@ -498,9 +498,13 @@ def fdor_gis_and_tax():
 
     # Bind data
     df = pd.DataFrame(
-        {"file": file, "year": years, "county": county_final, 
-         "numbers": co_nos, "url": urls 
-         }
+        {
+            "file": file,
+            "year": years,
+            "county": county_final,
+            "numbers": co_nos,
+            "url": urls,
+        }
     )
 
     # Done

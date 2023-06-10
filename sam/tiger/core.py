@@ -12,8 +12,9 @@ from sam.download.census import dl_tiger
 
 # %% Helper functions
 
+
 def _tt(gdf, crs=None, trim=False, keepname=False):
-    '''
+    """
     Trim, and Transform a US Census TIGER shape.
 
     Parameters
@@ -22,7 +23,7 @@ def _tt(gdf, crs=None, trim=False, keepname=False):
         TIGER shape.
     crs : Any, optional
         The CRS for the shape; can be anything accepted by the
-        `GeoDataFrame.to_crs()` method, e.g. an integer EPSG code. The 
+        `GeoDataFrame.to_crs()` method, e.g. an integer EPSG code. The
         default is None, in which case the data is returned in EPSG:4269.
     trim : bool, optional
         Should only ID fields be retained? If True, GEOID will be the only
@@ -35,13 +36,13 @@ def _tt(gdf, crs=None, trim=False, keepname=False):
     -------
     gpd.GeoDataFrame
 
-    '''
+    """
     if trim == True:
-        fields = [x for x in gdf.columns if bool(re.search("^GEOID",x))]
+        fields = [x for x in gdf.columns if bool(re.search("^GEOID", x))]
         if keepname == True:
-            fields = fields+["NAME","geometry"]
+            fields = fields + ["NAME", "geometry"]
         else:
-            fields = fields+["geometry"]
+            fields = fields + ["geometry"]
         ttgdf = gdf[fields]
     else:
         ttgdf = gdf.copy()
@@ -50,8 +51,9 @@ def _tt(gdf, crs=None, trim=False, keepname=False):
     else:
         return ttgdf.to_crs(crs)
 
+
 def _dtt_nation(geom, year, crs=None, trim=False, keepname=False):
-    '''
+    """
     Download, Trim, and Transform a US Census TIGER shape that allows only
     nation level specifications (and up).
 
@@ -63,7 +65,7 @@ def _dtt_nation(geom, year, crs=None, trim=False, keepname=False):
         Year for the shape; passed to `dl_tiger`.
     crs : Any, optional
         The CRS for the shape; can be anything accepted by the
-        `GeoDataFrame.to_crs()` method, e.g. an integer EPSG code. The 
+        `GeoDataFrame.to_crs()` method, e.g. an integer EPSG code. The
         default is None, in which case the data is returned in EPSG:4269.
     trim : bool, optional
         Should only ID fields be retained? If True, GEOID will be the only
@@ -76,14 +78,13 @@ def _dtt_nation(geom, year, crs=None, trim=False, keepname=False):
     -------
     gpd.GeoDataFrame
 
-    '''
+    """
     ts = dl_tiger(geom=geom, year=year)
     return _tt(ts, crs=crs, trim=trim, keepname=keepname)
-    
 
-def _dtt_state(geom, year, state=None, crs=None, 
-               trim=False, keepname=False):
-    '''
+
+def _dtt_state(geom, year, state=None, crs=None, trim=False, keepname=False):
+    """
     Download, Trim, and Transform a US Census TIGER shape that allows state
     level specifications (and up).
 
@@ -94,11 +95,11 @@ def _dtt_state(geom, year, state=None, crs=None,
     year : int
         Year for the shape; passed to `dl_tiger`.
     state : str, optional
-        State for the shape; passed to `dl_tiger`. The default is None, in 
+        State for the shape; passed to `dl_tiger`. The default is None, in
         which case the entire country's worth of data is returned.
     crs : Any, optional
         The CRS for the shape; can be anything accepted by the
-        `GeoDataFrame.to_crs()` method, e.g. an integer EPSG code. The 
+        `GeoDataFrame.to_crs()` method, e.g. an integer EPSG code. The
         default is None, in which case the data is returned in EPSG:4269.
     trim : bool, optional
         Should only ID fields be retained? If True, GEOID will be the only
@@ -111,13 +112,15 @@ def _dtt_state(geom, year, state=None, crs=None,
     -------
     gpd.GeoDataFrame
 
-    '''
+    """
     ts = dl_tiger(geom=geom, state=state, year=year)
     return _tt(ts, crs=crs, trim=trim, keepname=keepname)
 
-def _dtt_county(geom, year, county=None, state=None, crs=None, 
-                trim=False, keepname=False):
-    '''
+
+def _dtt_county(
+    geom, year, county=None, state=None, crs=None, trim=False, keepname=False
+):
+    """
     Download, Trim, and Transform a US Census TIGER shape that allows county
     level specifications (and up).
 
@@ -129,14 +132,14 @@ def _dtt_county(geom, year, county=None, state=None, crs=None,
         Year for the shape; passed to `dl_tiger`.
     county : str, or iterable of str, optional
         Counties within `state` for the shape; must be provided with a
-        `state`; passed to `dl_tiger`. The default is None, in which case the 
+        `state`; passed to `dl_tiger`. The default is None, in which case the
         entire state's worth of data is returned.
     state : str, optional
-        State for the shape; passed to `dl_tiger`. The default is None, in 
+        State for the shape; passed to `dl_tiger`. The default is None, in
         which case the entire country's worth of data is returned.
     crs : Any, optional
         The CRS for the shape; can be anything accepted by the
-        `GeoDataFrame.to_crs()` method, e.g. an integer EPSG code. The 
+        `GeoDataFrame.to_crs()` method, e.g. an integer EPSG code. The
         default is None, in which case the data is returned in EPSG:4269.
     trim : bool, optional
         Should only ID fields be retained? If True, GEOID will be the only
@@ -149,23 +152,25 @@ def _dtt_county(geom, year, county=None, state=None, crs=None,
     -------
     gpd.GeoDataFrame
 
-    '''
+    """
     ts = dl_tiger(geom=geom, state=state, county=county, year=year)
     return _tt(ts, crs=crs, trim=trim, keepname=keepname)
 
 
-# %% Class  
+# %% Class
+
 
 class Tiger(gpd.GeoDataFrame):
-    '''
+    """
     Download TIGER shapes.
-    '''
+    """
+
     def __init__(self, gdf):
         return super().__init__(gdf)
-    
+
     @classmethod
     def blocks(cls, state, year=2019, county=None, crs=None, trim=False):
-        '''
+        """
         Download US Census blocks.
 
         Parameters
@@ -176,14 +181,21 @@ class Tiger(gpd.GeoDataFrame):
         -------
         Tiger (subclass of gpd.GeoDataFrame)
 
-        '''
-        ts = _dtt_county(geom="blocks", state=state, county=county, year=year,
-                         crs=crs, trim=trim, keepname=False)
+        """
+        ts = _dtt_county(
+            geom="blocks",
+            state=state,
+            county=county,
+            year=year,
+            crs=crs,
+            trim=trim,
+            keepname=False,
+        )
         return cls(ts)
-        
+
     @classmethod
     def block_groups(cls, state, county=None, year=2019, crs=None, trim=False):
-        '''
+        """
         Download US Census block groups.
 
         Parameters
@@ -194,14 +206,21 @@ class Tiger(gpd.GeoDataFrame):
         -------
         Tiger (subclass of gpd.GeoDataFrame)
 
-        '''
-        ts = _dtt_county(geom="block_groups", state=state, county=county, 
-                         year=year, crs=crs, trim=trim, keepname=False)
+        """
+        ts = _dtt_county(
+            geom="block_groups",
+            state=state,
+            county=county,
+            year=year,
+            crs=crs,
+            trim=trim,
+            keepname=False,
+        )
         return cls(ts)
-        
+
     @classmethod
     def tracts(cls, state, county=None, year=2019, crs=None, trim=False):
-        '''
+        """
         Download US Census tracts.
 
         Parameters
@@ -212,14 +231,21 @@ class Tiger(gpd.GeoDataFrame):
         -------
         Tiger (subclass of gpd.GeoDataFrame)
 
-        '''
-        ts = _dtt_county(geom="tracts", state=state, county=county, year=year,
-                         crs=crs, trim=trim, keepname=False)
+        """
+        ts = _dtt_county(
+            geom="tracts",
+            state=state,
+            county=county,
+            year=year,
+            crs=crs,
+            trim=trim,
+            keepname=False,
+        )
         return cls(ts)
-        
+
     @classmethod
     def counties(cls, state, year=2019, crs=None, trim=False):
-        '''
+        """
         Download US counties.
 
         Parameters
@@ -230,27 +256,33 @@ class Tiger(gpd.GeoDataFrame):
         -------
         Tiger (subclass of gpd.GeoDataFrame)
 
-        '''
-        ts = _dtt_state(geom="counties", state=state, year=year,
-                        crs=crs, trim=trim, keepname=True)
+        """
+        ts = _dtt_state(
+            geom="counties", state=state, year=year, crs=crs, trim=trim, keepname=True
+        )
         return cls(ts)
-    
+
     @classmethod
     def cbsas(cls, year=2019, crs=None, trim=False):
-        '''
+        """
         Download US CBSAs.
 
         Parameters
         ----------
         see `sam.tiger._dtt_nation`
 
-        '''
-        ts = _dtt_county(geom="core_based_statistical_areas", year=year,
-                         crs=crs, trim=trim, keepname=True)
+        """
+        ts = _dtt_county(
+            geom="core_based_statistical_areas",
+            year=year,
+            crs=crs,
+            trim=trim,
+            keepname=True,
+        )
         return cls(ts)
-        
+
     def to_shp(self, save_path):
-        '''
+        """
         Write a TIGER shape to shapefile.
 
         Parameters
@@ -262,7 +294,5 @@ class Tiger(gpd.GeoDataFrame):
         -------
         None.
 
-        '''
+        """
         self.to_file(save_path)
-    
-    

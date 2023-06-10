@@ -117,12 +117,12 @@ def dl_parcel_gis(gis_url, crs):
 
     gdf = gpd.read_file(gis_url)
     gdf = gdf.astype({"PARCELNO": str})
-    
+
     # remove non-polygons
     # --------------
     print("----> removing non-polygon geometries")
-    gdf = gdf.loc[gdf.geom_type.isin(['Polygon', 'MultiPolygon'])].copy()
-    
+    gdf = gdf.loc[gdf.geom_type.isin(["Polygon", "MultiPolygon"])].copy()
+
     # Repair Geometries
     gdf["geometry"] = gdf.apply(
         lambda row: make_valid(row.geometry)
@@ -137,16 +137,15 @@ def dl_parcel_gis(gis_url, crs):
 
     if len(np.unique(gdf.PARCELNO)) < len(gdf.index):
         gdf = gdf.dissolve(by="PARCELNO").reset_index()
-    
 
     # remove geometry collections
     # ------------
     print("----> removing geometry collections")
-    if 'GeometryCollection' in gdf.geom_type.unique():
+    if "GeometryCollection" in gdf.geom_type.unique():
         exploded = gdf.explode().reset_index()[list(gdf.columns)]
-        exploded = exploded.loc[exploded.geom_type != 'LineString'].copy()
-        gdf = exploded.dissolve(by='PARCELNO')
-        
+        exploded = exploded.loc[exploded.geom_type != "LineString"].copy()
+        gdf = exploded.dissolve(by="PARCELNO")
+
     # reprojecting
     # ------------
     print("----> reprojecting")
@@ -226,12 +225,12 @@ def dl_parcel_nal(nal_url, field_specs={}):
     if field_specs != {}:
         if "NO_RES_UNT" in list(field_specs.keys()):
             if "NO_RES_UNTS" in list(df.columns):
-                df.rename(columns={"NO_RES_UNTS":"NO_RES_UNT"}, inplace=True)
-        
+                df.rename(columns={"NO_RES_UNTS": "NO_RES_UNT"}, inplace=True)
+
         if "TOT_LVG_AR" in list(field_specs.keys()):
             if "TOT_LVG_AREA" in list(df.columns):
-                df.rename(columns={"TOT_LVG_AREA":"TOT_LVG_AR"}, inplace=True)
-        
+                df.rename(columns={"TOT_LVG_AREA": "TOT_LVG_AR"}, inplace=True)
+
         cols = np.unique(["PARCEL_ID"] + list(field_specs.keys())).tolist()
         df = df[cols]
 
@@ -322,6 +321,7 @@ def dl_parcel_nal(nal_url, field_specs={}):
     # done
     # ----
     return df
+
 
 # ----------------------------------------------------------------------------
 
@@ -347,7 +347,7 @@ def dl_parcel_nal_csv(nal_url, field_specs):
                 same type specified in dtype if dtype is given)
                 aggfunc: function used to aggregate this variable over the
                 same ID (e.g., sum, mean)
-        Must be set as this version of the function is for dtype issues with 
+        Must be set as this version of the function is for dtype issues with
         certain csvs
 
     Notes
@@ -371,29 +371,29 @@ def dl_parcel_nal_csv(nal_url, field_specs):
     # and load it from the zip
     # (Note: urllib is used bc requests doesn't work with FTP sites)
     # (https://stackoverflow.com/questions/11768214/python-download-a-file-from-an-ftp-server)
-    
-    #handle the common renamed columns
+
+    # handle the common renamed columns
     # csv_field = field_specs.copy()
-    
+
     # if "NO_RES_UNT" in list(field_specs.keys()):
     #     csv_field["NO_RES_UNTS"] = csv_field.pop("NO_RES_UNT")
-        
+
     # if "TOT_LVG_AR" in list(field_specs.keys()):
     #     csv_field["TOT_LVG_AREA"] = csv_field.pop("TOT_LVG_AR")
-    
-    
+
     # try:
     #     df = pd.read_csv(nal_url,
     #                      usecols=csv_field.keys(),
-    #                      dtype={key:csv_field[key]['dtype'] 
+    #                      dtype={key:csv_field[key]['dtype']
     #                             for key in csv_field.keys()})
-        
+
     try:
-        df = pd.read_csv(nal_url,
-                         usecols=field_specs.keys(),
-                         dtype={key:field_specs[key]['dtype'] 
-                                for key in field_specs.keys()})
-        
+        df = pd.read_csv(
+            nal_url,
+            usecols=field_specs.keys(),
+            dtype={key: field_specs[key]["dtype"] for key in field_specs.keys()},
+        )
+
     except:
         td = tempfile.mkdtemp()
         fp = os.path.join(td, os.path.basename(nal_url))
@@ -403,22 +403,23 @@ def dl_parcel_nal_csv(nal_url, field_specs):
         with zipfile.ZipFile(fp) as z:
             load_file = z.namelist()[0]
         load_path = "".join(["zip://", fp, "!", load_file])
-        df = df = pd.read_csv(nal_url,
-                         usecols=field_specs.keys(),
-                         dtype={key:field_specs[key]['dtype'] 
-                                for key in field_specs.keys()})
+        df = df = pd.read_csv(
+            nal_url,
+            usecols=field_specs.keys(),
+            dtype={key: field_specs[key]["dtype"] for key in field_specs.keys()},
+        )
         shutil.rmtree(td)
 
     # df = pd.DataFrame(df.drop(columns="geometry"))
     if field_specs != {}:
         if "NO_RES_UNT" in list(field_specs.keys()):
             if "NO_RES_UNTS" in list(df.columns):
-                df.rename(columns={"NO_RES_UNTS":"NO_RES_UNT"}, inplace=True)
-        
+                df.rename(columns={"NO_RES_UNTS": "NO_RES_UNT"}, inplace=True)
+
         if "TOT_LVG_AR" in list(field_specs.keys()):
             if "TOT_LVG_AREA" in list(df.columns):
-                df.rename(columns={"TOT_LVG_AREA":"TOT_LVG_AR"}, inplace=True)
-        
+                df.rename(columns={"TOT_LVG_AREA": "TOT_LVG_AR"}, inplace=True)
+
         cols = np.unique(["PARCEL_ID"] + list(field_specs.keys())).tolist()
         df = df[cols]
 
@@ -509,6 +510,7 @@ def dl_parcel_nal_csv(nal_url, field_specs):
     # done
     # ----
     return df
+
 
 # ----------------------------------------------------------------------------
 
@@ -654,6 +656,7 @@ def process_parcels(gis_url, nal_url, transform_crs, field_specs={}):
     print("")
     return save_info
 
+
 # ----------------------------------------------------------------------------
 
 
@@ -662,7 +665,7 @@ def process_parcels_csv(gis_url, nal_url, transform_crs, field_specs):
     downloads a publicly-available parcel boundaries from FDOR FTP data
     archives, attributes it with NAL data for that year, and save locally as
     a shapefile
-    
+
     designed when only csv is avaliable and requires a field spec to read the csv
 
     Parameters

@@ -22,7 +22,7 @@ from rputils import make_path
 # TODO add pad and NLCD (NLCD needs default datasets to be incorporated)
 # TODO set up downloader to handle differing census geographies by 2030
 # TODO add alternatives for Replica data for non-parcel data and add trip downloaders
-# TODO replica year automation 
+# TODO replica year automation
 
 # helper functions and variables
 expected = np.array(["parcel_year", "acs_year", "lodes_year"])
@@ -37,7 +37,7 @@ def pull_corridor_data(
     years=None,
     parcel_source="replica",
     network_ids=False,
-    trip_table_time = "all",
+    trip_table_time="all",
 ):
     """Download relevant data for a TOD study.
 
@@ -63,7 +63,7 @@ def pull_corridor_data(
         years = {
             "parcel_year": datetime.date.today().year - 1,
             "acs_year": datetime.date.today().year - 2,
-            "lodes_year": datetime.date.today().year - 3
+            "lodes_year": datetime.date.today().year - 3,
         }
     else:
         in_keys = np.array([key in years.keys() for key in expected])
@@ -81,8 +81,16 @@ def pull_corridor_data(
     lih_dir = os.path.join(raw_dir, "lihtc")
     rep_dir = os.path.join(raw_dir, "replica")
 
-    for dire in [raw_dir, lodes_dir, acs_dir, shp_dir, 
-                 net_dir, par_dir, lih_dir, rep_dir]:
+    for dire in [
+        raw_dir,
+        lodes_dir,
+        acs_dir,
+        shp_dir,
+        net_dir,
+        par_dir,
+        lih_dir,
+        rep_dir,
+    ]:
         if os.path.exists(dire) != True:
             os.mkdir(dire)
 
@@ -115,9 +123,7 @@ def pull_corridor_data(
     if "od" in lodes_data:
         od = lodes.od(state=postal, year=years["lodes_year"])
         # od = od.lodes.aggregate(XWalk=xw, to=lodes_level) TODO fix the aggregate method
-        od.to_csv(
-            os.path.join(lodes_dir, f"od_{years['lodes_year']}.csv"), index=False
-        )
+        od.to_csv(os.path.join(lodes_dir, f"od_{years['lodes_year']}.csv"), index=False)
         del od
 
     del xw
@@ -159,28 +165,26 @@ def pull_corridor_data(
     blocks = blocks.to_crs(prj_crs)
     blocks.to_file(os.path.join(shp_dir, "blocks.shp"))
     del blocks
-    
+
     if parcel_source != None:
         print("Downloading parcels...")
         if parcel_source == "DOR":
             parcels = pd.concat(
                 [
                     download_fl_parcels(
-                        county=county, crs=prj_crs, 
-                        year=years["parcel_year"], config=PAR_CONF
+                        county=county,
+                        crs=prj_crs,
+                        year=years["parcel_year"],
+                        config=PAR_CONF,
                     )
                     for county in county_names
                 ]
             )
         else:
-            rep_fetch = Replica(state = state, 
-                                county=counties, 
-                                year=years['parcel_year'])
+            rep_fetch = Replica(state=state, county=counties, year=years["parcel_year"])
             parcels = rep_fetch.parcels(crs=prj_crs)
-                
-        parcels.to_file(
-            os.path.join(par_dir, f'parcels_{years["parcel_year"]}.shp')
-            )
+
+        parcels.to_file(os.path.join(par_dir, f'parcels_{years["parcel_year"]}.shp'))
         del parcels
 
     # pull networks
@@ -202,32 +206,29 @@ def pull_corridor_data(
     print("Downloading Low Income Housing...")
     lihtc = pull_lihtc(state=state, county=counties, crs=prj_crs)
     lihtc.to_file(os.path.join(lih_dir, "lihtc.shp"))
-    
+
     print("Set Up Replica Fetcher")
-    rep_fetch = Replica(state = state, 
-                        county=counties, 
-                        year=years['parcel_year'])
-    
+    rep_fetch = Replica(state=state, county=counties, year=years["parcel_year"])
+
     print("Downloading Replica Trip Table...")
-    org_trips = rep_fetch.trip_table(link_ids=network_ids,
-                                     time=trip_table_time)
+    org_trips = rep_fetch.trip_table(link_ids=network_ids, time=trip_table_time)
     # org_trips.to_csv(
     #     make_path(rep_dir, f"origin_trips_{years['parcel_year']}.csv")
     #     )
-    
-    dest_trips = rep_fetch.trip_table(link_ids=network_ids,
-                                      time=trip_table_time)
+
+    dest_trips = rep_fetch.trip_table(link_ids=network_ids, time=trip_table_time)
     # dest_trips.to_csv(
     #     make_path(rep_dir, f"dest_trips_{years['parcel_year']}.csv")
     #     )
-    
+
     pd.concat([org_trips, dest_trips]).to_file(
         make_path(rep_dir, f"all_trips_{years['parcel_year']}.csv")
     )
-    
+
     print("Downloading Replica Network...")
     network = rep_fetch.network(crs=prj_crs)
     network.to_file(make_path(rep_dir, "network.shp"))
-    
+
+
 if __name__ == "__main__":
     pass

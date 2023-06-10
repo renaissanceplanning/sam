@@ -243,5 +243,6 @@ if __name__ == "__main__":
     state_data = DATA[DATA.state_USPS == ST]
 
     # Load all files for that state
-    pad_state = read_pad(pad_link = state_data.PAD_link.iloc[0],
-                         pad_files = state_data.PAD_file)
+    pad_state = read_pad(
+        pad_link=state_data.PAD_link.iloc[0], pad_files=state_data.PAD_file
+    )
