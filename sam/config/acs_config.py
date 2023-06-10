@@ -121,7 +121,6 @@ _AGE_BY_SEX_CONFIG_ = ACSConfig(
             "B01001_023": ["male_age_75_79", 75],
             "B01001_024": ["male_age_80_84", 80],
             "B01001_025": ["male_age_85p", 85],  # TODO figure out appropriate levels
-            
             "B01001_027": ["female_age_0_4", 0],
             "B01001_028": ["female_age_5_9", 5],
             "B01001_029": ["female_age_10-14", 10],

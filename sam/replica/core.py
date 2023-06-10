@@ -1,15 +1,13 @@
-import us
-import pandas_gbq 
-import pydata_google_auth 
-
-import pandas as pd
 import geopandas as gpd
-import numpy as np
-
-from sam.config import CRED, replica_regions, is_int
-from sam.config import replica_config as rpc
-from sam.config.parcel_config import rep_parcel_shorten
+import pandas as pd
+import pandas_gbq
+import us
 from shapely import wkt
+
+# from sam.config import CRED, replica_regions, is_int
+from sam.config import replica_regions, is_int, replica_config as rpc
+from sam.config.parcel_config import rep_parcel_shorten
+
 
 # state = ['34']
 # county = ['039', '024']

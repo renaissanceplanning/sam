@@ -1,6 +1,9 @@
 import os
+
 import geopandas as gpd
+
 from sam.config import COUNTIES as county_shapes
+
 
 def is_int(element):
     try:
@@ -8,6 +11,7 @@ def is_int(element):
         return True
     except ValueError:
         return False
+
 
 def extract_fips(gdf):
     """Finds the county level fips and names for a give geometry
@@ -19,13 +23,14 @@ def extract_fips(gdf):
         tuple: A tuple containing strings for state and county fips, and county
             names.
     """
-    # TODO increase persicion to single county
+    # TODO increase precision to single county
     gdf = gdf.to_crs(county_shapes.crs)
     county = county_shapes[county_shapes.intersects(gdf.dissolve().geometry[0])]
     counties = county["COUNTYFP"].unique().tolist()
     states = county["STATEFP"].unique().tolist()
     county_names = county["NAME"].unique().tolist()
     return states, counties, county_names
+
 
 def validate_data_dir(data_dir):
     data_dir = os.path.normpath(data_dir)

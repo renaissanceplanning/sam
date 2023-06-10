@@ -1,151 +1,185 @@
-import pandas as pd
 import numpy as np
 
 fl_par_config = {
-       # """
-       # Column level specifications for Florida DOR data
-       # """
-    "CO_NO": {'dtype' : str,
-              'aggfunc': 'first',
-              'na_value': 'unknown'},
-    
-    "PARCEL_ID": {'dtype' : str,
-                  'aggfunc': 'first',
-                  'na_value': 'unknown'},
-    
-    "DOR_UC": {'dtype' : str,
-               'aggfunc': 'first',
-               'na_value': 'unknown'},
-    
-    "JV": {'dtype' : float,
-           'aggfunc': 'sum',
-           'na_value': np.nan},
-    
-    "LND_VAL": {'dtype' : float,
-                'aggfunc': 'sum',
-                'na_value': np.nan},
-    
-    "LND_SQFOOT": {'dtype' : float,
-                   'aggfunc': 'sum',
-                   'na_value': np.nan},
-    
-    "NO_BULDNG": {'dtype' : 'Int64',
-                  'aggfunc': 'sum',
-                  'na_value': np.nan},
-    
-    "NO_RES_UNT": {'dtype' : 'Int64',
-                    'aggfunc': 'sum',
-                    'na_value': np.nan},
-    
-    "OWN_NAME": {'dtype' : str,
-                 'aggfunc': 'first',
-                 'na_value': 'unknown'},
-    
-    "CENSUS_BK": {'dtype' : str,
-                  'aggfunc': 'first',
-                  'na_value': 'unknown'},
-    
-    "TOT_LVG_AR": {'dtype' : float, 
-                   'aggfunc': 'sum',
-                   'na_value': np.nan},
-    
-    "EFF_YR_BLT": {'dtype' : 'Int64',
-                    'aggfunc': 'sum',
-                    'na_value': np.nan},
-    
-    "ACT_YR_BLT": {'dtype' : 'Int64',
-                    'aggfunc': 'sum',
-                    'na_value': np.nan},
+    """ Column level specifications for Florida DOR data """
+    "CO_NO": {
+        "dtype": str,
+        "aggfunc": "first",
+        "na_value": "unknown"
+    },
+    "PARCEL_ID": {
+        "dtype": str,
+        "aggfunc": "first",
+        "na_value": "unknown"
+    },
+    "DOR_UC": {
+        "dtype": str,
+        "aggfunc": "first",
+        "na_value": "unknown"
+    },
+    "JV": {
+        "dtype": float,
+        "aggfunc": "sum",
+        "na_value": np.nan
+    },
+    "LND_VAL": {
+        "dtype": float,
+        "aggfunc": "sum",
+        "na_value": np.nan
+    },
+    "LND_SQFOOT": {
+        "dtype": float,
+        "aggfunc": "sum",
+        "na_value": np.nan
+    },
+    "NO_BULDNG": {
+        "dtype": "Int64",
+        "aggfunc": "sum",
+        "na_value": np.nan
+    },
+    "NO_RES_UNT": {
+        "dtype": "Int64",
+        "aggfunc": "sum",
+        "na_value": np.nan
+    },
+    "OWN_NAME": {
+        "dtype": str,
+        "aggfunc": "first",
+        "na_value": "unknown"
+    },
+    "CENSUS_BK": {
+        "dtype": str,
+        "aggfunc": "first",
+        "na_value": "unknown"
+    },
+    "TOT_LVG_AR": {
+        "dtype": float,
+        "aggfunc": "sum",
+        "na_value": np.nan
+    },
+    "EFF_YR_BLT": {
+        "dtype": "Int64",
+        "aggfunc": "sum",
+        "na_value": np.nan
+    },
+    "ACT_YR_BLT": {
+        "dtype": "Int64",
+        "aggfunc": "sum",
+        "na_value": np.nan
+    },
 }
 
 fl_par_config_csv = {
-       # """
-       # Column level specifications for Florida DOR data
-       # includes pd.na to deal with csv read nonsense
-       # """
-    "CO_NO": {'dtype' : str,
-              'aggfunc': 'first',
-              'na_value': 'unknown'},
-    
-    "PARCEL_ID": {'dtype' : str,
-                  'aggfunc': 'first',
-                  'na_value': 'unknown'},
-    
-    "DOR_UC": {'dtype' : str,
-               'aggfunc': 'first',
-               'na_value': 'unknown'},
-    
-    "JV": {'dtype' : float,
-           'aggfunc': 'sum',
-           'na_value': np.nan},
-    
-    "LND_VAL": {'dtype' : float,
-                'aggfunc': 'sum',
-                'na_value': np.nan},
-    
-    "LND_SQFOOT": {'dtype' : float,
-                   'aggfunc': 'sum',
-                   'na_value': np.nan},
-    
-    "NO_BULDNG": {'dtype' : 'Int64',
-                  'aggfunc': 'sum',
-                  'na_value': np.nan},
-    
-    "OWN_NAME": {'dtype' : str,
-                 'aggfunc': 'first',
-                 'na_value': 'unknown'},
-    
-    "CENSUS_BK": {'dtype' : str,
-                  'aggfunc': 'first',
-                  'na_value': 'unknown'},
-    
-    "TOT_LVG_AREA": {'dtype' : float, 
-                   'aggfunc': 'sum',
-                   'na_value': np.nan},
-    
-    "NO_RES_UNTS": {'dtype' : 'Int64',
-                    'aggfunc': 'sum',
-                    'na_value': np.nan},
-    
-    "EFF_YR_BLT": {'dtype' : 'Int64',
-                    'aggfunc': 'sum',
-                    'na_value': np.nan},
-    
-    "ACT_YR_BLT": {'dtype' : 'Int64',
-                    'aggfunc': 'sum',
-                    'na_value': np.nan},
+    # """
+    # Column level specifications for Florida DOR data
+    # includes pd.na to deal with csv read nonsense
+    # """
+    "CO_NO": {
+        "dtype": str,
+        "aggfunc": "first",
+        "na_value": "unknown"
+    },
+    "PARCEL_ID": {
+        "dtype": str,
+        "aggfunc": "first",
+        "na_value": "unknown"
+    },
+    "DOR_UC": {
+        "dtype": str,
+        "aggfunc": "first",
+        "na_value": "unknown"
+    },
+    "JV": {
+        "dtype": float,
+        "aggfunc": "sum",
+        "na_value": np.nan
+    },
+    "LND_VAL": {
+        "dtype": float,
+        "aggfunc": "sum",
+        "na_value": np.nan
+    },
+    "LND_SQFOOT": {
+        "dtype": float,
+        "aggfunc": "sum",
+        "na_value": np.nan
+    },
+    "NO_BULDNG": {
+        "dtype": "Int64",
+        "aggfunc": "sum",
+        "na_value": np.nan
+    },
+    "OWN_NAME": {
+        "dtype": str,
+        "aggfunc": "first",
+        "na_value": "unknown"
+    },
+    "CENSUS_BK": {
+        "dtype": str,
+        "aggfunc": "first",
+        "na_value": "unknown"
+    },
+    "TOT_LVG_AREA": {
+        "dtype": float,
+        "aggfunc": "sum",
+        "na_value": np.nan
+    },
+    "NO_RES_UNTS": {
+        "dtype": "Int64",
+        "aggfunc": "sum",
+        "na_value": np.nan
+    },
+    "EFF_YR_BLT": {
+        "dtype": "Int64",
+        "aggfunc": "sum",
+        "na_value": np.nan
+    },
+    "ACT_YR_BLT": {
+        "dtype": "Int64",
+        "aggfunc": "sum",
+        "na_value": np.nan
+    },
 }
 
 fl_parcel_rename = {
-       "PARCELNO": "id",       
-       "CENSUS_BK": "BLOCKGROUP",       
-       "LND_SQFOOT": "parcel_sqft",       
-       "TOT_LVG_AR": "built_sqft",      
-       "NO_RES_UNT": "dwelling_units",
-       "geometry": "geometry",       
+    "PARCELNO": "id",
+    "CENSUS_BK": "BLOCKGROUP",
+    "LND_SQFOOT": "parcel_sqft",
+    "TOT_LVG_AR": "built_sqft",
+    "NO_RES_UNT": "dwelling_units",
+    "geometry": "geometry",
 }
 
 fl_parcel_csv_rename = {
-       "PARCELNO": "id",       
-       "CENSUS_BK": "BLOCKGROUP",       
-       "LND_SQFOOT": "parcel_sqft",       
-       "TOT_LVG_AREA": "built_sqft", 
-       "NO_RES_UNTS": "dwelling_units",
-       "geometry": "geometry",       
+    "PARCELNO": "id",
+    "CENSUS_BK": "BLOCKGROUP",
+    "LND_SQFOOT": "parcel_sqft",
+    "TOT_LVG_AREA": "built_sqft",
+    "NO_RES_UNTS": "dwelling_units",
+    "geometry": "geometry",
 }
 
 rep_cols = [
-       'id', 'BLOCKGROUP', 'TRACT', 'parcel_sqft', 'built_sqft', 'landuse_l1',
-       'landuse_l2_primary', 'landuse_l2_secondary', 'landuse_l2_tertiary',
-       'dwelling_units', 'lat', 'lng', 'geometry'
-       ]
-
+    "id",
+    "BLOCKGROUP",
+    "TRACT",
+    "parcel_sqft",
+    "built_sqft",
+    "landuse_l1",
+    "landuse_l2_primary",
+    "landuse_l2_secondary",
+    "landuse_l2_tertiary",
+    "dwelling_units",
+    "lat",
+    "lng",
+    "geometry",
+]
 
 rep_parcel_shorten = {
-       'parcel_sqft': 'land_sqft', 
-       'landuse_l1': 'lu_l1',
-       'landuse_l2_primary': 'lu_l2p', 
-       'landuse_l2_secondary': 'lu_l2s', 
-       'landuse_l2_tertiary': 'lu_l2t',
-       'dwelling_units': 'dus', 
+    "parcel_sqft": "land_sqft",
+    "landuse_l1": "lu_l1",
+    "landuse_l2_primary": "lu_l2p",
+    "landuse_l2_secondary": "lu_l2s",
+    "landuse_l2_tertiary": "lu_l2t",
+    "dwelling_units": "dus",
 }
