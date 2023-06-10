@@ -337,7 +337,7 @@ class ACS:
             name=name,
         )
         return tbl
-    
+
     def age_by_sex(
         state, year, county=None, geography="block group", breaks=None, name="full"
     ):
