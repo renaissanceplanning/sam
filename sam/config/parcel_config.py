@@ -1,7 +1,7 @@
 import numpy as np
 
 fl_par_config = {
-    """ Column level specifications for Florida DOR data """
+    # """ Column level specifications for Florida DOR data """
     "CO_NO": {
         "dtype": str,
         "aggfunc": "first",
