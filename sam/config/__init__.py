@@ -7,3 +7,18 @@ from .parcel_config import fl_par_config as PAR_CONF
 from . import acs_config as ACS_CONF
 from . import ref_config as REF_CONF
 from .replica_config import replica_regions
+
+import pydata_google_auth
+
+""" 
+    integrated into the init of replica module and will only run the first time sam is imported 
+    for a user of the codebase. 
+    Credentials are stored here typically:
+        $APPDATA/Roaming/pydata/pydate_google_credentials.json
+"""
+
+SCOPES = [
+    "https://www.googleapis.com/auth/cloud-platform",
+]
+
+CRED = pydata_google_auth.get_user_credentials(SCOPES)

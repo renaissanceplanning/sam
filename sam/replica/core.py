@@ -8,6 +8,8 @@ from sam.config import replica_regions, is_int, replica_config as rpc
 from sam.config.parcel_config import rep_parcel_shorten
 from shapely import wkt
 from sam.config import COUNTIES
+from sam.config import CRED
+
 
 # state = ['34']
 # county = ['039', '024']
@@ -744,7 +746,7 @@ class Replica:
         if time == "am":
             time_filter = "start_local_hour >= 6 and start_local_hour <= 10"
         elif time == "pm":
-            time_filter = "start_local_hour >= 16 and start_local_hour <= 18"
+            time_filter = "start_local_hour >= 16 and start_local_hour <= 19"
         elif time == "md":
             time_filter = "start_local_hour >= 11 and start_local_hour <= 13"
         elif time == "all":
@@ -788,7 +790,7 @@ class Replica:
             f"""
             select 
                 {columns}
-            from `{self._region}.{self._region}_2021_Q4_{day}_trip`
+            from `{self._region}.{self._region}_2022_Q4_{day}_trip`
             where 
                 left({end}_bgrp, 2) in {self._stateSQL} AND
                 substr({end}_bgrp, 3, 3) in {self._countySQL} AND
