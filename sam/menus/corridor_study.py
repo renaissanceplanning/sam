@@ -38,6 +38,7 @@ def pull_corridor_data(
     parcel_source="replica",
     network_ids=False,
     trip_table_time="all",
+    network=False
 ):
     """Download relevant data for a TOD study.
 
@@ -224,10 +225,11 @@ def pull_corridor_data(
     pd.concat([org_trips, dest_trips]).to_file(
         make_path(rep_dir, f"all_trips_{years['parcel_year']}.csv")
     )
-
-    print("Downloading Replica Network...")
-    network = rep_fetch.network(crs=prj_crs)
-    network.to_file(make_path(rep_dir, "network.shp"))
+    
+    if network:
+        print("Downloading Replica Network...")
+        network = rep_fetch.network(crs=prj_crs)
+        network.to_file(make_path(rep_dir, "network.shp"))
 
 
 if __name__ == "__main__":

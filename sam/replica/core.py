@@ -136,7 +136,10 @@ class Replica:
         # Format year for SQL
         if isinstance(year, int):
             if year in rpc.replica_coverage_years:
-                self._yearSQL = f"{year}_Q4"
+                if f'{year}_Q4' in rpc.replica_pop_years:
+                    self._yearSQL = f"{year}_Q4"
+                else:
+                    self._yearSQL = f"{year}_Q2"
             else:
                 raise ValueError(
                     f"year must be after 2019, excluding 2020",
@@ -162,7 +165,7 @@ class Replica:
         df = pandas_gbq.read_gbq(
             f"""
             select person_id, BLOCKGROUP as GEOID, sex
-            from `{self._region}.{self._region}_2021_Q4_population`
+            from `{self._region}.{self._region}_{self._yearSQL}_population`
             where 
                 left(BLOCKGROUP, 2) in {self._stateSQL} AND
                 substr(BLOCKGROUP, 3, 3) in {self._countySQL}
@@ -201,7 +204,7 @@ class Replica:
         df = pandas_gbq.read_gbq(
             f"""
             select person_id, BLOCKGROUP as GEOID, age
-            from `{self._region}.{self._region}_2021_Q4_population`
+            from `{self._region}.{self._region}_{self._yearSQL}_population`
             where 
                 left(BLOCKGROUP, 2) in {self._stateSQL} AND
                 substr(BLOCKGROUP, 3, 3) in {self._countySQL}
@@ -241,7 +244,7 @@ class Replica:
         df = pandas_gbq.read_gbq(
             f"""
             select household_id, BLOCKGROUP as GEOID, household_income
-            from `{self._region}.{self._region}_2021_Q4_population`
+            from `{self._region}.{self._region}_{self._yearSQL}_population`
             where 
                 left(BLOCKGROUP, 2) in {self._stateSQL} AND
                 substr(BLOCKGROUP, 3, 3) in {self._countySQL}
@@ -272,7 +275,7 @@ class Replica:
         df = pandas_gbq.read_gbq(
             f"""
             select household_id, BLOCKGROUP as GEOID, vehicles
-            from `{self._region}.{self._region}_2021_Q4_population`
+            from `{self._region}.{self._region}_{self._yearSQL}_population`
             where 
                 left(BLOCKGROUP, 2) in {self._stateSQL} AND
                 substr(BLOCKGROUP, 3, 3) in {self._countySQL}
@@ -304,7 +307,7 @@ class Replica:
         df = pandas_gbq.read_gbq(
             f"""
             select household_id, BLOCKGROUP as GEOID, tenure
-            from `{self._region}.{self._region}_2021_Q4_population`
+            from `{self._region}.{self._region}_{self._yearSQL}_population`
             where 
                 left(BLOCKGROUP, 2) in {self._stateSQL} AND
                 substr(BLOCKGROUP, 3, 3) in {self._countySQL}
@@ -328,7 +331,7 @@ class Replica:
         df = pandas_gbq.read_gbq(
             f"""
             select household_id, person_id, BLOCKGROUP as GEOID, household_size
-            from `{self._region}.{self._region}_2021_Q4_population`
+            from `{self._region}.{self._region}_{self._yearSQL}_population`
             where 
                 left(BLOCKGROUP, 2) in {self._stateSQL} AND
                 substr(BLOCKGROUP, 3, 3) in {self._countySQL}
@@ -377,7 +380,7 @@ class Replica:
         df = pandas_gbq.read_gbq(
             f"""
             select household_id, BLOCKGROUP as GEOID, employment
-            from `{self._region}.{self._region}_2021_Q4_population`
+            from `{self._region}.{self._region}_{self._yearSQL}_population`
             where 
                 left(BLOCKGROUP, 2) in {self._stateSQL} AND
                 substr(BLOCKGROUP, 3, 3) in {self._countySQL}
@@ -424,7 +427,7 @@ class Replica:
         df = pandas_gbq.read_gbq(
             f"""
             select person_id, BLOCKGROUP as GEOID, education
-            from `{self._region}.{self._region}_2021_Q4_population`
+            from `{self._region}.{self._region}_{self._yearSQL}_population`
             where 
                 left(BLOCKGROUP, 2) in {self._stateSQL} AND
                 substr(BLOCKGROUP, 3, 3) in {self._countySQL} AND
@@ -467,7 +470,7 @@ class Replica:
         df = pandas_gbq.read_gbq(
             f"""
             select household_id, person_id, BLOCKGROUP as GEOID, race
-            from `{self._region}.{self._region}_2021_Q4_population`
+            from `{self._region}.{self._region}_{self._yearSQL}_population`
             where 
                 left(BLOCKGROUP, 2) in {self._stateSQL} AND
                 substr(BLOCKGROUP, 3, 3) in {self._countySQL} 
@@ -510,7 +513,7 @@ class Replica:
         df = pandas_gbq.read_gbq(
             f"""
             select household_id, person_id, BLOCKGROUP as GEOID, ethnicity
-            from `{self._region}.{self._region}_2021_Q4_population`
+            from `{self._region}.{self._region}_{self._yearSQL}_population`
             where 
                 left(BLOCKGROUP, 2) in {self._stateSQL} AND
                 substr(BLOCKGROUP, 3, 3) in {self._countySQL} 
@@ -548,7 +551,7 @@ class Replica:
         df = pandas_gbq.read_gbq(
             f"""
             select household_id, person_id, BLOCKGROUP as GEOID, ethnicity, race
-            from `{self._region}.{self._region}_2021_Q4_population`
+            from `{self._region}.{self._region}_{self._yearSQL}_population`
             where 
                 left(BLOCKGROUP, 2) in {self._stateSQL} AND
                 substr(BLOCKGROUP, 3, 3) in {self._countySQL} 
@@ -586,7 +589,7 @@ class Replica:
         df = pandas_gbq.read_gbq(
             f"""
             select household_id, person_id, BLOCKGROUP as GEOID, commute_mode
-            from `{self._region}.{self._region}_2021_Q4_population`
+            from `{self._region}.{self._region}_{self._yearSQL}_population`
             where 
                 left(BLOCKGROUP, 2) in {self._stateSQL} AND
                 substr(BLOCKGROUP, 3, 3) in {self._countySQL} 
@@ -643,7 +646,7 @@ class Replica:
         df = pandas_gbq.read_gbq(
             f"""
             select household_id, person_id, BLOCKGROUP as GEOID
-            from `{self._region}.{self._region}_2021_Q4_population`
+            from `{self._region}.{self._region}_{self._yearSQL}_population`
             where 
                 left(BLOCKGROUP, 2) in {self._stateSQL} AND
                 substr(BLOCKGROUP, 3, 3) in {self._countySQL} 
@@ -790,7 +793,7 @@ class Replica:
             f"""
             select 
                 {columns}
-            from `{self._region}.{self._region}_2022_Q4_{day}_trip`
+            from `{self._region}.{self._region}_{self._yearSQL}_{day}_trip`
             where 
                 left({end}_bgrp, 2) in {self._stateSQL} AND
                 substr({end}_bgrp, 3, 3) in {self._countySQL} AND
@@ -841,7 +844,7 @@ class Replica:
         df = pandas_gbq.read_gbq(
             f"""
             select *
-            from `{self._region}.{self._region}_2019_Q4_network_segments`
+            from `{self._region}.{self._region}_{self._yearSQL}_network_segments`
             """,
             project_id="replica-customer",
             credentials=CRED,
