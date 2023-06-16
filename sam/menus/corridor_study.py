@@ -36,6 +36,7 @@ def pull_corridor_data(
     lodes_level="bgrp",
     years=None,
     parcel_source="replica",
+    parcel_replica_fields=True,
     network_ids=False,
     trip_table_time="all",
     network=False
@@ -177,6 +178,7 @@ def pull_corridor_data(
                         crs=prj_crs,
                         year=years["parcel_year"],
                         config=PAR_CONF,
+                        replica=parcel_replica_fields
                     )
                     for county in county_names
                 ]
@@ -222,7 +224,7 @@ def pull_corridor_data(
     #     make_path(rep_dir, f"dest_trips_{years['parcel_year']}.csv")
     #     )
 
-    pd.concat([org_trips, dest_trips]).to_file(
+    pd.concat([org_trips, dest_trips]).to_csv(
         make_path(rep_dir, f"all_trips_{years['parcel_year']}.csv")
     )
     
