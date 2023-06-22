@@ -162,3 +162,27 @@ def download_old_fl_parcels(
         parcels = parcels["result"].merge(PAR_RECODE).copy()
 
     return parcels
+
+# def process_permits(path, 
+#                     address_fields = ['Address'],
+#                     sqft_fields = ['HSF', 'UHSF'],
+#                     unit_fields = ['Unit'],
+#                     land_use_fields = [],
+#                     land_use_dict = {
+#                         'res_uses' = [],
+#                         'non_resuses' = []
+#                     },
+#                     ):
+#     pass
+
+# [{'tigerLine': {'side': 'L', 'tigerLineId': '178479986'}, 
+#   'coordinates': {'x': -80.2490817848835, 'y': 33.0127196588559}, 
+#   'addressComponents': {'zip': '29483', 'streetName': 'CHAUSSEE', 'preType': '', 'city': 'KNIGHTSVILLE', 'preDirection': '', 'suffixDirection': '', 'fromAddress': '201', 'state': 'SC', 'suffixType': 'BLVD', 'toAddress': '299', 'suffixQualifier': '', 'preQualifier': ''}, 
+#   'matchedAddress': '207 CHAUSSEE BLVD, KNIGHTSVILLE, SC, 29483'},
+  
+#  {'tigerLine': {'side': 'L', 'tigerLineId': '178479986'}, 
+#   'coordinates': {'x': -80.2490817848835, 'y': 33.0127196588559}, 
+#   'addressComponents': {'zip': '29483', 'streetName': 'CHAUSSEE', 'preType': '', 'city': 'SUMMERVILLE', 'preDirection': '', 'suffixDirection': '', 'fromAddress': '201', 'state': 'SC', 'suffixType': 'BLVD', 'toAddress': '299', 'suffixQualifier': '', 'preQualifier': ''}, 
+#   'matchedAddress': '207 CHAUSSEE BLVD, SUMMERVILLE, SC, 29483'}]
+
+# '1503 Spicata St, Mount Pleasant'

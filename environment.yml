@@ -15,6 +15,7 @@ dependencies:
   - pip
   - pip:
     - us
+    - censusgeocode
     - -e ../../packages/rputils
     - -e ../../packages/algi
     - -e ../../packages/gary
