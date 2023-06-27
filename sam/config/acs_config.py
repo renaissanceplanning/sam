@@ -464,6 +464,22 @@ _EDUCATION_CONFIG_ = ACSConfig(
     univ="18+ population",
 )
 
+_MIGRATION_CONFIG_ = ACSConfig(
+    pd.DataFrame.from_dict(
+        {
+            "B07001_017": "same_house",
+            "B07001_033": "same_county",
+            "B07001_049": "same_state",
+            "B07001_065": "diff_state",
+            "B07001_081": "diff_country",
+        },
+        orient="index",
+        columns=["full"],
+    ),
+    table="B07001",
+    univ="1+ population",
+)
+
 _RACE_CONFIG_ = ACSConfig(
     pd.DataFrame.from_dict(
         {

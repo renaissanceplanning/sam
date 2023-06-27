@@ -942,3 +942,38 @@ class ACS:
             name=name,
         )
         return tbl
+    
+    def migration(
+        state, year, county=None, geography="tract", breaks=None, name="full"
+    ):
+        """
+        Download ACS housing cost data (universe: Owner-occupied Housing Units).
+
+        Parameters
+        ----------
+        see `sam.acs._numeric_processing`
+
+        Notes
+        -----
+        Options include:
+            1. `name = "full"`: full names for bins
+            2. `breaks = [...]`: only lower bound of bin
+
+        Returns
+        -------
+        ACS (subclass of pd.DataFrame)
+
+        """
+        cfg = acs_cfg._MIGRATION_CONFIG_
+        tbl = _numeric_processing(
+            geography=geography,
+            config=cfg,
+            state=state,
+            year=year,
+            county=county,
+            breaks=breaks,
+            name=name,
+        )
+        return tbl
+
+ACS.migration(state=state, county=county, year=2021)
