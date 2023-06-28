@@ -15,10 +15,11 @@ from sam.download.census import dl_census
 # TODO: rent and value methods
 # TODO: meta data handling (also lodes)
 
-state = "VA"
-county = ["51003", "51540"]
-county_names = ["Charlottesville", "Albemarle"]
-year = 2019
+# for interactive testing
+# state = "VA"
+# county = ["51003", "51540"]
+# county_names = ["Charlottesville", "Albemarle"]
+# year = 2019
 
 
 # Helper functions
@@ -975,5 +976,32 @@ class ACS:
             name=name,
         )
         return tbl
+    
+    def year_moved(state, year, county=None, geography="block group", name="full"):
+        """
+        Download ACS year moved in data (universe: total households).
 
-ACS.migration(state=state, county=county, year=2021)
+        Parameters
+        ----------
+        see `sam.acs._discrete_processing`
+
+        Notes
+        -----
+        Options include:
+            1. `name = "full"`: own, rent
+
+        Returns
+        -------
+        ACS (subclass of pd.DataFrame)
+
+        """
+        cfg = acs_cfg._YEAR_MOVED_IN_CONFIG_
+        tbl = _numeric_processing(
+            geography=geography,
+            config=cfg,
+            state=state,
+            year=year,
+            county=county,
+            name=name,
+        )
+        return tbl

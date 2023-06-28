@@ -222,10 +222,36 @@ _VEHICLES_CONFIG_ = ACSConfig(
 
 _TENURE_CONFIG_ = ACSConfig(
     pd.DataFrame.from_dict(
-        {"B25044_002": "own", "B25044_009": "rent"}, orient="index", columns=["full"]
+        {"B25044_002": "own", "B25044_009": "rent"}, 
+        orient="index", columns=["full"]
     ),
     table="B25044",
     univ="Total households",
+)
+
+_YEAR_MOVED_IN_CONFIG_ = ACSConfig(
+    pd.DataFrame.from_dict(
+        {
+            "B25038_003": "rnt_2019p",
+            "B25038_004": "rnt_2015_2018",
+            "B25038_005": "rnt_2010_2014",
+            "B25038_006": "rnt_2000_2009",
+            "B25038_007": "rnt_1990_1999",
+            "B25038_008": "rnt_1989b",
+
+            "B25038_010": "own_2019p",
+            "B25038_011": "own_2015_2018",
+            "B25038_012": "own_2010_2014",
+            "B25038_013": "own_2000_2009",
+            "B25038_014": "own_1990_1999",
+            "B25038_015": "own_1989b",
+
+        },
+        orient="index",
+        columns=["full"],
+    ),
+    table="B25038",
+    univ="Total Population in Occupied Housing Units",
 )
 
 _DISABILITY_BG_CONFIG_ = ACSConfig(

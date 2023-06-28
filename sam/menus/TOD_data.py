@@ -16,6 +16,7 @@ from sam.config import PAR_CONF
 from sam.config import COUNTIES as county_shapes
 from sam.config import extract_fips, validate_data_dir
 from sam.replica import Replica
+from rputils import make_path
 
 # TODO get postal from county geojson? I think this is done
 # TODO add pad and NLCD (NLCD needs default datasets to be incorporated)
@@ -35,6 +36,8 @@ def pull_TOD_data(
     lodes_level="bgrp",
     years=None,
     parcel_source="replica",
+    network_ids=False,
+    trip_table_time="all",
 ):
     """Download relevant data for a TOD study.
 
@@ -76,8 +79,18 @@ def pull_TOD_data(
     net_dir = os.path.join(raw_dir, "osm")
     par_dir = os.path.join(raw_dir, "parcels")
     lih_dir = os.path.join(raw_dir, "lihtc")
+    rep_dir = os.path.join(raw_dir, "replica")
 
-    for dire in [raw_dir, lodes_dir, acs_dir, shp_dir, net_dir, par_dir, lih_dir]:
+    for dire in [
+        raw_dir,
+        lodes_dir,
+        acs_dir,
+        shp_dir,
+        net_dir,
+        par_dir,
+        lih_dir,
+        rep_dir,
+        ]:
         if os.path.exists(dire) != True:
             os.mkdir(dire)
 
@@ -152,6 +165,11 @@ def pull_TOD_data(
     blocks = blocks.to_crs(prj_crs)
     blocks.to_file(os.path.join(shp_dir, "blocks.shp"))
     del blocks
+    
+    tracts = tiger.tracts(state=state, county=counties)
+    tracts = tracts.to_crs(prj_crs)
+    tracts.to_file(os.path.join(shp_dir, "tracts.shp"))
+    del tracts
 
     if parcel_source != None:
         print("Downloading parcels...")
@@ -193,6 +211,24 @@ def pull_TOD_data(
     print("Downloading Low Income Housing")
     lihtc = pull_lihtc(state=state, county=counties, crs=prj_crs)
     lihtc.to_file(os.path.join(lih_dir, "lihtc.shp"))
+    
+    print("Set Up Replica Fetcher")
+    rep_fetch = Replica(state=state, county=counties, year=years["parcel_year"])
+
+    print("Downloading Replica Trip Table...")
+    org_trips = rep_fetch.trip_table(link_ids=network_ids, time=trip_table_time)
+    # org_trips.to_csv(
+    #     make_path(rep_dir, f"origin_trips_{years['parcel_year']}.csv")
+    #     )
+
+    dest_trips = rep_fetch.trip_table(link_ids=network_ids, time=trip_table_time)
+    # dest_trips.to_csv(
+    #     make_path(rep_dir, f"dest_trips_{years['parcel_year']}.csv")
+    #     )
+
+    pd.concat([org_trips, dest_trips]).to_csv(
+        make_path(rep_dir, f"all_trips_{years['parcel_year']}.csv")
+    )
 
 
 if __name__ == "__main__":
