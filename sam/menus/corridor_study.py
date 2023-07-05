@@ -194,21 +194,28 @@ def pull_corridor_data(
 
     print("Downloading OSM...")
 
-    walk = OSMNetwork.walk(geometry=summary_areas, add_travel_time=True, crs=prj_crs)
+    walk = OSMNetwork.walk(geometry=summary_areas, 
+                           add_travel_time=True, 
+                           crs=prj_crs)
     walk.to_shp(net_dir, "walk")
     del walk
 
-    bike = OSMNetwork.bike(geometry=summary_areas, add_travel_time=True, crs=prj_crs)
+    bike = OSMNetwork.bike(geometry=summary_areas, 
+                           add_travel_time=True, 
+                           crs=prj_crs)
     bike.to_shp(net_dir, "bike")
     del bike
 
-    drive = OSMNetwork.drive(geometry=summary_areas, add_travel_time=True, crs=prj_crs)
+    drive = OSMNetwork.drive(geometry=summary_areas, 
+                             add_travel_time=True, 
+                             crs=prj_crs)
     drive.to_shp(net_dir, "drive")
     del drive
 
     print("Downloading Low Income Housing...")
     lihtc = pull_lihtc(state=state, county=counties, crs=prj_crs)
     lihtc.to_file(os.path.join(lih_dir, "lihtc.shp"))
+    del lihtc
 
     print("Set Up Replica Fetcher")
     rep_fetch = Replica(state=state, county=counties, year=years["parcel_year"])
