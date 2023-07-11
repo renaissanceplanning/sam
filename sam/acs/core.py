@@ -977,7 +977,7 @@ class ACS:
         )
         return tbl
     
-    def year_moved(state, year, county=None, geography="block group", name="full"):
+    def year_moved(state, year, county=None, geography="block group"):
         """
         Download ACS year moved in data (universe: total households).
 
@@ -1002,6 +1002,35 @@ class ACS:
             state=state,
             year=year,
             county=county,
-            name=name,
+            name=str(year),
+        )
+        return tbl
+    
+    def year_moved(state, year, county=None, geography="block group"):
+        """
+        Download ACS year moved in data (universe: total households).
+
+        Parameters
+        ----------
+        see `sam.acs._discrete_processing`
+
+        Notes
+        -----
+        Options include:
+            1. `name = "full"`: own, rent
+
+        Returns
+        -------
+        ACS (subclass of pd.DataFrame)
+
+        """
+        cfg = acs_cfg._YEAR_BLT__
+        tbl = _numeric_processing(
+            geography=geography,
+            config=cfg,
+            state=state,
+            year=year,
+            county=county,
+            name=str(year),
         )
         return tbl
