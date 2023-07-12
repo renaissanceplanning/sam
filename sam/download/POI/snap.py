@@ -76,8 +76,8 @@ def download_snap_retailers(current=True, mask=None, return_as_shape=False):
     provided. Changes in the parameters will only change the number of records 
     and data type returned.
     
-    For descriptions of the SNAP store type designations, refer to the function
-    `snap_store_types`.    
+    For descriptions of the SNAP store type designations, refer to the
+    function `snap_store_types`.    
     
     Returns
     -------
