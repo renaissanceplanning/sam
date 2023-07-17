@@ -12,6 +12,9 @@ Created on Mon Feb 21 14:19:35 2022
 import numpy as np
 import pandas as pd
 
+census_xw = 'https://www2.census.gov/geo/docs/maps-data/data/rel2020/blkgrp/tab20_blkgrp20_blkgrp10_natl.txt'
+
+xw_2010_to_2020 = pd.read_table(census_xw, delimiter='|')
 
 class ACSConfig:
     """

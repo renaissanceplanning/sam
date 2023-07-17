@@ -1006,9 +1006,9 @@ class ACS:
         )
         return tbl
     
-    def year_moved(state, year, county=None, geography="block group"):
+    def year_built(state, year, county=None, geography="block group"):
         """
-        Download ACS year moved in data (universe: total households).
+        Download ACS year built in data (universe: total households).
 
         Parameters
         ----------
