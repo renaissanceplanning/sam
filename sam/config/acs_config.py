@@ -235,6 +235,8 @@ _TENURE_CONFIG_ = ACSConfig(
 _YEAR_MOVED_IN_CONFIG_ = ACSConfig(
     pd.DataFrame.from_dict(
         {
+            "B25038_001": ["tot", "tot", "tot", "tot",
+                           "tot", "tot", "tot"],
             "B25038_003": ["rnt_2019p", "rnt_2019p", "rnt_2017p", "rnt_2017p", 
                            "rnt_2015p", "rnt_2015p", "rnt_2015p"],
             "B25038_004": ["rnt_2015_2018", "rnt_2015_2018", "rnt_2015_2016", 
@@ -280,6 +282,8 @@ _YEAR_MOVED_IN_CONFIG_ = ACSConfig(
 _YEAR_BLT__ = ACSConfig(
      pd.DataFrame.from_dict(
         {
+            "B25034_001": ["tot", "tot", "tot", "tot",
+                           "tot", "tot", "tot"],
             "B25034_002":['blt_2020p', 'blt_2014p', 'blt_2014p', 'blt_2014p', 
                           'blt_2014p', 'blt_2014p', 'blt_2014p'],
             "B25034_003":['blt_2010_2019', 'blt_2010_2013', 'blt_2010_2013', 
