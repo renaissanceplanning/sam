@@ -700,7 +700,7 @@ class Replica:
                 link ids increases the processing load from 50 gb to 400gb
             time (str): One of "am", "pm", "md", or "all". If "am",
                 filters trips that occurred between 6am and 10am.
-                If "pm", filters trips that occurred between 4pm and 6pm. If
+                If "pm", filters trips that occurred between 4pm and 7pm. If
                 "md", filters trips that occurred between 11am and 1pm. If
                 "all", does not filter based on time of day. Defaults to "am".
             purpose (str or list): One or more of "COMMERCIAL", "EAT", "HOME",
