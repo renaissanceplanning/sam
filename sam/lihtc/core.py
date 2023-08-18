@@ -9,7 +9,7 @@ from zipfile import ZipFile
 from sam.config import is_int
 
 
-def pull_lihtc(state, county, spatial=True, crs="EPSG:4326"):
+def download_lihtc(state, county, spatial=True, crs="EPSG:4326"):
     """Pull LIHTC from HUD
 
     Args:

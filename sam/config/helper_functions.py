@@ -1,7 +1,5 @@
 import os
-
 import geopandas as gpd
-
 from sam.config import COUNTIES as county_shapes
 
 
@@ -41,7 +39,24 @@ def validate_data_dir(data_dir):
     net_dir = os.path.join(raw_dir, "osm")
     par_dir = os.path.join(raw_dir, "parcels")
     lih_dir = os.path.join(raw_dir, "lihtc")
+    rep_dir = os.path.join(raw_dir, "replica")
+    nlcd_dir = os.path.join(raw_dir, "nlcd")
+    sld_dir = os.path.join(raw_dir, "sld")
 
-    for dire in [raw_dir, lodes_dir, acs_dir, shp_dir, net_dir, par_dir, lih_dir]:
+    for dire in [raw_dir, lodes_dir, acs_dir, shp_dir, net_dir, par_dir, 
+                 lih_dir, rep_dir, nlcd_dir, sld_dir]:
         if os.path.exists(dire) != True:
             os.mkdir(dire)
+    
+    dirs = {
+        'raw_dir': raw_dir,   
+        'lodes_dir' :lodes_dir, 
+        'acs_dir': acs_dir,    
+        'shp_dir': shp_dir,    
+        'net_dir': net_dir,     
+        'par_dir': par_dir,    
+        'lih_dir': lih_dir,
+        'rep_dir': rep_dir 
+    }       
+            
+    return dirs

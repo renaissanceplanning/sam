@@ -6,7 +6,7 @@ import sam.config.acs_config as acs_cfg
 from sam.download.sld import dl_sld
 
 
-def pull_sld(state, county=None, keep_cols=None):
+def download_sld(state, county=None, keep_cols=None):
     """downloads and filters sld to study county
 
     Args:

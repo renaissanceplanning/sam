@@ -22,7 +22,7 @@ __pycache__/
 my_map.html
 
 # osm cashe
-sam/cache
+sam/cache/
 
 
 # Distribution / packaging

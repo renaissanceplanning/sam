@@ -120,3 +120,8 @@ hh_inc_groups = [
 
 hh_workers_breaks = [-1, 0, 1, 2, 100]
 hh_workers_labels = ["wrk_0", "wrk_1", "wrk_2", "wrk_3p"]
+
+replica_acs_tables = [
+    "sex", "age", "hh_income", "hh_vehicles", "tenure", "hh_size", "hh_worker", 
+    "education", "race", "ethnicity", "minority_status", "mode_share", "totals"
+]

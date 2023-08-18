@@ -73,7 +73,8 @@ def download_nlcd(state, counties, year, dataset):
     year = closest(lst=[2019, 2016, 2013, 2011, 2008, 2006, 2004, 2001], K=year)
 
     cnties = county_shapes.loc[
-        (county_shapes.STATEFP.isin(state)) & (county_shapes.COUNTYFP.isin(counties))
+        (county_shapes.STATEFP.isin(state)) & 
+        (county_shapes.COUNTYFP.isin(counties))
     ]
 
     bounds = cnties.total_bounds
@@ -85,7 +86,8 @@ def download_nlcd(state, counties, year, dataset):
 
     bbox = gpd.GeoDataFrame(dict, crs=cnties.crs).to_crs("EPSG:4326")
 
-    raster = dl_nlcd(dataset=dataset, geog=geog, year=year, window=bbox, mask=False)
+    raster = dl_nlcd(dataset=dataset, geog=geog, year=year, 
+                     window=bbox, mask=False)
 
     return raster
 
@@ -96,5 +98,6 @@ if __name__ == "__main__":
     county_names = ["Franklin", "Wake", "Durham", "Johnston"]
 
     nlcd = download_nlcd(
-        state=state, counties=counties, year=2020, dataset="developed imperviousness"
+        state=state, counties=counties, 
+        year=2020, dataset="developed imperviousness"
     )

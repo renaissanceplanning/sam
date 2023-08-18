@@ -272,6 +272,15 @@ class Replica:
     #     return print('Currently no data in replica')
 
     def hh_vehicles(self):
+        """
+        Query the Google BigQuery database for household vehicle information for
+        a given region, state, and county.
+
+        Returns:
+        df (pandas.DataFrame): DataFrame containing counts of households in
+            each vehicle group and GEOID combination.
+            Columns are income groups, index is GEOIDs.
+        """
         df = pandas_gbq.read_gbq(
             f"""
             select household_id, BLOCKGROUP as GEOID, vehicles
@@ -304,6 +313,15 @@ class Replica:
         return df
 
     def tenure(self):
+        """
+        Query the Google BigQuery database for household tenure information for
+        a given region, state, and county.
+
+        Returns:
+        df (pandas.DataFrame): DataFrame containing counts of households by 
+        tenure status and GEOID combination.
+            Columns are income groups, index is GEOIDs.
+        """
         df = pandas_gbq.read_gbq(
             f"""
             select household_id, BLOCKGROUP as GEOID, tenure
@@ -328,6 +346,15 @@ class Replica:
         return df
 
     def hh_size(self):
+        """
+        Query the Google BigQuery database for household size information for
+        a given region, state, and county.
+
+        Returns:
+        df (pandas.DataFrame): DataFrame containing counts of households by 
+        size and GEOID combination.
+            Columns are income groups, index is GEOIDs.
+        """
         df = pandas_gbq.read_gbq(
             f"""
             select household_id, person_id, BLOCKGROUP as GEOID, household_size
@@ -811,11 +838,21 @@ class Replica:
 
         return df
 
-    def employment(self):
-        """_summary_ #TODO fill out to RAC standard"""
-        pass
+    # def employment(self):
+    #     """_summary_ #TODO fill out to RAC standard"""
+    #     pass
 
     def parcels(self, crs="WGS84"):
+        """
+        Query Replica Google BigQuery database for parcel table
+
+        Args:
+            crs (string): Sring specifiying a CRS for the parcels. Defaults to 
+                WGS84
+        Returns:
+            gdf (gpd.GeoDataFrame): GeoDataFrame of the parcel table
+        
+        """
         if self._yearSQL not in rpc.replica_parcel_years:
             raise ValueError(
                 f"Parcels only available for {rpc.replica_parcel_years}",
@@ -841,6 +878,16 @@ class Replica:
         return gdf
 
     def network(self, crs="WGS84"):
+        """
+        Query Replica Google BigQuery database for network table
+
+        Args:
+            crs (string): Sring specifiying a CRS for the network. Defaults to 
+                WGS84
+        Returns:
+            gdf (gpd.GeoDataFrame): GeoDataFrame of the Network table
+        
+        """
         df = pandas_gbq.read_gbq(
             f"""
             select *
@@ -862,6 +909,26 @@ class Replica:
             network = network.to_crs(crs=crs)
 
         return network
+    
+    def population(self):
+        """
+        Query Replica Google BigQuery database for population table
+
+        Returns:
+        df (pandas.DataFrame): DataFrame of the population table
+        """
+        df = pandas_gbq.read_gbq(
+            f"""
+            select *
+            from `{self._region}.{self._region}_{self._yearSQL}_population`
+            where 
+                left(BLOCKGROUP, 2) in {self._stateSQL} AND
+                substr(BLOCKGROUP, 3, 3) in {self._countySQL} 
+            """,
+            project_id="replica-customer",
+            credentials=CRED,
+        )
+        return df
 
 
 # nj = Replica(state=state, county=county, year=2022)

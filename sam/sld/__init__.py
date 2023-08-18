@@ -1,1 +1,1 @@
-from .core import pull_sld
+from .core import download_sld

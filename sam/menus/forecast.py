@@ -10,7 +10,7 @@ from sam.parcels import download_fl_parcels
 from sam.acs import ACS
 from sam.lodes import lodes
 from sam.tiger import Tiger as tiger
-from sam.lihtc import pull_lihtc
+from sam.lihtc import download_lihtc
 from sam.osm import OSMNetwork
 from sam.config import PAR_CONF
 from sam.config import COUNTIES as county_shapes
@@ -128,6 +128,4 @@ def pull_forecast_data(
     blocks.to_file(os.path.join(shp_dir, "blocks.shp"))
     del blocks
     
-    
-
     print("Done! Now go Download BAO")
