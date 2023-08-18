@@ -30,8 +30,9 @@ class dataMenuDownloader:
     """_summary_
     A class that allows for mass use of the SAM data downloaders.
     
-    Contains methods wrapping the individual submodules downloaders so that the (insert pull method name)
-    and injest various project menus and settings to provide a convient methods for mass downloads.
+    Contains methods wrapping the individual submodules downloaders so that  
+    `pull_menu` can injest various project menus and settings to provide a 
+    convient methods for mass downloads.
     """
     def __init__(
         self,
@@ -71,6 +72,34 @@ class dataMenuDownloader:
         lodes_data=["rac", "wac", "od"],
         lodes_level="bgrp",
         ):
+        """
+        Downloads LODES (Longitudinal Employer-Household Dynamics) data based on 
+        the provided parameters and saves the downloaded data as CSV files in 
+        the designated directories.
+       
+        If "rac" is included in `lodes_data`, it downloads Residence Area 
+        Characteristics data and saves it as 'rac_year.csv'.
+        
+        If "wac" is included in `lodes_data`, it downloads Workplace Area 
+        Characteristics data and saves it as 'wac_year.csv'.
+       
+        If "od" is included in `lodes_data`, it downloads Origin-Destination 
+        data and saves it as 'od_year.csv'.
+
+        Args:
+            lodes_data (list[str], optional): A list of LODES data types to 
+                download. Valid options are "rac" (Residence Area 
+                Characteristics), "wac" (Workplace Area Characteristics), and 
+                "od" (Origin-Destination). Defaults to ["rac", "wac", "od"].
+            lodes_level (str, optional): The geographic level at which the LODES
+            data should be aggregated. Valid options include "bgrp" (Block 
+            Group), "tract" (Census Tract), and other geographic levels 
+            supported by the LODES API. Defaults to "bgrp".
+
+        Note:
+            This function requires prior setup of the `postal`, `years`, `dirs`, 
+            and other necessary attributes within the class.
+        """
         print("Downloading LODES...")
         
         xw = lodes.xwalk(state=self.postal)
@@ -105,6 +134,23 @@ class dataMenuDownloader:
     def pull_acs(
         self,
     ):
+        """
+        Downloads American Community Survey (ACS) data for various methods and 
+        saves them as CSV files.
+
+        Note:
+            This function requires prior setup of the `state`, `years`, 
+            `counties`, `dirs`, and other necessary attributes within the class.
+
+        Downloads ACS data using the methods available in the ACS class and 
+        saves the downloaded data as CSV files in the designated directories.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
         print("Downloading ACS...")
         # TODO use the get attribute method and a list
         methods = [
@@ -132,6 +178,25 @@ class dataMenuDownloader:
     def pull_tiger(
         self
     ):
+        """
+        Downloads TIGER (Topologically Integrated Geographic Encoding and 
+        Referencing) data for specified boundaries.
+
+        This method downloads TIGER data for block groups, blocks, and tracts 
+        for the specified state and county, and saves them as shapefiles in the 
+        designated directory specified in the `dirs` attribute of the class.
+        
+        Note:
+            This function should be called after setting up the necessary 
+            attributes (`state`, `counties`, `crs`, `dirs`) within the class 
+            instance.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
         print("Downloading TIGER...")
         
         bgrp = tiger.block_groups(state=self.state, 
@@ -192,6 +257,31 @@ class dataMenuDownloader:
         self,
         add_travel_time=True
     ):
+        """
+        Downloads parcel data for specified boundaries from either Florida 
+        Department of Revenue (FDOR) or Replica and saves it as a shapefile.
+
+        This method downloads parcel data for the specified state and county 
+        boundaries from either source. The downloaded parcel data is then saved 
+        as a shapefile in the designated directory specified in the `dirs` 
+        attribute of the class.
+
+        Note:
+            This function should be called after setting up the necessary 
+            attributes (`state`, `counties`, `crs`, `years`, `dirs`) within the 
+            class instance.
+
+        Args:
+            parcel_source (str, optional): The source from which to download 
+                parcel data. Valid options are "DOR" (Department of Revenue) or 
+                "replica" (Replica source). Defaults to "replica".
+            parcel_replica_fields (bool, optional): A boolean indicating whether 
+                to include replica-specific fields when downloading parcel data 
+                from the Replica source. Defaults to True.
+
+        Returns:
+            None
+        """
         print("Downloading OSM...")
 
         walk = OSMNetwork.walk(
@@ -218,6 +308,25 @@ class dataMenuDownloader:
     def pull_lihtc(
             self
         ):
+        """
+        Downloads Low-Income Housing Tax Credit (LIHTC) data and saves it as a 
+        shapefile.
+
+        This method downloads LIHTC data for the specified state and county 
+        boundaries and saves it as a shapefile in the designated directory 
+        specified in the `dirs` attribute of the class.
+
+        Note:
+            This function should be called after setting up the necessary 
+            attributes (`state`, `counties`, `crs`, `dirs`) within the class 
+            instance.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
         print("Downloading Low Income Housing...")
         lihtc = download_lihtc(
             state=self.state, 
@@ -230,6 +339,39 @@ class dataMenuDownloader:
             self,
             dataset
         ):
+        """
+        Downloads National Land Cover Database (NLCD) data and saves it as a 
+        GeoTIFF raster.
+
+        This method downloads NLCD data for the specified state and county 
+        boundaries and saves it as a GeoTIFF raster in the designated directory 
+        specified in the `dirs` attribute of the class. The NLCD dataset can be 
+        selected using the `dataset` parameter.
+
+        Note:
+            This function should be called after setting up the necessary 
+            attributes (`state`, `counties`, `crs`, `dirs`, `years`) within the 
+            class instance.
+
+        Args:
+            dataset (str): The NLCD dataset to be downloaded.
+            NLCD Data Sets:
+                - 'land cover change index'
+                - 'land cover all years'
+                - 'land cover'
+                - 'land cover change'
+                - 'land cover change pixels'
+                - 'developed imperviousness all years'
+                - 'developed imperviousness'
+                - 'developed imperviousness descriptor'
+                - 'developed urban descriptor'
+                - 'developed imperviousness change'
+                - 'tree canopy cover'
+                - 'tree canopy change'
+
+        Returns:
+            None
+        """
         print("Downloading Replica Trip Table...")
         nlcd = download_nlcd(
             state=self.state,
@@ -247,6 +389,26 @@ class dataMenuDownloader:
             self,
             keep_cols
         ):
+        """
+        Downloads the Smart Location Database (SLD) data and saves it as a 
+        shapefile.
+
+        This method downloads SLD data for the specified state and county 
+        boundaries and saves it as a shapefile in the designated directory 
+        specified in the `dirs` attribute of the class. The columns to be 
+        retained in the downloaded SLD data can be specified using the 
+        `keep_cols` parameter.
+
+        Note:
+            This function should be called after setting up the necessary 
+            attributes (`state`, `county`, `dirs`) within the class instance.
+
+        Args:
+            keep_cols (list[str]): A list of column names to be retained in the downloaded SLD data.
+
+        Returns:
+            None
+        """
         print("Downloading Replica SLD...")
         sld = download_sld(
             state=self.state,
@@ -264,27 +426,72 @@ class dataMenuDownloader:
             time="all",  
             purpose="all"
         ):
-            print("Downloading Replica Trip Table...")
-            org_trips = self.rep_fetch.trip_table(origin=True, 
-                                                  link_ids=link_ids, 
-                                                  mid_week=mid_week,
-                                                  time=time,
-                                                  purpose=purpose)
-            
-            dest_trips = self.rep_fetch.trip_table(origin=False, 
-                                                   link_ids=link_ids, 
-                                                   mid_week=mid_week,
-                                                   time=time,
-                                                   purpose=purpose)
 
-            pd.concat([org_trips, dest_trips]).to_csv(
-                make_path(self.dirs['rep_dir'], 
-                          f"all_trips_{self.rep_fetch._yearSQL}.csv")
-            )
+        """
+        Downloads Replica Trip Table data for specified parameters and saves it 
+        as a CSV file.
+
+        This method downloads Replica Trip Table data for the specified 
+        parameters, including trip origin and destination, link IDs, day type, 
+        time period, and trip purpose. The downloaded trip table data is then 
+        concatenated and saved as a CSV file in the designated directory 
+        specified in the `dirs` attribute of the class.
+
+        Note:
+            This function should be called after setting up the necessary 
+            attributes (`rep_fetch`, `dirs`) within the class instance.
+
+        Args:
+            mid_week (bool, optional): A boolean indicating whether to download 
+            mid-week trip table data. Defaults to True.
+            link_ids (bool, optional): A boolean indicating whether to include 
+            link IDs in the downloaded trip table data. Defaults to False.
+            time (str, optional): The time period to filter the trip table data, 
+                see `Replica.trip_table` for all options
+            purpose (str, optional): The trip purpose to filter the trip table.
+                see `Replica.trip_table` for all options
+
+        Returns:
+            None
+        """
+        print("Downloading Replica Trip Table...")
+        org_trips = self.rep_fetch.trip_table(origin=True, 
+                                                link_ids=link_ids, 
+                                                mid_week=mid_week,
+                                                time=time,
+                                                purpose=purpose)
+        
+        dest_trips = self.rep_fetch.trip_table(origin=False, 
+                                                link_ids=link_ids, 
+                                                mid_week=mid_week,
+                                                time=time,
+                                                purpose=purpose)
+
+        pd.concat([org_trips, dest_trips]).to_csv(
+            make_path(self.dirs['rep_dir'], 
+                        f"all_trips_{self.rep_fetch._yearSQL}.csv")
+        )
             
     def pull_replica_network(
         self
     ):
+        """
+        Downloads Replica Network data and saves it as a shapefile.
+
+        This method downloads Replica Network data for the specified year and 
+        saves it as a shapefile in the designated directory specified in the 
+        `dirs` attribute of the class.
+
+        Note:
+            This function should be called after setting up the necessary 
+            attributes (`rep_fetch`, `dirs`, `crs`) within the class instance.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
         print("Downloading Replica Network...")
         network = self.rep_fetch.network(crs=self.crs)
         network.to_file(
@@ -296,7 +503,8 @@ class dataMenuDownloader:
         self,
     ):
         """
-        Pull Data From Replica using the ACS Format
+        Pulls Data From Replica Population Table and formats it to be comparable
+        to the ACS data
         """
         print("Downloading Replica ACS Table...")
         for method in replica_acs_tables:
@@ -312,6 +520,23 @@ class dataMenuDownloader:
     def pull_replica_population(
         self,
     ):
+        """
+        Downloads Replica Population Table data and saves it as a CSV file.
+
+        This method downloads Replica Population Table data for the specified 
+        year and saves it as a CSV file in the designated directory specified in 
+        the `dirs` attribute of the class.
+
+        Note:
+            This function should be called after setting up the necessary 
+            attributes (`rep_fetch`, `dirs`) within the class instance.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
         print("Downloading Replica Population Table...")
         pop = self.rep_fetch.population()
         pop.to_csv(
