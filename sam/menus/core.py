@@ -1,4 +1,3 @@
-import os
 import us
 import datetime
 import pandas as pd
