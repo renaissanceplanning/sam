@@ -5,6 +5,7 @@ Created on Tue Aug 29 10:39:10 2023
 @author: w_rpg
 """
 
+import os
 import re
 import requests
 import geopandas as gpd
@@ -115,6 +116,19 @@ def _scrape_noaa_slr_dataset_links(message=True):
     noaa_slr_links = pd.concat(noaa_slr_links)
     noaa_slr_links = noaa_slr_links[["state","county","dataset","link"]]
     return noaa_slr_links
+
+
+# The links are to .zips -- iterate through to pull files
+for url in noaa_slr_links.link:
+    # If it's Sea Level Rise, Sea Level Rise Depth, Mapping Confidence, or
+    # Flood Frequency, we're dealing with a .gdb. If it's DEM, we're 
+    # dealing with a .tif.
+    zip_link = f"https:{url}"
+    req_zip_link = requests.get(zip_link, stream=True)
+    zip_open = ZipFile(BytesIO(req_zip_link.content))
+    zip_files = zip_open.namelist()
+    zip_dirs = np.unique([os.path.dirname(f) for f in zip_files])
+        
 
 
 
