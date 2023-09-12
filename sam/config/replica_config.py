@@ -17,7 +17,8 @@ replica_regions = {
 
 replica_pop_years = ["2019_Q4", 
                      "2021_Q2", "2021_Q4", 
-                     "2022_Q2", "2022_Q4"]
+                     "2022_Q2", "2022_Q4",
+                     "2023_Q2"]
 
 replica_coverage_years = pd.Series(
     [int(year[0:4]) for year in replica_pop_years]

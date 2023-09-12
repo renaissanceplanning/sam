@@ -14,3 +14,8 @@ tod_menu = {
     'pull_replica_acs': {},
     'pull_replica_population': {},
 }
+
+parcels_menu = {
+    'pull_parcels': {'parcel_source': "replica",
+                     'parcel_replica_fields': False}
+}
