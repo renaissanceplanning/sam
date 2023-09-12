@@ -10,12 +10,8 @@ from shapely import wkt
 from sam.config import COUNTIES
 from sam.config import CRED
 
-
-# state = ['34']
-# county = ['039', '024']
 # TODO add rputils iterable
 # TODO add properties, getter and setter
-
 
 def find_mega_region(state):
     """
@@ -930,6 +926,10 @@ class Replica:
         )
         return df
 
-
-# nj = Replica(state=state, county=county, year=2022)
-# test = nj.parcels()
+if __name__ == "__main__":
+    from pprint import pprint
+    state = ['34']
+    county = ['039', '024']   
+    nj = Replica(state=state, county=county, year=2023)
+    test = nj.population()
+    pprint(test)
