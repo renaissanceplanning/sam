@@ -927,9 +927,10 @@ class Replica:
         return df
 
 if __name__ == "__main__":
-    from pprint import pprint
-    state = ['34']
-    county = ['039', '024']   
-    nj = Replica(state=state, county=county, year=2023)
-    test = nj.population()
-    pprint(test)
+    pass
+    # from pprint import pprint
+    # state = ['34']
+    # county = ['039', '024']   
+    # nj = Replica(state=state, county=county, year=2023)
+    # test = nj.population()
+    # pprint(test)
