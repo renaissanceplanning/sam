@@ -254,7 +254,8 @@ class dataMenuDownloader:
         
     def pull_OSM(
         self,
-        add_travel_time=True
+        add_travel_time=True,
+        trim=True
     ):
         """
         Downloads parcel data for specified boundaries from either Florida 
@@ -288,21 +289,21 @@ class dataMenuDownloader:
             add_travel_time=add_travel_time, 
             crs=self.crs
             )
-        walk.to_shp(self.dirs['net_dir'], "walk")
+        walk.to_shp(self.dirs['net_dir'], "walk", trim=trim)
 
         bike = OSMNetwork.bike(
             geometry=self.summary_areas, 
             add_travel_time=add_travel_time, 
             crs=self.crs
             )
-        bike.to_shp(self.dirs['net_dir'], "bike")
+        bike.to_shp(self.dirs['net_dir'], "bike", trim=trim)
 
         drive = OSMNetwork.drive(
             geometry=self.summary_areas, 
             add_travel_time=add_travel_time, 
             crs=self.crs
             )
-        drive.to_shp(self.dirs['net_dir'], "drive")
+        drive.to_shp(self.dirs['net_dir'], "drive", trim=trim)
         
     def pull_lihtc(
             self
