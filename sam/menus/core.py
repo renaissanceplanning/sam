@@ -289,7 +289,7 @@ class dataMenuDownloader:
             add_travel_time=add_travel_time, 
             crs=self.crs
             )
-        walk.to_shp(self.dirs['net_dir'], "walk", trim=trim)
+        walk.to_shp(save_dir=self.dirs['net_dir'], prefix="walk", trim=trim)
 
         bike = OSMNetwork.bike(
             geometry=self.summary_areas, 
@@ -563,16 +563,17 @@ class dataMenuDownloader:
 
         
 if __name__ == "__main__":
-    data_dir = make_path(
-        "D:/Renaissance Planning Group",
-        "Projects - ComprehensivePlan_2023/tech_group/data"
-        )
+    pass
+    # data_dir = make_path(
+    #     "D:/Renaissance Planning Group",
+    #     "Projects - ComprehensivePlan_2023/tech_group/data"
+    #     )
     
-    county = gpd.read_file(make_path(data_dir, 'RAW', "vb_boundary.shp"))
-    county.geometry = county.buffer(distance=-1000)
+    # county = gpd.read_file(make_path(data_dir, 'RAW', "vb_boundary.shp"))
+    # county.geometry = county.buffer(distance=-1000)
     
-    fetcher = dataMenuDownloader(
-        county, data_dir, prj_crs=county.crs
-    )
+    # fetcher = dataMenuDownloader(
+    #     county, data_dir, prj_crs=county.crs
+    # )
     
-    fetcher.pull_menu(methods=tod_menu)
+    # fetcher.pull_menu(methods=tod_menu)

@@ -19,7 +19,7 @@ from sam.download.osm import dl_osm_network
 # TODO: hierarchies for highway types
 
 _NODES_FIELDS_ = ["x", "y"]
-_EDGES_FIELDS_ = ["highway", "length", "speed_kph", "travel_time"]
+_EDGES_FIELDS_ = ["u", "v", "key", "highway", "length", "speed_kph", "travel_time"]
 _OBJ_TYPES_ = ["nx", "pandana", "gdf"]
 
 # %% Helper Functions
@@ -57,7 +57,7 @@ def _dat_osm(geometry, net_type, add_travel_time=True, crs=None, **kwargs):
 
     """
     net = dl_osm_network(
-        geometry=geometry, net_type=net_type, trim_components=True, **kwargs
+        geometry=geometry, net_type=net_type, trim_components=False, **kwargs
     )
     if add_travel_time == True:
         net = ox.add_edge_speeds(net)

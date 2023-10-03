@@ -179,7 +179,7 @@ def dl_osm_network(
             c,
             network_type=net_type,
             simplify=True,
-            retain_all=False,
+            retain_all=True,
             truncate_by_edge=True,
             clean_periphery=False,
             custom_filter=osm_query,
