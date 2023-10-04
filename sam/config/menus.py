@@ -41,7 +41,7 @@ corridor_studies = {
     'pull_lodes': {'lodes_data': ["rac", "wac", "od"],
                    'lodes_level': "tabblk2020"},
     'pull_acs': {},
-    'pull_tiger': {},
+    # 'pull_tiger': {},
     'pull_parcels': {'parcel_source': "replica",
                      'parcel_replica_fields': True},
     'pull_OSM': {'add_travel_time': False},

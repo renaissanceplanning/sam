@@ -18,16 +18,17 @@ def extract_fips(gdf):
         gdf (gpd.GeoDataFrame): A gdf containing summary area polygons
 
     Returns:
-        tuple: A tuple containing strings for state and county fips, and county
-            names.
+        tuple: A tuple containing strings for geoids and county names.
     """
     # TODO increase precision to single county
     gdf = gdf.to_crs(county_shapes.crs)
     county = county_shapes[county_shapes.intersects(gdf.dissolve().geometry[0])]
-    counties = county["COUNTYFP"].unique().tolist()
-    states = county["STATEFP"].unique().tolist()
+    # counties = county["COUNTYFP"].unique().tolist()
+    # states = county["STATEFP"].unique().tolist()
+    geoids = county["GEOID"].unique().tolist()
     county_names = county["NAME"].unique().tolist()
-    return states, counties, county_names
+    # return states, counties, county_names
+    return geoids, county_names
 
 
 def validate_data_dir(data_dir):
