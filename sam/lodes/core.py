@@ -71,7 +71,7 @@ class lodes:
         return df
 
     # TODO add built in aggregate and filters
-    def rac(state, year, aggregate=None):
+    def rac(state, year):
         """
         Download LODES residence area characteristics data (for all jobs in all
         segments)
