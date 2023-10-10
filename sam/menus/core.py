@@ -405,8 +405,7 @@ class dataMenuDownloader:
         """
         print("Downloading Replica Trip Table...")
         nlcd = download_nlcd(
-            state=self.state,
-            counties=self.counties,
+            geoid=self.geoids,
             year=self.years["parcel_year"],
             dataset=dataset
         )
