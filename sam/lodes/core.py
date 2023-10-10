@@ -13,6 +13,9 @@ import pandas as pd
 
 from sam.download.census import dl_lodes, dl_xwalk
 
+#TODO bring more in line with other downloads 
+# add the conversions to POSTAL in here not part of menu
+
 
 # Helper functions
 def _dlfm_lodes_ac(file, state, year, idcol):

@@ -16,11 +16,9 @@ from sam.nlcd import download_nlcd
 from sam.sld import download_sld
 
 from sam.config import PAR_CONF
-from sam.config import COUNTIES as county_shapes
 from sam.config import extract_fips, validate_data_dir
 from sam.config.replica_config import replica_acs_tables
-from sam.config.menus import tod_menu
-
+from sam.config.helper_functions import create_geo_dict
 from rputils import make_path
 
 expected = np.array(["parcel_year", "acs_year", "lodes_year"])
@@ -58,9 +56,13 @@ class dataMenuDownloader:
         self.summary_areas = summary_areas
         self.years = years
         self.geoids = geoids
-        self.postal = [us.states.lookup(state[0:2]).abbr for state in geoids]
-        self.state = [state[0:2] for state in geoids]
-        self.counties = [county[2:5] for county in geoids]
+        self.geo_dict = create_geo_dict(geoids=geoids)
+        
+        
+        self.postal = [us.states.lookup(state).abbr 
+                       for state in self.geo_dict.keys()]
+        # self.state = self.geo_dict.keys()
+        # self.counties = [county[2:5] for county in geoids]
         self.county_names = county_names
         self.crs = prj_crs
         self.rep_fetch = Replica(state=[state[0:2] for state in geoids], 
@@ -214,42 +216,34 @@ class dataMenuDownloader:
             None
         """
         print("Downloading TIGER...")
-        bgrp_2010_out = []
-        bgrp_2020_out = []
-        blocks_out = []
-        tracts_out = []
+        # bgrp_2010_out = []
+        # bgrp_2020_out = []
+        # blocks_out = []
+        # tracts_out = []
         
-        for geoid in self.geoids:
-            bgrp_10 = tiger.block_groups(state=geoid[0:2], 
-                                         county=geoid[2:5], 
-                                         year = 2019)
-            bgrp_10 = bgrp_10.to_crs(self.crs)
-            bgrp_2010_out.append(bgrp_10)
-            
-            bgrp_20 = tiger.block_groups(state=geoid[0:2], 
-                                      county=geoid[2:5], 
-                                      year=2020)
-            bgrp_20 = bgrp_20.to_crs(self.crs)
-            bgrp_2020_out.append(bgrp_20)
-            
+        # for geoid in self.geoids:
+        bgrp_10 = tiger.block_groups(geoid=self.geoids, year = 2019)
+        bgrp_10 = bgrp_10.to_crs(self.crs)
+        # bgrp_2010_out.append(bgrp_10)
+        
+        bgrp_20 = tiger.block_groups(geoid=self.geoids, year=2020)
+        bgrp_20 = bgrp_20.to_crs(self.crs)
+        # bgrp_2020_out.append(bgrp_20)
+        
 
-            blocks = tiger.blocks(state=geoid[0:2], 
-                                county=geoid[2:5],
-                                year=self.years["acs_year"])
-            blocks = blocks.to_crs(self.crs)
-            blocks_out.append(blocks)
-            
-            
-            tracts = tiger.tracts(state=geoid[0:2],
-                                  county=geoid[2:5],
-                                  year=self.years["acs_year"])
-            tracts = tracts.to_crs(self.crs)
-            tracts_out.append(tracts)
+        blocks = tiger.blocks(geoid=self.geoids, year=self.years["acs_year"])
+        blocks = blocks.to_crs(self.crs)
+        # blocks_out.append(blocks)
         
-        bgrp_10 = gpd.GeoDataFrame(pd.concat(bgrp_2010_out))
-        bgrp_20 = gpd.GeoDataFrame(pd.concat(bgrp_2020_out))
-        blocks = gpd.GeoDataFrame(pd.concat(bgrp_2010_out))
-        tracts = gpd.GeoDataFrame(pd.concat(bgrp_2010_out))
+        
+        tracts = tiger.tracts(geoid=self.geoids, year=self.years["acs_year"])
+        tracts = tracts.to_crs(self.crs)
+        # tracts_out.append(tracts)
+        
+        # bgrp_10 = gpd.GeoDataFrame(pd.concat(bgrp_2010_out))
+        # bgrp_20 = gpd.GeoDataFrame(pd.concat(bgrp_2020_out))
+        # blocks = gpd.GeoDataFrame(pd.concat(bgrp_2010_out))
+        # tracts = gpd.GeoDataFrame(pd.concat(bgrp_2010_out))
             
         bgrp_10.to_file(make_path(self.dirs['shp_dir'], "block_groups_2010.shp"))
         bgrp_20.to_file(make_path(self.dirs['shp_dir'], "block_groups_2020.shp"))

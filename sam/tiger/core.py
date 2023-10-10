@@ -6,9 +6,11 @@ Created on Thu Jan 27 17:01:13 2022
 """
 
 import re
+import pandas as pd
 import geopandas as gpd
 
 from sam.download.census import dl_tiger
+from sam.config.helper_functions import create_geo_dict
 
 # %% Helper functions
 
@@ -83,7 +85,7 @@ def _dtt_nation(geom, year, crs=None, trim=False, keepname=False):
     return _tt(ts, crs=crs, trim=trim, keepname=keepname)
 
 
-def _dtt_state(geom, year, state=None, crs=None, trim=False, keepname=False):
+def _dtt_state(geom, year, geoid=None, crs=None, trim=False, keepname=False):
     """
     Download, Trim, and Transform a US Census TIGER shape that allows state
     level specifications (and up).
@@ -113,12 +115,20 @@ def _dtt_state(geom, year, state=None, crs=None, trim=False, keepname=False):
     gpd.GeoDataFrame
 
     """
-    ts = dl_tiger(geom=geom, state=state, year=year)
-    return _tt(ts, crs=crs, trim=trim, keepname=keepname)
+    if geoid is None:
+        ts = dl_tiger(geom=geom, state=state, year=year)        
+    else:
+        geo_dict = create_geo_dict(geoid)
+        state = geo_dict.keys() 
+        #TODO Could need a loop here if dl_tiger cannot take list of states
+        ts = dl_tiger(geom=geom, state=state, year=year) 
+        ts = _tt(ts, crs=crs, trim=trim, keepname=keepname)
+    
+    return ts
 
 
 def _dtt_county(
-    geom, year, county=None, state=None, crs=None, trim=False, keepname=False
+    geom, year, geoid=None, crs=None, trim=False, keepname=False
 ):
     """
     Download, Trim, and Transform a US Census TIGER shape that allows county
@@ -153,8 +163,20 @@ def _dtt_county(
     gpd.GeoDataFrame
 
     """
-    ts = dl_tiger(geom=geom, state=state, county=county, year=year)
-    return _tt(ts, crs=crs, trim=trim, keepname=keepname)
+    if geoid is None:
+        geo_dict = create_geo_dict(geoid)
+        ts = dl_tiger(geom=geom, state=None, county=None, year=year)
+    else:
+        geo_dict = create_geo_dict(geoids=geoid)
+        ts_out = []
+        for state in geo_dict.keys():
+            st_ts = dl_tiger(geom=geom, state=state, 
+                             county=geo_dict[state], 
+                             year=year)
+            ts_out.append(st_ts)
+        ts = pd.concat(ts_out)
+        ts = _tt(ts, crs=crs, trim=trim, keepname=keepname)
+    return ts
 
 
 # %% Class
@@ -169,7 +191,7 @@ class Tiger(gpd.GeoDataFrame):
         return super().__init__(gdf)
 
     @classmethod
-    def blocks(cls, state, year=2019, county=None, crs=None, trim=False):
+    def blocks(cls, geoid, year, crs=None, trim=False):
         """
         Download US Census blocks.
 
@@ -182,10 +204,11 @@ class Tiger(gpd.GeoDataFrame):
         Tiger (subclass of gpd.GeoDataFrame)
 
         """
+        
         ts = _dtt_county(
             geom="blocks",
-            state=state,
-            county=county,
+            geoid=geoid,
+            # county=county,
             year=year,
             crs=crs,
             trim=trim,
@@ -194,7 +217,7 @@ class Tiger(gpd.GeoDataFrame):
         return cls(ts)
 
     @classmethod
-    def block_groups(cls, state, county=None, year=2019, crs=None, trim=False):
+    def block_groups(cls, geoid, year, crs=None, trim=False):
         """
         Download US Census block groups.
 
@@ -209,8 +232,8 @@ class Tiger(gpd.GeoDataFrame):
         """
         ts = _dtt_county(
             geom="block_groups",
-            state=state,
-            county=county,
+            geoid=geoid,
+            # county=county,
             year=year,
             crs=crs,
             trim=trim,
@@ -219,7 +242,7 @@ class Tiger(gpd.GeoDataFrame):
         return cls(ts)
 
     @classmethod
-    def tracts(cls, state, county=None, year=2019, crs=None, trim=False):
+    def tracts(cls, geoid, year, crs=None, trim=False):
         """
         Download US Census tracts.
 
@@ -234,8 +257,8 @@ class Tiger(gpd.GeoDataFrame):
         """
         ts = _dtt_county(
             geom="tracts",
-            state=state,
-            county=county,
+            geoid=geoid,
+            # county=county,
             year=year,
             crs=crs,
             trim=trim,
@@ -244,7 +267,7 @@ class Tiger(gpd.GeoDataFrame):
         return cls(ts)
 
     @classmethod
-    def counties(cls, state, year=2019, crs=None, trim=False):
+    def counties(cls, geoid, year=2019, crs=None, trim=False):
         """
         Download US counties.
 
@@ -258,7 +281,8 @@ class Tiger(gpd.GeoDataFrame):
 
         """
         ts = _dtt_state(
-            geom="counties", state=state, year=year, crs=crs, trim=trim, keepname=True
+            geom="counties", geoid=geoid, year=year, crs=crs, 
+            trim=trim, keepname=True
         )
         return cls(ts)
 
