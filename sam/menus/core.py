@@ -176,18 +176,11 @@ class dataMenuDownloader:
         ]
 
         for method in methods:
-            df_out = []
-            
-            for geoid in self.geoids:
-                df = getattr(ACS, method)(
-                    state=geoid[0:2], 
-                    year=self.years["acs_year"], 
-                    county=geoid[2:5]
-                    )
-                df_out.append(df)
-                
-            df = pd.concat(df_out)
-                
+            df = getattr(ACS, method)(
+                geoid=self.geoids,
+                year=self.years["acs_year"],
+                )
+
             if df.empty == False:
                 df.to_csv(
                     make_path(

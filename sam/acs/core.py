@@ -11,6 +11,7 @@ import numpy as np
 import sam.config.acs_config as acs_cfg
 
 from sam.download.census import dl_census
+from sam.config.helper_functions import create_geo_dict
 
 # TODO: rent and value methods
 # TODO: meta data handling (also lodes)
@@ -167,7 +168,7 @@ def _combine_levels(df, idcol, config, breaks=None, name="full"):
     return dt
 
 
-def _discrete_processing(geography, config, state, year, county=None, name="full"):
+def _discrete_processing(geography, config, geoid, year, name="full"):
     """
     Download ACS data, and perform aliasing or preset reclassification for
     discrete ACS variables
@@ -178,14 +179,10 @@ def _discrete_processing(geography, config, state, year, county=None, name="full
         Census geography for the data; passed to `dl_census`.
     config : ACSConfig
         Config for the variable of interest
-    state : str
-        State for the data; passed to `dl_census`.
+    geoid : str or int or list of either.
+        5 digit census FIPS GEOID; passed to `dl_census`.
     year : int
         Year for the data; passed to `dl_census`.
-    county : str, iterable of str, or None
-        County or counties for the data, if any; passed to `dl_census`. The
-        default is None, in which case the entire state's worth of data is
-        returned.
     name : str
         Name of the aliasing or preset to use. Note that for all ACS downloads
         in `sam`, the aliasing option is "full", which returns all levels of
@@ -198,22 +195,32 @@ def _discrete_processing(geography, config, state, year, county=None, name="full
         Aliased or reclassified ACS data from `df`.
 
     """
-    # name = _check_name(config, name)
-    df = dl_census(
-        "acs",
-        geography=geography,
-        table=config._table_,
-        year=year,
-        state=state,
-        county=county,
-    )
-    idcol = [c for c in df.columns if bool(re.search("^GEOID", c))][0]
-    tbl = _combine_levels(df, idcol=idcol, config=config, breaks=None, name=name)
+    # create a dict of state fips and the county fips in each state
+    # geoid=['10003', '24015', '42029', '42015']
+    geo_dict = create_geo_dict(geoids=geoid)
+    
+    # loop over the dicts pulling only the correct counties
+    tbl_out = []
+    for state in geo_dict.keys():
+        df = dl_census(
+            "acs",
+            geography=geography,
+            table=config._table_,
+            year=year,
+            state=state,
+            county=geo_dict[state]
+        )
+        idcol = [c for c in df.columns if bool(re.search("^GEOID", c))][0]
+        tbl = _combine_levels(df, idcol=idcol, config=config, 
+                              breaks=None, name=name)
+        tbl_out.append(tbl)
+        
+    tbl = pd.concat(tbl_out)
     return tbl
 
 
 def _numeric_processing(
-    geography, config, state, year, county=None, breaks=None, name="full"
+    geography, config, geoid, year, breaks=None, name="full"
 ):
     """
     Download ACS data, and perform aliasing or numeric reclassification for
@@ -248,20 +255,31 @@ def _numeric_processing(
         Aliased or reclassified ACS data from `df`.
 
     """
+    # create a dict of state fips and the county fips in each state
+    # geoid=['10003', '24015', '42029', '42015']
+    geo_dict = create_geo_dict(geoids=geoid)
+    
+    # loop over the dicts pulling only the correct counties
+    tbl_out = []
     breaks = _check_breaks(config=config, breaks=breaks)
     # name = _check_name(name, config)
-    df = dl_census(
-        "acs",
-        geography=geography,
-        table=config._table_,
-        year=year,
-        state=state,
-        county=county,
-    )
-    idcol = [c for c in df.columns if bool(re.search("^GEOID", c))][0]
-    tbl = _combine_levels(df, idcol=idcol, config=config, breaks=breaks, name=name)
+    dtbl_out = []
+    for state in geo_dict.keys():
+        df = dl_census(
+            "acs",
+            geography=geography,
+            table=config._table_,
+            year=year,
+            state=state,
+            county=geo_dict[state]
+        )
+        idcol = [c for c in df.columns if bool(re.search("^GEOID", c))][0]
+        tbl = _combine_levels(df, idcol=idcol, config=config, 
+                              breaks=breaks, name=name)
+        tbl_out.append(tbl)
+        
+    tbl = pd.concat(tbl_out)
     return tbl
-
 
 # Class
 @pd.api.extensions.register_dataframe_accessor("acs")
@@ -273,7 +291,7 @@ class ACS:
     def __init__(self, pandas_obj):
         self._obj = pandas_obj
 
-    def sex(state, year, county=None, geography="block group", name="full"):
+    def sex(year, geoid, geography="block group", name="full"):
         """
         Download ACS sex data (universe: total population).
 
@@ -295,15 +313,14 @@ class ACS:
         tbl = _discrete_processing(
             geography=geography,
             config=cfg,
-            state=state,
+            geoid=geoid,
             year=year,
-            county=county,
             name=name,
         )
         return tbl
 
     def age(
-        state, year, county=None, geography="block group", breaks=None, name="full"
+        year, geoid, geography="block group", breaks=None, name="full"
     ):
         """
         Download ACS age data (universe: total population).
@@ -331,16 +348,15 @@ class ACS:
         tbl = _numeric_processing(
             geography=geography,
             config=cfg,
-            state=state,
+            geoid=geoid,
             year=year,
-            county=county,
-            breaks=breaks,
             name=name,
+            breaks=breaks,
         )
         return tbl
 
     def age_by_sex(
-        state, year, county=None, geography="block group", breaks=None, name="full"
+        year, geoid, geography="block group", breaks=None, name="full"
     ):
         """
         Download ACS age data (universe: total population).
@@ -368,16 +384,15 @@ class ACS:
         tbl = _numeric_processing(
             geography=geography,
             config=cfg,
-            state=state,
+            geoid=geoid,
             year=year,
-            county=county,
-            breaks=breaks,
             name=name,
+            breaks=breaks,
         )
         return tbl
 
     def hh_income(
-        state, year, county=None, geography="block group", breaks=None, name="full"
+        year, geoid , geography="block group", breaks=None, name="full"
     ):
         """
         Download ACS household income data (universe: total households).
@@ -404,16 +419,15 @@ class ACS:
         tbl = _numeric_processing(
             geography=geography,
             config=cfg,
-            state=state,
+            geoid=geoid,
             year=year,
-            county=county,
-            breaks=breaks,
             name=name,
+            breaks=breaks,
         )
         return tbl
 
     def ratio_of_income_to_poverty_level(
-        state, year, county=None, geography="block group", breaks=None, name="full"
+        year, geoid , geography="block group", breaks=None, name="full"
     ):
         """
         Download ACS ratio of income to poverty level data (universe:
@@ -440,16 +454,15 @@ class ACS:
         tbl = _numeric_processing(
             geography=geography,
             config=cfg,
-            state=state,
+            geoid=geoid,
             year=year,
-            county=county,
-            breaks=breaks,
             name=name,
+            breaks=breaks,
         )
         return tbl
 
     def hh_vehicles(
-        state, year, county=None, geography="block group", breaks=None, name="full"
+        year, geoid , geography="block group", breaks=None, name="full"
     ):
         """
         Download ACS household vehicles' data (universe: total households).
@@ -474,15 +487,14 @@ class ACS:
         tbl = _numeric_processing(
             geography=geography,
             config=cfg,
-            state=state,
+            geoid=geoid,
             year=year,
-            county=county,
-            breaks=breaks,
             name=name,
+            breaks=breaks,
         )
         return tbl
 
-    def tenure(state, year, county=None, geography="block group", name="full"):
+    def tenure(year, geoid , geography="block group", name="full"):
         """
         Download ACS tenure data (universe: total households).
 
@@ -504,15 +516,14 @@ class ACS:
         tbl = _discrete_processing(
             geography=geography,
             config=cfg,
-            state=state,
+            geoid=geoid,
             year=year,
-            county=county,
             name=name,
         )
         return tbl
 
     def disability_status(
-        state, year, county=None, geography="block group", name="full"
+        year, geoid , geography="block group", name="full"
     ):
         """
         Download ACS disability status data (universe for block group level
@@ -542,15 +553,14 @@ class ACS:
         tbl = _discrete_processing(
             geography=geography,
             config=cfg,
-            state=state,
+            geoid=geoid,
             year=year,
-            county=county,
             name=name,
         )
         return tbl
 
     def hh_size(
-        state, year, county=None, geography="block group", breaks=None, name="full"
+        year, geoid , geography="block group", breaks=None, name="full"
     ):
         """
         Download ACS household size data (universe: total households.
@@ -575,16 +585,15 @@ class ACS:
         tbl = _numeric_processing(
             geography=geography,
             config=cfg,
-            state=state,
+            geoid=geoid,
             year=year,
-            county=county,
-            breaks=breaks,
             name=name,
+            breaks=breaks,
         )
         return tbl
 
     def hh_workers(
-        state, year, county=None, geography="block group", breaks=None, name="full"
+        year, geoid , geography="block group", breaks=None, name="full"
     ):
         """
         Download ACS household number of workers data (universe for block
@@ -613,15 +622,14 @@ class ACS:
         tbl = _numeric_processing(
             geography=geography,
             config=cfg,
-            state=state,
+            geoid=geoid,
             year=year,
-            county=county,
-            breaks=breaks,
             name=name,
+            breaks=breaks,
         )
         return tbl
 
-    def education(state, year, county=None, geography="block group", name="full"):
+    def education(year, geoid , geography="block group", name="full"):
         """
         Download ACS educational attainment data (universe for block group
         level data: 25+ population; universe for higher level data: 18+
@@ -655,14 +663,13 @@ class ACS:
         tbl = _discrete_processing(
             geography=geography,
             config=cfg,
-            state=state,
+            geoid=geoid,
             year=year,
-            county=county,
             name=name,
         )
         return tbl
 
-    def race(state, year, county=None, geography="block group", name="full"):
+    def race(year, geoid , geography="block group", name="full"):
         """
         Download ACS race data (universe: total population).
 
@@ -686,14 +693,13 @@ class ACS:
         tbl = _discrete_processing(
             geography=geography,
             config=cfg,
-            state=state,
+            geoid=geoid,
             year=year,
-            county=county,
             name=name,
         )
         return tbl
 
-    def ethnicity(state, year, county=None, geography="block group", name="full"):
+    def ethnicity(year, geoid , geography="block group", name="full"):
         """
         Download ACS ethnicity data (universe: total population).
 
@@ -715,14 +721,13 @@ class ACS:
         tbl = _discrete_processing(
             geography=geography,
             config=cfg,
-            state=state,
+            geoid=geoid,
             year=year,
-            county=county,
             name=name,
         )
         return tbl
 
-    def minority_status(state, year, county=None, geography="block group", name="full"):
+    def minority_status(year, geoid , geography="block group", name="full"):
         """
         Download ACS minority status data (universe: total population).
 
@@ -745,14 +750,13 @@ class ACS:
         tbl = _discrete_processing(
             geography=geography,
             config=cfg,
-            state=state,
+            geoid=geoid,
             year=year,
-            county=county,
             name=name,
         )
         return tbl
 
-    def mode_share(state, year, county=None, geography="block group", name="full"):
+    def mode_share(year, geoid , geography="block group", name="full"):
         """
         Download ACS mode share data (universe: 16+ working population).
 
@@ -789,9 +793,8 @@ class ACS:
         tbl = _discrete_processing(
             geography=geography,
             config=cfg,
-            state=state,
+            geoid=geoid,
             year=year,
-            county=county,
             name=name,
         )
         # tbl = tbl.drop(columns="")
@@ -802,7 +805,7 @@ class ACS:
                 tbl[c] = tbl[c] / tbl["trips"]
         return tbl
 
-    def totals(state, year, county=None, geography="block group", name="full"):
+    def totals(year, geoid , geography="block group", name="full"):
         """
         Download ACS total population, households, and housing units data
 
@@ -833,9 +836,8 @@ class ACS:
             _discrete_processing(
                 geography=geography,
                 config=cfg,
-                state=state,
+                geoid=geoid,
                 year=year,
-                county=county,
                 name=name,
             )
             for cfg in cfgs
@@ -846,7 +848,7 @@ class ACS:
         return tbl
 
     def rent(
-        state, year, county=None, geography="block group", breaks=None, name="full"
+        year, geoid , geography="block group", breaks=None, name="full"
     ):
         """
         Download ACS rent data (universe: Renter-occupied housing units).
@@ -870,16 +872,15 @@ class ACS:
         tbl = _numeric_processing(
             geography=geography,
             config=cfg,
-            state=state,
+            geoid=geoid,
             year=year,
-            county=county,
-            breaks=breaks,
             name=name,
+            breaks=breaks,
         )
         return tbl
 
     def value(
-        state, year, county=None, geography="block group", breaks=None, name="full"
+        year, geoid , geography="block group", breaks=None, name="full"
     ):
         """
         Download ACS housing value data (universe: Owner-occupied Housing Units).
@@ -903,16 +904,15 @@ class ACS:
         tbl = _numeric_processing(
             geography=geography,
             config=cfg,
-            state=state,
+            geoid=geoid,
             year=year,
-            county=county,
-            breaks=breaks,
             name=name,
+            breaks=breaks,
         )
         return tbl
 
     def cost(
-        state, year, county=None, geography="block group", breaks=None, name="full"
+        year, geoid , geography="block group", breaks=None, name="full"
     ):
         """
         Download ACS housing cost data (universe: Owner-occupied Housing Units).
@@ -936,16 +936,15 @@ class ACS:
         tbl = _numeric_processing(
             geography=geography,
             config=cfg,
-            state=state,
+            geoid=geoid,
             year=year,
-            county=county,
-            breaks=breaks,
             name=name,
+            breaks=breaks,
         )
         return tbl
     
     def migration(
-        state, year, county=None, geography="tract", breaks=None, name="full"
+        year, geoid , geography="tract", breaks=None, name="full"
     ):
         """
         Download ACS housing cost data (universe: Owner-occupied Housing Units).
@@ -969,15 +968,14 @@ class ACS:
         tbl = _numeric_processing(
             geography=geography,
             config=cfg,
-            state=state,
+            geoid=geoid,
             year=year,
-            county=county,
-            breaks=breaks,
             name=name,
+            breaks=breaks,
         )
         return tbl
     
-    def year_moved(state, year, county=None, geography="block group"):
+    def year_moved(year, geoid, geography="block group"):
         """
         Download ACS year moved in data (universe: total households).
 
@@ -999,14 +997,13 @@ class ACS:
         tbl = _numeric_processing(
             geography=geography,
             config=cfg,
-            state=state,
+            geoid=geoid,
             year=year,
-            county=county,
             name=str(year),
         )
         return tbl
     
-    def year_built(state, year, county=None, geography="block group"):
+    def year_built(year, geoid , geography="block group"):
         """
         Download ACS year built in data (universe: total households).
 
@@ -1028,9 +1025,8 @@ class ACS:
         tbl = _numeric_processing(
             geography=geography,
             config=cfg,
-            state=state,
+            geoid=geoid,
             year=year,
-            county=county,
             name=str(year),
         )
         return tbl
