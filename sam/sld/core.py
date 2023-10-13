@@ -2,11 +2,12 @@ import re
 import pandas as pd
 import numpy as np
 import sam.config.acs_config as acs_cfg
+from sam.config.helper_functions import create_geo_dict
 
 from sam.download.sld import dl_sld
+geoid = '12115'
 
-
-def download_sld(state, county=None, keep_cols=None):
+def download_sld(geoid, keep_cols=None):
     """downloads and filters sld to study county
 
     Args:
@@ -17,9 +18,12 @@ def download_sld(state, county=None, keep_cols=None):
     Returns:
         gpd.GeoDataFrame: SLD filtered to project location
     """
+    if isinstance(geoid, str):
+        geoid = [geoid]
+    
     sld = dl_sld(columns=keep_cols)
-    if county is None:
-        sld = sld.loc[(sld.STATEFP == state)]
-    else:
-        sld = sld.loc[(sld.STATEFP == state) & (sld.COUNTYFP == county)]
+    sld = sld.loc[sld.GEOID20.str[0:5].isin(geoid)]
     return sld
+
+if __name__ == "__main__":
+    print(download_sld(geoid=geoid))

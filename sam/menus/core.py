@@ -234,6 +234,10 @@ class dataMenuDownloader:
         blocks = tiger.blocks(geoid=self.geoids, year=self.years["acs_year"])
         blocks = blocks.to_crs(self.crs)
         # blocks_out.append(blocks)
+        if 'GEOID20' in blocks.columns:
+            blocks.rename(columns={'GEOID20': 'GEOID'}, inplace=True)
+        if 'GEOID10' in blocks.columns:
+            blocks.rename(columns={'GEOID10': 'GEOID'}, inplace=True)
         
         
         tracts = tiger.tracts(geoid=self.geoids, year=self.years["acs_year"])

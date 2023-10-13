@@ -12,6 +12,7 @@ import sam.config.acs_config as acs_cfg
 
 from sam.download.census import dl_census
 from sam.config.helper_functions import create_geo_dict
+from sam.config.acs_config import xw_2010_to_2020
 
 # TODO: rent and value methods
 # TODO: meta data handling (also lodes)
@@ -943,37 +944,37 @@ class ACS:
         )
         return tbl
     
-    def migration(
-        year, geoid , geography="tract", breaks=None, name="full"
-    ):
-        """
-        Download ACS housing cost data (universe: Owner-occupied Housing Units).
+    # def migration(
+    #     year, geoid , geography="tract", breaks=None, name="full"
+    # ):
+    #     """
+    #     Download ACS housing cost data (universe: Owner-occupied Housing Units).
 
-        Parameters
-        ----------
-        see `sam.acs._numeric_processing`
+    #     Parameters
+    #     ----------
+    #     see `sam.acs._numeric_processing`
 
-        Notes
-        -----
-        Options include:
-            1. `name = "full"`: full names for bins
-            2. `breaks = [...]`: only lower bound of bin
+    #     Notes
+    #     -----
+    #     Options include:
+    #         1. `name = "full"`: full names for bins
+    #         2. `breaks = [...]`: only lower bound of bin
 
-        Returns
-        -------
-        ACS (subclass of pd.DataFrame)
+    #     Returns
+    #     -------
+    #     ACS (subclass of pd.DataFrame)
 
-        """
-        cfg = acs_cfg._MIGRATION_CONFIG_
-        tbl = _numeric_processing(
-            geography=geography,
-            config=cfg,
-            geoid=geoid,
-            year=year,
-            name=name,
-            breaks=breaks,
-        )
-        return tbl
+    #     """
+    #     cfg = acs_cfg._MIGRATION_CONFIG_
+    #     tbl = _numeric_processing(
+    #         geography=geography,
+    #         config=cfg,
+    #         geoid=geoid,
+    #         year=year,
+    #         name=name,
+    #         breaks=breaks,
+    #     )
+    #     return tbl
     
     def year_moved(year, geoid, geography="block group"):
         """
@@ -994,13 +995,33 @@ class ACS:
 
         """
         cfg = acs_cfg._YEAR_MOVED_IN_CONFIG_
-        tbl = _numeric_processing(
+        tbl_cur = _numeric_processing(
             geography=geography,
             config=cfg,
             geoid=geoid,
             year=year,
             name=str(year),
         )
+        #TODO add the cross walk for 2010 to 2020 geo
+        tbl_cur = tbl_cur.rename(
+            columns={col: f'{col}_from_{year}' 
+                     for col in tbl_cur.columns if col != 'GEOID'}
+        )
+        
+        tbl_pre = _numeric_processing(
+            geography=geography,
+            config=cfg,
+            geoid=geoid,
+            year=year-1,
+            name=str(year-1),
+        )
+        
+        tbl_pre = tbl_pre.rename(
+            columns={col: f'{col}_from_{year - 1}' 
+                     for col in tbl_pre.columns if col != 'GEOID'}
+        )
+        
+        tbl = tbl_cur.merge(tbl_pre)
         return tbl
     
     def year_built(year, geoid , geography="block group"):
@@ -1022,11 +1043,31 @@ class ACS:
 
         """
         cfg = acs_cfg._YEAR_BLT__
-        tbl = _numeric_processing(
+        tbl_cur = _numeric_processing(
             geography=geography,
             config=cfg,
             geoid=geoid,
             year=year,
             name=str(year),
         )
+        #TODO add the cross walk for 2010 to 2020 geo
+        tbl_cur = tbl_cur.rename(
+            columns={col: f'{col}_from_{year}' 
+                     for col in tbl_cur.columns if col != 'GEOID'}
+        )
+        
+        tbl_pre = _numeric_processing(
+            geography=geography,
+            config=cfg,
+            geoid=geoid,
+            year=year-1,
+            name=str(year-1),
+        )
+        
+        tbl_pre = tbl_pre.rename(
+            columns={col: f'{col}_from_{year - 1}' 
+                     for col in tbl_pre.columns if col != 'GEOID'}
+        )
+        
+        tbl = tbl_cur.merge(tbl_pre)
         return tbl
