@@ -9,6 +9,7 @@ from sam.config.parcel_config import rep_parcel_shorten
 from shapely import wkt
 from sam.config import COUNTIES
 from sam.config import CRED
+from sam.config.helper_functions import create_geo_dict
 
 # TODO add rputils iterable
 # TODO add properties, getter and setter
@@ -63,71 +64,72 @@ class Replica:
         The mega-region that the state(s) belong to.
     _year : int
         The year of interest.
-    _stateSQL : str or tuple of str
-        The formatted state(s) in a form that can be used in SQL queries.
-    _countySQL : str or tuple of str
-        The formatted county(s) in a form that can be used in SQL queries.
+    _geoidSQL : str or tuple of str
+        The formatted geoid(s) in a form that can be used in SQL queries.
     """
 
-    def __init__(self, state, county, year):
-        # format the state
-        if isinstance(state, list):
-            for st in state:
-                if isinstance(st, int):
-                    st = str(st).zfill(2)
-                if isinstance(st, str):
-                    if is_int(st):
-                        st = st.zfill(2)
+    def __init__(self, geoid, year):
+        # format the GEOID
+        if isinstance(geoid, list):
+            for id in geoid:
+                if isinstance(id, int):
+                    st = str(id).zfill(5)
+                if isinstance(id, str):
+                    if is_int(id):
+                        id = id.zfill(5)
                     else:
-                        st = us.states.lookup(st).fips
+                        id = us.states.lookup(st).fips #probably replace but likely this formatting is unessesary
         else:
-            if isinstance(state, int):
-                state = [str(state).zfill(2)]
-            if isinstance(state, str):
-                if is_int(state):
-                    state = [state.zfill(2)]
+            if isinstance(geoid, int):
+                geoid = [str(geoid).zfill(5)]
+            if isinstance(geoid, str):
+                if is_int(geoid):
+                    geoid = [geoid.zfill(5)]
                 else:
-                    state = [us.states.lookup(state).fips]
+                    geoid = [us.states.lookup(geoid).fips] #probably replace but likely this formatting is unessesary
 
-        # format counties
-        if isinstance(county, list):
-            for ct in county:
-                if isinstance(ct, int):
-                    ct = str(ct).zfill(3)
-                if isinstance(ct, str):
-                    if is_int(ct):
-                        ct = ct.zfill(3)
-                    else:
-                        raise ValueError("County must be a fips code")
+        # # format counties
+        # if isinstance(county, list):
+        #     for ct in county:
+        #         if isinstance(ct, int):
+        #             ct = str(ct).zfill(3)
+        #         if isinstance(ct, str):
+        #             if is_int(ct):
+        #                 ct = ct.zfill(3)
+        #             else:
+        #                 raise ValueError("County must be a fips code")
 
-        else:
-            if isinstance(county, int):
-                county = [str(county).zfill(3)]
+        # else:
+        #     if isinstance(county, int):
+        #         county = [str(county).zfill(3)]
 
-            if isinstance(county, str):
-                if is_int(county):
-                    county = [county.zfill(3)]
-                else:
-                    raise ValueError("County must be a fips code")
+        #     if isinstance(county, str):
+        #         if is_int(county):
+        #             county = [county.zfill(3)]
+        #         else:
+        #             raise ValueError("County must be a fips code")
+        
+        geo_dict = create_geo_dict(geoids=geoid)
 
-        self._state = state
-        self._county = county
-        self._region = find_mega_region(state)
+        self._state = geo_dict.keys()
+        self._geoid = geoid
+        # self._county = county
+        self._region = find_mega_region(list(geo_dict.keys()))
         self._year = year
 
         # format state and counties for SQL
-        if len(state) > 1:
-            state = tuple(state)
+        if len(geoid) > 1:
+            geoid = tuple(geoid)
         else:
-            state = repr(state).replace("[", "(").replace("]", ")")
+            geoid = repr(geoid).replace("[", "(").replace("]", ")")
 
-        if len(county) > 1:
-            county = tuple(county)
-        else:
-            county = repr(county).replace("[", "(").replace("]", ")")
+        # if len(county) > 1:
+        #     county = tuple(county)
+        # else:
+        #     county = repr(county).replace("[", "(").replace("]", ")")
 
-        self._stateSQL = state
-        self._countySQL = county
+        self._geoidSQL = geoid
+        # self._countySQL = county
 
         # Format year for SQL
         if isinstance(year, int):
@@ -163,8 +165,7 @@ class Replica:
             select person_id, BLOCKGROUP as GEOID, sex
             from `{self._region}.{self._region}_{self._yearSQL}_population`
             where 
-                left(BLOCKGROUP, 2) in {self._stateSQL} AND
-                substr(BLOCKGROUP, 3, 3) in {self._countySQL}
+                left(BLOCKGROUP, 5) in {self._geoidSQL}
             """,
             project_id="replica-customer",
             credentials=CRED,
@@ -202,8 +203,7 @@ class Replica:
             select person_id, BLOCKGROUP as GEOID, age
             from `{self._region}.{self._region}_{self._yearSQL}_population`
             where 
-                left(BLOCKGROUP, 2) in {self._stateSQL} AND
-                substr(BLOCKGROUP, 3, 3) in {self._countySQL}
+                left(BLOCKGROUP, 5) in {self._geoidSQL}
             """,
             project_id="replica-customer",
             credentials=CRED,
@@ -242,8 +242,7 @@ class Replica:
             select household_id, BLOCKGROUP as GEOID, household_income
             from `{self._region}.{self._region}_{self._yearSQL}_population`
             where 
-                left(BLOCKGROUP, 2) in {self._stateSQL} AND
-                substr(BLOCKGROUP, 3, 3) in {self._countySQL}
+                left(BLOCKGROUP, 5) in {self._geoidSQL}
             """,
             project_id="replica-customer",
             credentials=CRED,
@@ -282,8 +281,7 @@ class Replica:
             select household_id, BLOCKGROUP as GEOID, vehicles
             from `{self._region}.{self._region}_{self._yearSQL}_population`
             where 
-                left(BLOCKGROUP, 2) in {self._stateSQL} AND
-                substr(BLOCKGROUP, 3, 3) in {self._countySQL}
+                left(BLOCKGROUP, 5) in {self._geoidSQL}
             """,
             project_id="replica-customer",
             credentials=CRED,
@@ -323,8 +321,7 @@ class Replica:
             select household_id, BLOCKGROUP as GEOID, tenure
             from `{self._region}.{self._region}_{self._yearSQL}_population`
             where 
-                left(BLOCKGROUP, 2) in {self._stateSQL} AND
-                substr(BLOCKGROUP, 3, 3) in {self._countySQL}
+                left(BLOCKGROUP, 5) in {self._geoidSQL}
             """,
             project_id="replica-customer",
             credentials=CRED,
@@ -356,8 +353,7 @@ class Replica:
             select household_id, person_id, BLOCKGROUP as GEOID, household_size
             from `{self._region}.{self._region}_{self._yearSQL}_population`
             where 
-                left(BLOCKGROUP, 2) in {self._stateSQL} AND
-                substr(BLOCKGROUP, 3, 3) in {self._countySQL}
+                left(BLOCKGROUP, 5) in {self._geoidSQL}
             """,
             project_id="replica-customer",
             credentials=CRED,
@@ -405,8 +401,7 @@ class Replica:
             select household_id, BLOCKGROUP as GEOID, employment
             from `{self._region}.{self._region}_{self._yearSQL}_population`
             where 
-                left(BLOCKGROUP, 2) in {self._stateSQL} AND
-                substr(BLOCKGROUP, 3, 3) in {self._countySQL}
+                left(BLOCKGROUP, 5) in {self._geoidSQL}
             """,
             project_id="replica-customer",
             credentials=CRED,
@@ -452,8 +447,7 @@ class Replica:
             select person_id, BLOCKGROUP as GEOID, education
             from `{self._region}.{self._region}_{self._yearSQL}_population`
             where 
-                left(BLOCKGROUP, 2) in {self._stateSQL} AND
-                substr(BLOCKGROUP, 3, 3) in {self._countySQL} AND
+                left(BLOCKGROUP, 5) in {self._geoidSQL} AND
                 age > 17
             """,
             project_id="replica-customer",
@@ -495,8 +489,7 @@ class Replica:
             select household_id, person_id, BLOCKGROUP as GEOID, race
             from `{self._region}.{self._region}_{self._yearSQL}_population`
             where 
-                left(BLOCKGROUP, 2) in {self._stateSQL} AND
-                substr(BLOCKGROUP, 3, 3) in {self._countySQL} 
+                left(BLOCKGROUP, 5) in {self._geoidSQL} 
             """,
             project_id="replica-customer",
             credentials=CRED,
@@ -538,8 +531,7 @@ class Replica:
             select household_id, person_id, BLOCKGROUP as GEOID, ethnicity
             from `{self._region}.{self._region}_{self._yearSQL}_population`
             where 
-                left(BLOCKGROUP, 2) in {self._stateSQL} AND
-                substr(BLOCKGROUP, 3, 3) in {self._countySQL} 
+                left(BLOCKGROUP, 5) in {self._geoidSQL} 
             """,
             project_id="replica-customer",
             credentials=CRED,
@@ -576,8 +568,7 @@ class Replica:
             select household_id, person_id, BLOCKGROUP as GEOID, ethnicity, race
             from `{self._region}.{self._region}_{self._yearSQL}_population`
             where 
-                left(BLOCKGROUP, 2) in {self._stateSQL} AND
-                substr(BLOCKGROUP, 3, 3) in {self._countySQL} 
+                left(BLOCKGROUP, 5) in {self._geoidSQL} 
             """,
             project_id="replica-customer",
             credentials=CRED,
@@ -614,8 +605,7 @@ class Replica:
             select household_id, person_id, BLOCKGROUP as GEOID, commute_mode
             from `{self._region}.{self._region}_{self._yearSQL}_population`
             where 
-                left(BLOCKGROUP, 2) in {self._stateSQL} AND
-                substr(BLOCKGROUP, 3, 3) in {self._countySQL} 
+                left(BLOCKGROUP, 5) in {self._geoidSQL} 
             """,
             project_id="replica-customer",
             credentials=CRED,
@@ -671,8 +661,7 @@ class Replica:
             select household_id, person_id, BLOCKGROUP as GEOID
             from `{self._region}.{self._region}_{self._yearSQL}_population`
             where 
-                left(BLOCKGROUP, 2) in {self._stateSQL} AND
-                substr(BLOCKGROUP, 3, 3) in {self._countySQL} 
+                left(BLOCKGROUP, 5) in {self._geoidSQL} 
             """,
             project_id="replica-customer",
             credentials=CRED,
@@ -818,8 +807,7 @@ class Replica:
                 {columns}
             from `{self._region}.{self._region}_{self._yearSQL}_{day}_trip`
             where 
-                left({end}_bgrp, 2) in {self._stateSQL} AND
-                substr({end}_bgrp, 3, 3) in {self._countySQL} AND
+                left({end}_bgrp, 5) in {self._geoidSQL} AND
                 {time_filter} AND
                 {purpose_filter}
             """,
@@ -860,8 +848,7 @@ class Replica:
             select *
             from `nationwide_landuse.landuse_parcels_{self._yearSQL}`
             where 
-                left(BLOCKGROUP, 2) in {self._stateSQL} AND
-                substr(BLOCKGROUP, 3, 3) in {self._countySQL}
+                left(BLOCKGROUP, 5) in {self._geoidSQL}
             """,
             project_id="replica-customer",
             credentials=CRED,
@@ -918,8 +905,7 @@ class Replica:
             select *
             from `{self._region}.{self._region}_{self._yearSQL}_population`
             where 
-                left(BLOCKGROUP, 2) in {self._stateSQL} AND
-                substr(BLOCKGROUP, 3, 3) in {self._countySQL} 
+                left(BLOCKGROUP, 5) in {self._geoidSQL} 
             """,
             project_id="replica-customer",
             credentials=CRED,

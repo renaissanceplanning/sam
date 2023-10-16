@@ -65,8 +65,7 @@ class dataMenuDownloader:
         # self.counties = [county[2:5] for county in geoids]
         self.county_names = county_names
         self.crs = prj_crs
-        self.rep_fetch = Replica(state=[state[0:2] for state in geoids], 
-                                 county=[county[2:5] for county in geoids], 
+        self.rep_fetch = Replica(geoid=self.geoids, 
                                  year=years["parcel_year"])
         
     def pull_lodes(
@@ -105,31 +104,31 @@ class dataMenuDownloader:
         print("Downloading LODES...")
         
         
-        rac_out = []
-        wac_out = []
-        od_out = []
-        for postal in self.postal:
-            xw = lodes.xwalk(state=postal)
-            if "rac" in lodes_data:
-                rac = lodes.rac(state=postal, year=self.years["lodes_year"])
-                rac = rac.lodes.aggregate(XWalk=xw, to=lodes_level)
-                rac_out.append(rac)
-                
-
-            if "wac" in lodes_data:
-                wac = lodes.wac(state=postal, year=self.years["lodes_year"])
-                wac = wac.lodes.aggregate(XWalk=xw, to=lodes_level)
-                wac_out.append(wac)
-                
-
-            if "od" in lodes_data:
-                od = lodes.od(state=postal, year=self.years["lodes_year"])
-                # od = od.lodes.aggregate(XWalk=xw, to=lodes_level) TODO fix the aggregate method
-                od_out.append(od)
+        # rac_out = []
+        # wac_out = []
+        # od_out = []
+        # for postal in self.postal:
+        xw = lodes.xwalk(geoid=self.geoids)
+        if "rac" in lodes_data:
+            rac = lodes.rac(geoid=self.geoids, year=self.years["lodes_year"])
+            rac = rac.lodes.aggregate(XWalk=xw, to=lodes_level)
+            # rac_out.append(rac)
             
-        rac = pd.concat(rac_out)
-        wac = pd.concat(wac_out)
-        od = pd.concat(od_out)
+
+        if "wac" in lodes_data:
+            wac = lodes.wac(geoid=self.geoids, year=self.years["lodes_year"])
+            wac = wac.lodes.aggregate(XWalk=xw, to=lodes_level)
+            # wac_out.append(wac)
+            
+
+        if "od" in lodes_data:
+            od = lodes.od(geoid=self.geoids, year=self.years["lodes_year"])
+            # od = od.lodes.aggregate(XWalk=xw, to=lodes_level) TODO fix the aggregate method
+            # od_out.append(od)
+            
+        # rac = pd.concat(rac_out)
+        # wac = pd.concat(wac_out)
+        # od = pd.concat(od_out)
             
         rac.to_csv(
                 make_path(self.dirs['lodes_dir'], 
@@ -364,10 +363,9 @@ class dataMenuDownloader:
         """
         print("Downloading Low Income Housing...")
         lihtc = download_lihtc(
-            state=self.state, 
-            county=self.counties, 
-            crs=self.crs
+            geoid=self.geoids
             )
+        lihtc = lihtc.to_crs(self.crs)
         lihtc.to_file(make_path(self.dirs['lih_dir'], "lihtc.shp"))
         
     def pull_nlcd(
@@ -445,8 +443,7 @@ class dataMenuDownloader:
         """
         print("Downloading SLD...")
         sld = download_sld(
-            state=self.state,
-            county=self.county,
+            geoid=self.geoids,
             keep_cols=keep_cols
         )
         sld.to_file(
