@@ -135,7 +135,7 @@ def create_geo_dict(geoids):
     states = set([st[0:2] for st in geoids])
 
     geo_dict = {
-        state: [cnt[3:] for cnt in geoids if (cnt[0:2] == state)]
+        state: [cnt[2:] for cnt in geoids if (cnt[0:2] == state)]
         for state in states    
         }
     

@@ -164,7 +164,7 @@ def _dtt_county(
 
     """
     if geoid is None:
-        geo_dict = create_geo_dict(geoid)
+        # geo_dict = create_geo_dict(geoid)
         ts = dl_tiger(geom=geom, state=None, county=None, year=year)
     else:
         geo_dict = create_geo_dict(geoids=geoid)
