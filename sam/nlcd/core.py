@@ -34,7 +34,7 @@ def closest(lst, K):
     return lst[min(range(len(lst)), key=lambda i: abs(lst[i] - K))]
 
 
-def download_nlcd(state, counties, year, dataset):
+def download_nlcd(geoid, year, dataset):
     """
     Download National Land Cover Database (NLCD) data for a given state, list of counties, year, and dataset.
 
@@ -63,9 +63,9 @@ def download_nlcd(state, counties, year, dataset):
     raster (algi.raster): NLCD data for the specified state and counties.
 
     """
-    if state == "72":
+    if geoid[0:2] == "72":
         geog = "puerto rico"
-    if state == "02":
+    if geoid[0:2] == "02":
         geog = "alaska"
     else:
         geog = "conus"
@@ -73,8 +73,7 @@ def download_nlcd(state, counties, year, dataset):
     year = closest(lst=[2019, 2016, 2013, 2011, 2008, 2006, 2004, 2001], K=year)
 
     cnties = county_shapes.loc[
-        (county_shapes.STATEFP.isin(state)) & 
-        (county_shapes.COUNTYFP.isin(counties))
+        (county_shapes.GEOID.isin(geoid))
     ]
 
     bounds = cnties.total_bounds

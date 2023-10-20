@@ -16,11 +16,9 @@ from sam.nlcd import download_nlcd
 from sam.sld import download_sld
 
 from sam.config import PAR_CONF
-from sam.config import COUNTIES as county_shapes
 from sam.config import extract_fips, validate_data_dir
 from sam.config.replica_config import replica_acs_tables
-from sam.config.menus import tod_menu
-
+from sam.config.helper_functions import create_geo_dict
 from rputils import make_path
 
 expected = np.array(["parcel_year", "acs_year", "lodes_year"])
@@ -58,13 +56,16 @@ class dataMenuDownloader:
         self.summary_areas = summary_areas
         self.years = years
         self.geoids = geoids
-        self.postal = [us.states.lookup(state[0:2]).abbr for state in geoids]
-        self.state = [state[0:2] for state in geoids]
-        self.counties = [county[2:5] for county in geoids]
+        self.geo_dict = create_geo_dict(geoids=geoids)
+        
+        
+        self.postal = [us.states.lookup(state).abbr 
+                       for state in self.geo_dict.keys()]
+        # self.state = self.geo_dict.keys()
+        # self.counties = [county[2:5] for county in geoids]
         self.county_names = county_names
         self.crs = prj_crs
-        self.rep_fetch = Replica(state=[state[0:2] for state in geoids], 
-                                 county=[county[2:5] for county in geoids], 
+        self.rep_fetch = Replica(geoid=self.geoids, 
                                  year=years["parcel_year"])
         
     def pull_lodes(
@@ -103,31 +104,31 @@ class dataMenuDownloader:
         print("Downloading LODES...")
         
         
-        rac_out = []
-        wac_out = []
-        od_out = []
-        for postal in self.postal:
-            xw = lodes.xwalk(state=postal)
-            if "rac" in lodes_data:
-                rac = lodes.rac(state=postal, year=self.years["lodes_year"])
-                rac = rac.lodes.aggregate(XWalk=xw, to=lodes_level)
-                rac_out.append(rac)
-                
-
-            if "wac" in lodes_data:
-                wac = lodes.wac(state=postal, year=self.years["lodes_year"])
-                wac = wac.lodes.aggregate(XWalk=xw, to=lodes_level)
-                wac_out.append(wac)
-                
-
-            if "od" in lodes_data:
-                od = lodes.od(state=postal, year=self.years["lodes_year"])
-                # od = od.lodes.aggregate(XWalk=xw, to=lodes_level) TODO fix the aggregate method
-                od_out.append(od)
+        # rac_out = []
+        # wac_out = []
+        # od_out = []
+        # for postal in self.postal:
+        xw = lodes.xwalk(geoid=self.geoids)
+        if "rac" in lodes_data:
+            rac = lodes.rac(geoid=self.geoids, year=self.years["lodes_year"])
+            rac = rac.lodes.aggregate(XWalk=xw, to=lodes_level)
+            # rac_out.append(rac)
             
-        rac = pd.concat(rac_out)
-        wac = pd.concat(wac_out)
-        od = pd.concat(od_out)
+
+        if "wac" in lodes_data:
+            wac = lodes.wac(geoid=self.geoids, year=self.years["lodes_year"])
+            wac = wac.lodes.aggregate(XWalk=xw, to=lodes_level)
+            # wac_out.append(wac)
+            
+
+        if "od" in lodes_data:
+            od = lodes.od(geoid=self.geoids, year=self.years["lodes_year"])
+            # od = od.lodes.aggregate(XWalk=xw, to=lodes_level) TODO fix the aggregate method
+            # od_out.append(od)
+            
+        # rac = pd.concat(rac_out)
+        # wac = pd.concat(wac_out)
+        # od = pd.concat(od_out)
             
         rac.to_csv(
                 make_path(self.dirs['lodes_dir'], 
@@ -176,18 +177,11 @@ class dataMenuDownloader:
         ]
 
         for method in methods:
-            df_out = []
-            
-            for geoid in self.geoids:
-                df = getattr(ACS, method)(
-                    state=geoid[0:2], 
-                    year=self.years["acs_year"], 
-                    county=geoid[2:5]
-                    )
-                df_out.append(df)
-                
-            df = pd.concat(df_out)
-                
+            df = getattr(ACS, method)(
+                geoid=self.geoids,
+                year=self.years["acs_year"],
+                )
+
             if df.empty == False:
                 df.to_csv(
                     make_path(
@@ -221,42 +215,38 @@ class dataMenuDownloader:
             None
         """
         print("Downloading TIGER...")
-        bgrp_2010_out = []
-        bgrp_2020_out = []
-        blocks_out = []
-        tracts_out = []
+        # bgrp_2010_out = []
+        # bgrp_2020_out = []
+        # blocks_out = []
+        # tracts_out = []
         
-        for geoid in self.geoids:
-            bgrp_10 = tiger.block_groups(state=geoid[0:2], 
-                                         county=geoid[2:5], 
-                                         year = 2019)
-            bgrp_10 = bgrp_10.to_crs(self.crs)
-            bgrp_2010_out.append(bgrp_10)
-            
-            bgrp_20 = tiger.block_groups(state=geoid[0:2], 
-                                      county=geoid[2:5], 
-                                      year=2020)
-            bgrp_20 = bgrp_20.to_crs(self.crs)
-            bgrp_2020_out.append(bgrp_20)
-            
+        # for geoid in self.geoids:
+        bgrp_10 = tiger.block_groups(geoid=self.geoids, year = 2019)
+        bgrp_10 = bgrp_10.to_crs(self.crs)
+        # bgrp_2010_out.append(bgrp_10)
+        
+        bgrp_20 = tiger.block_groups(geoid=self.geoids, year=2020)
+        bgrp_20 = bgrp_20.to_crs(self.crs)
+        # bgrp_2020_out.append(bgrp_20)
+        
 
-            blocks = tiger.blocks(state=geoid[0:2], 
-                                county=geoid[2:5],
-                                year=self.years["acs_year"])
-            blocks = blocks.to_crs(self.crs)
-            blocks_out.append(blocks)
-            
-            
-            tracts = tiger.tracts(state=geoid[0:2],
-                                  county=geoid[2:5],
-                                  year=self.years["acs_year"])
-            tracts = tracts.to_crs(self.crs)
-            tracts_out.append(tracts)
+        blocks = tiger.blocks(geoid=self.geoids, year=self.years["acs_year"])
+        blocks = blocks.to_crs(self.crs)
+        # blocks_out.append(blocks)
+        if 'GEOID20' in blocks.columns:
+            blocks.rename(columns={'GEOID20': 'GEOID'}, inplace=True)
+        if 'GEOID10' in blocks.columns:
+            blocks.rename(columns={'GEOID10': 'GEOID'}, inplace=True)
         
-        bgrp_10 = gpd.GeoDataFrame(pd.concat(bgrp_2010_out))
-        bgrp_20 = gpd.GeoDataFrame(pd.concat(bgrp_2020_out))
-        blocks = gpd.GeoDataFrame(pd.concat(bgrp_2010_out))
-        tracts = gpd.GeoDataFrame(pd.concat(bgrp_2010_out))
+        
+        tracts = tiger.tracts(geoid=self.geoids, year=self.years["acs_year"])
+        tracts = tracts.to_crs(self.crs)
+        # tracts_out.append(tracts)
+        
+        # bgrp_10 = gpd.GeoDataFrame(pd.concat(bgrp_2010_out))
+        # bgrp_20 = gpd.GeoDataFrame(pd.concat(bgrp_2020_out))
+        # blocks = gpd.GeoDataFrame(pd.concat(bgrp_2010_out))
+        # tracts = gpd.GeoDataFrame(pd.concat(bgrp_2010_out))
             
         bgrp_10.to_file(make_path(self.dirs['shp_dir'], "block_groups_2010.shp"))
         bgrp_20.to_file(make_path(self.dirs['shp_dir'], "block_groups_2020.shp"))
@@ -373,10 +363,9 @@ class dataMenuDownloader:
         """
         print("Downloading Low Income Housing...")
         lihtc = download_lihtc(
-            state=self.state, 
-            county=self.counties, 
-            crs=self.crs
+            geoid=self.geoids
             )
+        lihtc = lihtc.to_crs(self.crs)
         lihtc.to_file(make_path(self.dirs['lih_dir'], "lihtc.shp"))
         
     def pull_nlcd(
@@ -418,8 +407,7 @@ class dataMenuDownloader:
         """
         print("Downloading Replica Trip Table...")
         nlcd = download_nlcd(
-            state=self.state,
-            counties=self.counties,
+            geoid=self.geoids,
             year=self.years["parcel_year"],
             dataset=dataset
         )
@@ -455,8 +443,7 @@ class dataMenuDownloader:
         """
         print("Downloading SLD...")
         sld = download_sld(
-            state=self.state,
-            county=self.county,
+            geoid=self.geoids,
             keep_cols=keep_cols
         )
         sld.to_file(

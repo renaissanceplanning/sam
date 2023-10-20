@@ -16,6 +16,7 @@ from warnings import warn
 
 import gary
 from algi.dep.BBOX import BBOX
+from osmnx._errors import EmptyOverpassResponse
 
 # %% Globals
 
@@ -175,17 +176,21 @@ def dl_osm_network(
     for c in chunks.geometry:
         print(f"-- chunk {i}/{nchunks}")
         # TODO: is setting truncate by edge=True good enough for composition?
-        cg = ox.graph_from_polygon(
-            c,
-            network_type=net_type,
-            simplify=True,
-            retain_all=True,
-            truncate_by_edge=True,
-            clean_periphery=False,
-            custom_filter=osm_query,
-        )
-        nets.append(cg)
-        i += 1
+        try:
+            cg = ox.graph_from_polygon(
+                c,
+                network_type=net_type,
+                simplify=True,
+                retain_all=True,
+                truncate_by_edge=True,
+                clean_periphery=False,
+                custom_filter=osm_query,
+            )
+            nets.append(cg)
+            i += 1
+        except EmptyOverpassResponse:
+            pass
+
     # Compose network
     print("Composing and formatting networks")
     if len(nets) > 1:

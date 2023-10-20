@@ -6,12 +6,17 @@ Created on Fri Feb 18 15:42:42 2022
 """
 
 import re
+import us
 
 # import us
 import numpy as np
 import pandas as pd
 
 from sam.download.census import dl_lodes, dl_xwalk
+from sam.config.helper_functions import create_geo_dict
+
+#TODO bring more in line with other downloads 
+# add the conversions to POSTAL in here not part of menu
 
 
 # Helper functions
@@ -54,7 +59,7 @@ class lodes:
     # def datastate(self):
     #     return self.__datastate__
 
-    def xwalk(state):
+    def xwalk(geoid):
         """
         Download the geography crosswalk for a state.
         Parameters
@@ -65,13 +70,19 @@ class lodes:
         -------
         pd.DataFrame
         """
-        df = dl_xwalk(ST=state)
-        df = df.drop(columns=["blklatdd", "blklondd", "createdate"])
-        # df.lodes.__dict__['__datastate__'] = state
+        geo_dict = create_geo_dict(geoids=geoid)
+        out = []
+        for st in geo_dict.keys():
+            state = us.states.lookup(st).abbr
+            df = dl_xwalk(ST=state)
+            df = df.drop(columns=["blklatdd", "blklondd", "createdate"])
+            out.append(df)
+        df = pd.concat(out)
+
         return df
 
     # TODO add built in aggregate and filters
-    def rac(state, year, aggregate=None):
+    def rac(geoid, year):
         """
         Download LODES residence area characteristics data (for all jobs in all
         segments)
@@ -85,12 +96,17 @@ class lodes:
         LODES (subclass of pd.DataFrame)
 
         """
-        df = _dlfm_lodes_ac(file="rac", state=state, year=year, idcol="h_geocode")
-        # df.lodes.__dict__['__datastate__'] = state
-        # df.lodes.__dict__['__datayear__'] = year
+        geo_dict = create_geo_dict(geoids=geoid)
+        out = []
+        for st in geo_dict.keys():
+            state = us.states.lookup(st).abbr
+            df = _dlfm_lodes_ac(file="rac", state=state, 
+                                year=year, idcol="h_geocode")
+            out.append(df)
+        df = pd.concat(out)
         return df
 
-    def wac(state, year):
+    def wac(geoid, year):
         """
         Download LODES workplace area characteristics data (for all jobs in all
         segments)
@@ -104,12 +120,18 @@ class lodes:
         LODES (subclass of pd.DataFrame)
 
         """
-        df = _dlfm_lodes_ac(file="wac", state=state, year=year, idcol="w_geocode")
-        # df.lodes.__dict__['__datastate__'] = state
-        # df.lodes.__dict__['__datayear__'] = year
+        geo_dict = create_geo_dict(geoids=geoid)
+        out = []
+        for st in geo_dict.keys():
+            state = us.states.lookup(st).abbr
+            df = _dlfm_lodes_ac(file="wac", state=state, 
+                                year=year, idcol="w_geocode")
+            out.append(df)
+        df = pd.concat(out)
+        return df
         return df
 
-    def od(state, year):
+    def od(geoid, year):
         """
         Download LODES origin-destiantion data (for all jobs in all segments)
 
@@ -125,16 +147,22 @@ class lodes:
         LODES (subclass of pd.DataFrame)
 
         """
-        main = dl_lodes(
-            file="od", ST=state, TYPE="JT00", YEAR=year, SEG=None, PART="main"
-        )
-        aux = dl_lodes(
-            file="od", ST=state, TYPE="JT00", YEAR=year, SEG=None, PART="aux"
-        )
-        df = pd.concat([main, aux])
-        df["h_geocode"] = df.h_geocode.astype(str)
-        df["w_geocode"] = df.w_geocode.astype(str)
-        df = df.drop(columns="createdate")
+        geo_dict = create_geo_dict(geoids=geoid)
+        out = []
+        for st in geo_dict.keys():
+            state = us.states.lookup(st).abbr
+            main = dl_lodes(
+                file="od", ST=state, TYPE="JT00", YEAR=year, SEG=None, PART="main"
+            )
+            aux = dl_lodes(
+                file="od", ST=state, TYPE="JT00", YEAR=year, SEG=None, PART="aux"
+            )
+            df = pd.concat([main, aux])
+            df["h_geocode"] = df.h_geocode.astype(str)
+            df["w_geocode"] = df.w_geocode.astype(str)
+            df = df.drop(columns="createdate")
+            out.append(df)
+        df = pd.concat(out)
         # df.lodes.__dict__['__datastate__'] = state
         # df.lodes.__dict__['__datayear__'] = year
         return df
