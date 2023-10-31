@@ -242,6 +242,19 @@ class OSMNetwork(nx.MultiDiGraph):
         nodes, edges = self.to_gdf(trim=trim)
         nodes_path = os.path.join(save_dir, f"{prefix}_nodes.shp")
         edges_path = os.path.join(save_dir, f"{prefix}_edges.shp")
+        
+        if 'oneway' in edges.columns:
+            edges['oneway'] =  edges['oneway'].astype(str)
+        
+        if 'reversed' in edges.columns:
+            edges['reversed'] =  edges['reversed'].astype(str)
+        
+        for col in edges.columns:
+            edges[col] = [
+                "-".join(np.sort(edge)) if isinstance(edge, list) else edge
+                for edge in edges[col]
+            ]
+        
         nodes.reset_index().to_file(nodes_path)
         edges.reset_index().to_file(edges_path)
 
