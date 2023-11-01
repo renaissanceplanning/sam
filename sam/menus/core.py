@@ -111,13 +111,15 @@ class dataMenuDownloader:
         xw = lodes.xwalk(geoid=self.geoids)
         if "rac" in lodes_data:
             rac = lodes.rac(geoid=self.geoids, year=self.years["lodes_year"])
-            rac = rac.lodes.aggregate(XWalk=xw, to=lodes_level)
+            if lodes_level != "blocks":
+                rac = rac.lodes.aggregate(XWalk=xw, to=lodes_level)
             # rac_out.append(rac)
             
 
         if "wac" in lodes_data:
             wac = lodes.wac(geoid=self.geoids, year=self.years["lodes_year"])
-            wac = wac.lodes.aggregate(XWalk=xw, to=lodes_level)
+            if lodes_level != "blocks":
+                wac = wac.lodes.aggregate(XWalk=xw, to=lodes_level)
             # wac_out.append(wac)
             
 

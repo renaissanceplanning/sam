@@ -56,9 +56,7 @@ class Replica:
 
     Attributes
     ----------
-    _state : list of str
-        The formatted state(s).
-    _county : list of str
+    _geoid : list of str
         The formatted county(s).
     _region : str
         The mega-region that the state(s) belong to.
@@ -797,7 +795,7 @@ class Replica:
                 "[", "("
             ).replace("]", ")")
         elif purpose in valid_purposes:
-            purpose_filter = f"travel_purpose == '{purpose}'"
+            purpose_filter = f"travel_purpose = '{purpose}'"
         else:
             raise ValueError(f"values not in {valid_purposes}")
 
@@ -884,7 +882,7 @@ class Replica:
         gdf = gpd.GeoDataFrame(df, geometry="geometry", crs="WGS84")
 
         cnty = COUNTIES.loc[
-            COUNTIES.STATEFP.isin(self._state) & COUNTIES.COUNTYFP.isin(self._county)
+            COUNTIES.GEOID.isin(self._geoid)
         ].to_crs(crs="WGS84")
 
         network = gdf.sjoin(cnty[["GEOID", "geometry"]])
