@@ -46,6 +46,12 @@ class dataMenuDownloader:
                 "acs_year": datetime.date.today().year - 2,
                 "lodes_year": datetime.date.today().year - 3,
             }
+        elif isinstance(years, int):
+            years = {
+                "parcel_year": years - 1,
+                "acs_year": years - 2,
+                "lodes_year": years - 3,
+            }
         else:
             in_keys = np.array([key in years.keys() for key in expected])
             if sum(in_keys) != 3:
@@ -223,7 +229,7 @@ class dataMenuDownloader:
         # tracts_out = []
         
         # for geoid in self.geoids:
-        bgrp_10 = tiger.block_groups(geoid=self.geoids, year = 2019)
+        bgrp_10 = tiger.block_groups(geoid=self.geoids, year=2019)
         bgrp_10 = bgrp_10.to_crs(self.crs)
         # bgrp_2010_out.append(bgrp_10)
         
@@ -325,21 +331,27 @@ class dataMenuDownloader:
             add_travel_time=add_travel_time, 
             crs=self.crs
             )
-        walk.to_shp(save_dir=self.dirs['net_dir'], prefix="walk", trim=trim)
+        walk.to_shp(self.dirs['net_dir'], 
+                    prefix=f"walk_{self.years['parcel_years']}", 
+                    trim=trim)
 
         bike = OSMNetwork.bike(
             geometry=self.summary_areas, 
             add_travel_time=add_travel_time, 
             crs=self.crs
             )
-        bike.to_shp(self.dirs['net_dir'], "bike", trim=trim)
+        bike.to_shp(self.dirs['net_dir'], 
+                    prefix=f"bike_{self.years['parcel_years']}", 
+                    trim=trim)
 
         drive = OSMNetwork.drive(
             geometry=self.summary_areas, 
             add_travel_time=add_travel_time, 
             crs=self.crs
             )
-        drive.to_shp(self.dirs['net_dir'], "drive", trim=trim)
+        drive.to_shp(self.dirs['net_dir'], 
+                    prefix=f"drive_{self.years['parcel_years']}", 
+                    trim=trim)
         
     def pull_lihtc(
             self
@@ -368,7 +380,8 @@ class dataMenuDownloader:
             geoid=self.geoids
             )
         lihtc = lihtc.to_crs(self.crs)
-        lihtc.to_file(make_path(self.dirs['lih_dir'], "lihtc.shp"))
+        lihtc.to_file(make_path(self.dirs['lih_dir'], 
+                                f"lihtc_{self.years['parcel_years']}.shp"))
         
     def pull_nlcd(
             self,
@@ -417,7 +430,8 @@ class dataMenuDownloader:
         
         nlcd = nlcd.reproject(to_crs=self.crs)
         nlcd.to_file(save_path=make_path(self.dirs['nlcd_dir'],
-                                            f'{path}.tif'))
+                                         f'{path}_{self.years["parcel_years"]}.tif')
+                     )
             
     def pull_sld(
             self,

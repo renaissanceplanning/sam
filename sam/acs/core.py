@@ -12,18 +12,9 @@ import sam.config.acs_config as acs_cfg
 
 from sam.download.census import dl_census
 from sam.config.helper_functions import create_geo_dict
-from sam.config.acs_config import xw_2010_to_2020
 
 # TODO: rent and value methods
 # TODO: meta data handling (also lodes)
-
-# for interactive testing
-# state = "VA"
-# county = ["51003", "51540"]
-# county_names = ["Charlottesville", "Albemarle"]
-# year = 2019
-
-
 # Helper functions
 def _check_breaks(config, breaks=None):
     """
@@ -1021,6 +1012,38 @@ class ACS:
                      for col in tbl_pre.columns if col != 'GEOID'}
         )
         
+        if year == 2020:
+            from sam.config.acs_config import xw_2010_to_2020
+            xw_2010_to_2020['src_pct'] = (xw_2010_to_2020['AREALAND_PART'] / 
+                                        xw_2010_to_2020['AREALAND_BLKGRP_10'])
+
+            xw_2010_to_2020['GEOID_BLKGRP_20'] = xw_2010_to_2020[
+                'GEOID_BLKGRP_20'].astype(str)
+            xw_2010_to_2020['GEOID_BLKGRP_10'] = xw_2010_to_2020[
+                'GEOID_BLKGRP_10'].astype(str)
+            xw_2010_to_2020 = xw_2010_to_2020.loc[
+                xw_2010_to_2020['GEOID_BLKGRP_20'].isin(tbl_cur['GEOID'])
+                ]
+            keep_cols = tbl_pre.columns
+            math_cols = [col for col in keep_cols if col != 'GEOID']
+
+            tbl_pre = tbl_pre.merge(
+                xw_2010_to_2020[['GEOID_BLKGRP_20', 'GEOID_BLKGRP_10', 'src_pct']],
+                left_on='GEOID', right_on='GEOID_BLKGRP_10'
+                )
+
+            for col in math_cols:
+                tbl_pre[col] = np.round(tbl_pre[col] * tbl_pre['src_pct'], 
+                                        decimals=0)
+                
+                
+            tbl_pre.drop(columns=['src_pct', 'GEOID', 'GEOID_BLKGRP_10'], 
+                         inplace=True)
+            tbl_pre.rename(columns={'GEOID_BLKGRP_20': 'GEOID'}, 
+                           inplace=True)
+
+            tbl_pre = tbl_pre.groupby('GEOID').agg('sum').reset_index()
+        
         tbl = tbl_cur.merge(tbl_pre)
         return tbl
     
@@ -1069,5 +1092,40 @@ class ACS:
                      for col in tbl_pre.columns if col != 'GEOID'}
         )
         
+        if year == 2020:
+            from sam.config.acs_config import xw_2010_to_2020
+            xw_2010_to_2020['src_pct'] = (xw_2010_to_2020['AREALAND_PART'] / 
+                                        xw_2010_to_2020['AREALAND_BLKGRP_10'])
+
+            xw_2010_to_2020['GEOID_BLKGRP_20'] = xw_2010_to_2020[
+                'GEOID_BLKGRP_20'].astype(str)
+            xw_2010_to_2020['GEOID_BLKGRP_10'] = xw_2010_to_2020[
+                'GEOID_BLKGRP_10'].astype(str)
+            xw_2010_to_2020 = xw_2010_to_2020.loc[
+                xw_2010_to_2020['GEOID_BLKGRP_20'].isin(tbl_cur['GEOID'])
+                ]
+            keep_cols = tbl_pre.columns
+            math_cols = [col for col in keep_cols if col != 'GEOID']
+
+            tbl_pre = tbl_pre.merge(
+                xw_2010_to_2020[['GEOID_BLKGRP_20', 'GEOID_BLKGRP_10', 'src_pct']],
+                left_on='GEOID', right_on='GEOID_BLKGRP_10'
+                )
+
+            for col in math_cols:
+                tbl_pre[col] = np.round(tbl_pre[col] * tbl_pre['src_pct'], 
+                                        decimals=0)
+                
+                
+            tbl_pre.drop(columns=['src_pct', 'GEOID', 'GEOID_BLKGRP_10'], 
+                         inplace=True)
+            tbl_pre.rename(columns={'GEOID_BLKGRP_20': 'GEOID'}, 
+                           inplace=True)
+
+            tbl_pre = tbl_pre.groupby('GEOID').agg('sum').reset_index()
+        
         tbl = tbl_cur.merge(tbl_pre)
         return tbl
+    
+if __name__ == "__main__":
+    pass
