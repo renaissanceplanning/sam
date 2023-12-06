@@ -150,7 +150,7 @@ def download_old_fl_parcels(
 
     if replica:
         parcels = parcels["result"].merge(FL_TO_REPLICA).copy()
-        parcels = parcels.rename(columns=fl_parcel_rename)
+        parcels = parcels.rename(columns=fl_parcel_csv_rename)
         parcels["lat"] = parcels.centroid.y
         parcels["lng"] = parcels.centroid.x
         parcels["BLOCKGROUP"] = parcels["BLOCKGROUP"].str.zfill(12)
