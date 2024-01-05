@@ -28,12 +28,19 @@ url = (r"https://naip.imagery1.arcgis.com/arcgis/rest/"
        r"services/NAIP/ImageServer/exportImage?")
 
 def mosaic_naip(dir, out_dir, out_name):
-    """_summary_
+    """Mosaics NAIP imagery chunks into a single GeoTIFF file.
 
     Args:
-        dir (_type_): _description_
-        out_dir (_type_): _description_
-        out_name (_type_): _description_
+    dir (str): Path to the directory containing NAIP imagery chunks.
+    out_dir (str): Path to the output directory for the mosaicked file.
+    out_name (str): Desired filename for the output mosaic (without extension).
+
+    Returns:
+    None
+
+    Raises:
+    FileNotFoundError: If any input chunks are not found.
+    RuntimeError: If any other errors occur during processing.
     """
     search_criteria = "*_chunk_*.tif"
     query = make_path(dir, search_criteria)
@@ -70,12 +77,23 @@ def mosaic_naip(dir, out_dir, out_name):
         os.remove(chunk)
 
 def fetch_naip(gdf, out_dir, out_name):
-    """_summary_
+    """Fetches NAIP imagery for a given geometry and mosaics it if necessary.
 
     Args:
-        gdf (_type_): _description_
-        out_dir (_type_): _description_
-        out_name (_type_): _description_
+    gdf (GeoDataFrame): A GeoDataFrame containing the geometry for which to fetch imagery.
+    out_dir (str): Path to the output directory for the fetched imagery.
+    out_name (str): Desired filename for the output imagery (without extension).
+
+    Returns:
+    None
+
+    Raises:
+    requests.exceptions.RequestException: If any errors occur during the image download process.
+    RuntimeError: If any other errors occur during processing.
+
+    Notes:
+    - The function assumes the existence of a global variable url containing the base URL for the NAIP imagery service.
+    - If the bounding box of the geometry exceeds 2000x2000 pixels, the function fetches the imagery in chunks and mosaics them together.
     """
     minX = gdf.total_bounds[0]
     maxX = gdf.total_bounds[2]
