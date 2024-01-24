@@ -69,7 +69,7 @@ corridor_studies = {
     'pull_replica_population': {},
 }
 
-parcels_menu = {
+lanes_menu = {
     'pull_parcels': {'parcel_source': "replica",
                      'parcel_replica_fields': True},
     'pull_lodes': {'lodes_data': ["rac", "wac", "od"],
