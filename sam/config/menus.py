@@ -54,7 +54,7 @@ frieght_menu = {
 
 corridor_studies = {
     'pull_lodes': {'lodes_data': ["rac", "wac", "od"],
-                   'lodes_level': "tabblk2020"},
+                   'lodes_level': "tabblk2020"}, #tabblk could be wrong
     'pull_acs': {},
     'pull_tiger': {},
     'pull_parcels': {'parcel_source': "replica",
@@ -73,5 +73,6 @@ lanes_menu = {
     'pull_parcels': {'parcel_source': "replica",
                      'parcel_replica_fields': True},
     'pull_lodes': {'lodes_data': ["rac", "wac", "od"],
-                   'lodes_level': "tabblk2020"},
+                   'lodes_level': "bgrp"},
+    'pull_tiger': {}
 }
