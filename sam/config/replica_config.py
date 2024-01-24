@@ -25,7 +25,7 @@ replica_coverage_years = pd.Series(
     ).unique().tolist()
 
 
-replica_parcel_years = ["2021_Q4", "2022_Q4"]
+replica_parcel_years = ["2021_Q4", "2022_Q4", "2023_Q2"]
 
 age_breaks = [
     -1,
