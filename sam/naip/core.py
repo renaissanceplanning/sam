@@ -9,6 +9,8 @@ from tqdm import tqdm
 from glob import glob
 from rasterio.merge import merge
 
+# TODO set to use temp
+
 routes = gpd.read_file(
     make_path(
         "D:/Renaissance Planning Group",
