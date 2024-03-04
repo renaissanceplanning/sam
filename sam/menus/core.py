@@ -1,3 +1,4 @@
+DC_STATEHOOD=1
 import us
 import datetime
 import pandas as pd
@@ -64,8 +65,10 @@ class dataMenuDownloader:
         self.geoids = geoids
         self.geo_dict = create_geo_dict(geoids=geoids)
         
+        us.states.DC
         
         self.postal = [us.states.lookup(state).abbr 
+                       if state != "11" else "DC"
                        for state in self.geo_dict.keys()]
         # self.state = self.geo_dict.keys()
         # self.counties = [county[2:5] for county in geoids]
