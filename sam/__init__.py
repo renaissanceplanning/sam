@@ -20,6 +20,8 @@ from . import parcels
 from . import tiger
 from . import replica
 
+from .menus import dataMenuDownloader
+
 # """ 
 #     integrated into the init of replica module and will only run the first time sam is imported 
 #     for a user of the codebase. 
