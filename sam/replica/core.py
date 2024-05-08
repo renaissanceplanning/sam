@@ -1,5 +1,6 @@
 import us
 import pandas_gbq
+import warnings
 
 import pandas as pd
 import geopandas as gpd
@@ -13,6 +14,9 @@ from sam.config.helper_functions import create_geo_dict
 
 # TODO add rputils iterable
 # TODO add properties, getter and setter
+
+class YearOutOfBounds(UserWarning):     
+    pass
 
 def find_mega_region(state):
     """
@@ -137,9 +141,8 @@ class Replica:
                 else:
                     self._yearSQL = f"{year}_Q2"
             else:
-                raise ValueError(
-                    f"year must be after 2019, excluding 2020",
-                    f"current year is {year}",
+                warnings.warn(
+                    f"year must be after 2019, excluding 2020 current year is {year}"
                 )
         elif isinstance(year, str):
             if year in rpc.replica_pop_years:

@@ -88,7 +88,7 @@ __TIGRIS__ = [
 __TIDYCENSUS__ = ["acs", "decennial", "estimates", "flows", "pums"]
 
 # dl_lodes/dl_xwalk
-__LODES_YEAR__ = 2020
+__LODES_YEAR__ = 2021
 __LODES_VERSION__ = 8
 __LODES_URL__ = "https://lehd.ces.census.gov/data/lodes/LODES"
 
