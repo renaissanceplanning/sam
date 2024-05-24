@@ -139,4 +139,6 @@ dmypy.json
 .pyre/
 
 /build_environment.yml
-/sam/tests/data/
+
+/sam/tests/data/RAW/
+/sam/tests/data/PRODUCTION/
