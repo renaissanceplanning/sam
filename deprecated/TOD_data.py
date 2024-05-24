@@ -27,17 +27,18 @@ from rputils import make_path
 # helper functions and variables
 expected = np.array(["parcel_year", "acs_year", "lodes_year"])
 
+
 # fetcher
 def pull_TOD_data(
-    summary_areas,
-    data_dir,
-    prj_crs,
-    lodes_data=["rac", "wac", "od"],
-    lodes_level="bgrp",
-    years=None,
-    parcel_source="replica",
-    network_ids=False,
-    trip_table_time="all",
+        summary_areas,
+        data_dir,
+        prj_crs,
+        lodes_data=["rac", "wac", "od"],
+        lodes_level="bgrp",
+        years=None,
+        parcel_source="replica",
+        network_ids=False,
+        trip_table_time="all",
 ):
     """Download relevant data for a TOD study.
 
@@ -90,7 +91,7 @@ def pull_TOD_data(
         par_dir,
         lih_dir,
         rep_dir,
-        ]:
+    ]:
         if os.path.exists(dire) != True:
             os.mkdir(dire)
 
@@ -165,7 +166,7 @@ def pull_TOD_data(
     blocks = blocks.to_crs(prj_crs)
     blocks.to_file(os.path.join(shp_dir, "blocks.shp"))
     del blocks
-    
+
     tracts = tiger.tracts(state=state, county=counties)
     tracts = tracts.to_crs(prj_crs)
     tracts.to_file(os.path.join(shp_dir, "tracts.shp"))
@@ -211,7 +212,7 @@ def pull_TOD_data(
     print("Downloading Low Income Housing")
     lihtc = download_lihtc(state=state, county=counties, crs=prj_crs)
     lihtc.to_file(os.path.join(lih_dir, "lihtc.shp"))
-    
+
     print("Set Up Replica Fetcher")
     rep_fetch = Replica(state=state, county=counties, year=years["parcel_year"])
 
