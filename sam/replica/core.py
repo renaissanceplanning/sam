@@ -834,7 +834,7 @@ class Replica:
         Query Replica Google BigQuery database for parcel table
 
         Args:
-            crs (string): Sring specifiying a CRS for the parcels. Defaults to 
+            crs (string): String specifying a CRS for the parcels. Defaults to
                 WGS84
         Returns:
             gdf (gpd.GeoDataFrame): GeoDataFrame of the parcel table
