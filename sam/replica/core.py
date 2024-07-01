@@ -845,17 +845,26 @@ class Replica:
                 f"Parcels only available for {rpc.replica_parcel_years}",
                 f"not {self._yearSQL}",
             )
-
         df = pandas_gbq.read_gbq(
             f"""
             select *
-            from `nationwide_landuse.landuse_parcels_{self._yearSQL}`
+            from `{self._region}_landuse.landuse_parcels_tables_{self._yearSQL}`
             where 
-                left(BLOCKGROUP, 5) in {self._geoidSQL}
-            """,
+                left(BLOCKGROUP, 5) in {self._geoidSQL} 
+                """,
             project_id="replica-customer",
             credentials=CRED,
         )
+        # df = pandas_gbq.read_gbq(
+        #     f"""
+        #     select *
+        #     from `nationwide_landuse.landuse_parcels_{self._yearSQL}`
+        #     where
+        #         left(BLOCKGROUP, 5) in {self._geoidSQL}
+        #     """,
+        #     project_id="replica-customer",
+        #     credentials=CRED,
+        # )
         df["geometry"] = df.geometry.apply(wkt.loads)  # TODO look at pure geopandas
         gdf = gpd.GeoDataFrame(df, geometry="geometry", crs="WGS84")
         if crs != "WGS84":
