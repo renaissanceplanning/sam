@@ -103,17 +103,18 @@ def validate_data_dir(data_dir):
             os.mkdir(dire)
     
     dirs = {
-        'raw_dir': raw_dir,   
-        'lodes_dir' :lodes_dir, 
-        'acs_dir': acs_dir,    
-        'shp_dir': shp_dir,    
-        'net_dir': net_dir,     
-        'par_dir': par_dir,    
+        'raw_dir': raw_dir,
+        'lodes_dir': lodes_dir,
+        'acs_dir': acs_dir,
+        'shp_dir': shp_dir,
+        'net_dir': net_dir,
+        'par_dir': par_dir,
         'lih_dir': lih_dir,
-        'rep_dir': rep_dir 
-    }       
+        'rep_dir': rep_dir
+    }
             
     return dirs
+
 
 def create_geo_dict(geoids):
     """
