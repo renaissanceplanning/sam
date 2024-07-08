@@ -330,7 +330,7 @@ class dataMenuDownloader:
             crs=self.crs
         )
         walk.to_shp(self.dirs['net_dir'],
-                    prefix=f"walk_{self.years['parcel_years']}",
+                    prefix=f"walk_{self.years['parcel_year']}",
                     trim=trim)
 
         bike = OSMNetwork.bike(
@@ -339,7 +339,7 @@ class dataMenuDownloader:
             crs=self.crs
         )
         bike.to_shp(self.dirs['net_dir'],
-                    prefix=f"bike_{self.years['parcel_years']}",
+                    prefix=f"bike_{self.years['parcel_year']}",
                     trim=trim)
 
         drive = OSMNetwork.drive(
@@ -348,7 +348,7 @@ class dataMenuDownloader:
             crs=self.crs
         )
         drive.to_shp(self.dirs['net_dir'],
-                     prefix=f"drive_{self.years['parcel_years']}",
+                     prefix=f"drive_{self.years['parcel_year']}",
                      trim=trim)
 
     def pull_lihtc(
@@ -379,7 +379,7 @@ class dataMenuDownloader:
         )
         lihtc = lihtc.to_crs(self.crs)
         lihtc.to_file(make_path(self.dirs['lih_dir'],
-                                f"lihtc_{self.years['parcel_years']}.shp"))
+                                f"lihtc_{self.years['parcel_year']}.shp"))
 
     def pull_nlcd(
             self,
@@ -428,7 +428,7 @@ class dataMenuDownloader:
 
         nlcd = nlcd.reproject(to_crs=self.crs)
         nlcd.to_file(save_path=make_path(self.dirs['nlcd_dir'],
-                                         f'{path}_{self.years["parcel_years"]}.tif')
+                                         f'{path}_{self.years["parcel_year"]}.tif')
                      )
 
     def pull_sld(
