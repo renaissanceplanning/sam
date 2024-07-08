@@ -855,18 +855,11 @@ class Replica:
             project_id="replica-customer",
             credentials=CRED,
         )
-        # df = pandas_gbq.read_gbq(
-        #     f"""
-        #     select *
-        #     from `nationwide_landuse.landuse_parcels_{self._yearSQL}`
-        #     where
-        #         left(BLOCKGROUP, 5) in {self._geoidSQL}
-        #     """,
-        #     project_id="replica-customer",
-        #     credentials=CRED,
-        # )
         df["geometry"] = df.geometry.apply(wkt.loads)  # TODO look at pure geopandas
         gdf = gpd.GeoDataFrame(df, geometry="geometry", crs="WGS84")
+        # geometry checking to ensure all geometry is of the same type
+        gdf = gdf.loc[gdf.geom_type.isin(["Polygon", "MultiPolygon"])].copy()
+
         if crs != "WGS84":
             gdf = gdf.to_crs(crs=crs)
         gdf = gdf.rename(columns=rep_parcel_shorten)
