@@ -22,13 +22,17 @@ from algi.raster import Raster
 from algi import BBOX
 
 # %% Globals for MRLC download
+# handle potential http issues
+try:
+    req = Request("https://www.mrlc.gov/data")
+    html_page = urlopen(req)
+    soup = BeautifulSoup(html_page, "lxml")
+    views_row = soup.findAll("div", class_="views-row")  # dataset elements
+    __NLCD__ = []
+    title_start = "[A-Z]{4} ([0-9]{4} |[A-Z]{4} )?(from-to |to )?([0-9]{4} )?([A-Z]{4} )?(High Resolution )?"
+except requests.HTTPError:
+    print("HTTP Error, try again")
 
-req = Request("https://www.mrlc.gov/data")
-html_page = urlopen(req)
-soup = BeautifulSoup(html_page, "lxml")
-views_row = soup.findAll("div", class_="views-row")  # dataset elements
-__NLCD__ = []
-title_start = "[A-Z]{4} ([0-9]{4} |[A-Z]{4} )?(from-to |to )?([0-9]{4} )?([A-Z]{4} )?(High Resolution )?"
 for vr in views_row:
     # Title
     try:

@@ -1,28 +1,27 @@
-DC_STATEHOOD=1
-import us
+DC_STATEHOOD = 1
 import datetime
-import pandas as pd
+
 import numpy as np
-import geopandas as gpd
-import osmnx as ox
-
-from sam.parcels import download_fl_parcels
-from sam.acs import ACS
-from sam.lodes import lodes
-from sam.tiger import Tiger as tiger
-from sam.lihtc import download_lihtc
-from sam.osm import OSMNetwork
-from sam.replica import Replica
-from sam.nlcd import download_nlcd
-from sam.sld import download_sld
-
-from sam.config import PAR_CONF
-from sam.config import extract_fips, validate_data_dir
-from sam.config.replica_config import replica_acs_tables
-from sam.config.helper_functions import create_geo_dict
+import pandas as pd
+import us
 from rputils import make_path
 
+from sam.acs import ACS
+from sam.config import PAR_CONF
+from sam.config import extract_fips, validate_data_dir
+from sam.config.helper_functions import create_geo_dict
+from sam.config.replica_config import replica_acs_tables
+from sam.lihtc import download_lihtc
+from sam.lodes import lodes
+from sam.nlcd import download_nlcd
+from sam.osm import OSMNetwork
+from sam.parcels import download_fl_parcels
+from sam.replica import Replica
+from sam.sld import download_sld
+from sam.tiger import Tiger as tiger
+
 expected = np.array(["parcel_year", "acs_year", "lodes_year"])
+
 
 class dataMenuDownloader:
     """_summary_
@@ -32,16 +31,17 @@ class dataMenuDownloader:
     `pull_menu` can injest various project menus and settings to provide a 
     convient methods for mass downloads.
     """
+
     def __init__(
-        self,
-        summary_areas,
-        data_dir,
-        prj_crs,
-        years=None,
-        ):
+            self,
+            summary_areas,
+            data_dir,
+            prj_crs,
+            years=None,
+    ):
         self.dirs = validate_data_dir(data_dir=data_dir)
-        
-        if years == None:
+
+        if years is None:
             years = {
                 "parcel_year": datetime.date.today().year - 1,
                 "acs_year": datetime.date.today().year - 2,
@@ -57,31 +57,31 @@ class dataMenuDownloader:
             in_keys = np.array([key in years.keys() for key in expected])
             if sum(in_keys) != 3:
                 raise ValueError(f"{expected[~in_keys]} not in years dict")
-            
+
         geoids, county_names = extract_fips(summary_areas)
-        
+
         self.summary_areas = summary_areas
         self.years = years
         self.geoids = geoids
         self.geo_dict = create_geo_dict(geoids=geoids)
-        
+
         us.states.DC
-        
-        self.postal = [us.states.lookup(state).abbr 
+
+        self.postal = [us.states.lookup(state).abbr
                        if state != "11" else "DC"
                        for state in self.geo_dict.keys()]
         # self.state = self.geo_dict.keys()
         # self.counties = [county[2:5] for county in geoids]
         self.county_names = county_names
         self.crs = prj_crs
-        self.rep_fetch = Replica(geoid=self.geoids, 
+        self.rep_fetch = Replica(geoid=self.geoids,
                                  year=years["parcel_year"])
-        
+
     def pull_lodes(
-        self,
-        lodes_data=["rac", "wac", "od"],
-        lodes_level="bgrp",
-        ):
+            self,
+            lodes_data=["rac", "wac", "od"],
+            lodes_level="bgrp",
+    ):
         """
         Downloads LODES (Longitudinal Employer-Household Dynamics) data based on 
         the provided parameters and saves the downloaded data as CSV files in 
@@ -111,8 +111,7 @@ class dataMenuDownloader:
             and other necessary attributes within the class.
         """
         print("Downloading LODES...")
-        
-        
+
         # rac_out = []
         # wac_out = []
         # od_out = []
@@ -123,44 +122,42 @@ class dataMenuDownloader:
             if lodes_level != "blocks":
                 rac = rac.lodes.aggregate(XWalk=xw, to=lodes_level)
             # rac_out.append(rac)
-            
 
         if "wac" in lodes_data:
             wac = lodes.wac(geoid=self.geoids, year=self.years["lodes_year"])
             if lodes_level != "blocks":
                 wac = wac.lodes.aggregate(XWalk=xw, to=lodes_level)
             # wac_out.append(wac)
-            
 
         if "od" in lodes_data:
             od = lodes.od(geoid=self.geoids, year=self.years["lodes_year"])
             # od = od.lodes.aggregate(XWalk=xw, to=lodes_level) TODO fix the aggregate method
             # od_out.append(od)
-            
+
         # rac = pd.concat(rac_out)
         # wac = pd.concat(wac_out)
         # od = pd.concat(od_out)
-            
+
         rac.to_csv(
-                make_path(self.dirs['lodes_dir'], 
-                             f"rac_{self.years['lodes_year']}.csv"), 
-                index=False
-                )
-        
+            make_path(self.dirs['lodes_dir'],
+                      f"rac_{self.years['lodes_year']}.csv"),
+            index=False
+        )
+
         wac.to_csv(
-                make_path(self.dirs['lodes_dir'], 
-                             f"wac_{self.years['lodes_year']}.csv"), 
-                index=False
-                )
-        
+            make_path(self.dirs['lodes_dir'],
+                      f"wac_{self.years['lodes_year']}.csv"),
+            index=False
+        )
+
         od.to_csv(
-                make_path(self.dirs['lodes_dir'], 
-                             f"od_{self.years['lodes_year']}.csv"), 
-                index=False
-                )
-            
+            make_path(self.dirs['lodes_dir'],
+                      f"od_{self.years['lodes_year']}.csv"),
+            index=False
+        )
+
     def pull_acs(
-        self,
+            self,
     ):
         """
         Downloads American Community Survey (ACS) data for various methods and 
@@ -191,20 +188,20 @@ class dataMenuDownloader:
             df = getattr(ACS, method)(
                 geoid=self.geoids,
                 year=self.years["acs_year"],
-                )
+            )
 
             if df.empty == False:
                 df.to_csv(
                     make_path(
-                        self.dirs['acs_dir'], 
-                        f"{method}_{self.years['acs_year']}.csv"), 
+                        self.dirs['acs_dir'],
+                        f"{method}_{self.years['acs_year']}.csv"),
                     index=False
-                    )
+                )
             else:
                 print(f"{method} returned empty df and is dropped")
-                
+
     def pull_tiger(
-        self
+            self
     ):
         """
         Downloads TIGER (Topologically Integrated Geographic Encoding and 
@@ -230,16 +227,15 @@ class dataMenuDownloader:
         # bgrp_2020_out = []
         # blocks_out = []
         # tracts_out = []
-        
+
         # for geoid in self.geoids:
         bgrp_10 = tiger.block_groups(geoid=self.geoids, year=2019)
         bgrp_10 = bgrp_10.to_crs(self.crs)
         # bgrp_2010_out.append(bgrp_10)
-        
+
         bgrp_20 = tiger.block_groups(geoid=self.geoids, year=2020)
         bgrp_20 = bgrp_20.to_crs(self.crs)
         # bgrp_2020_out.append(bgrp_20)
-        
 
         blocks = tiger.blocks(geoid=self.geoids, year=self.years["acs_year"])
         blocks = blocks.to_crs(self.crs)
@@ -248,26 +244,25 @@ class dataMenuDownloader:
             blocks.rename(columns={'GEOID20': 'GEOID'}, inplace=True)
         if 'GEOID10' in blocks.columns:
             blocks.rename(columns={'GEOID10': 'GEOID'}, inplace=True)
-        
-        
+
         tracts = tiger.tracts(geoid=self.geoids, year=self.years["acs_year"])
         tracts = tracts.to_crs(self.crs)
         # tracts_out.append(tracts)
-        
+
         # bgrp_10 = gpd.GeoDataFrame(pd.concat(bgrp_2010_out))
         # bgrp_20 = gpd.GeoDataFrame(pd.concat(bgrp_2020_out))
         # blocks = gpd.GeoDataFrame(pd.concat(bgrp_2010_out))
         # tracts = gpd.GeoDataFrame(pd.concat(bgrp_2010_out))
-            
+
         bgrp_10.to_file(make_path(self.dirs['shp_dir'], "block_groups_2010.shp"))
         bgrp_20.to_file(make_path(self.dirs['shp_dir'], "block_groups_2020.shp"))
         blocks.to_file(make_path(self.dirs['shp_dir'], "blocks.shp"))
         tracts.to_file(make_path(self.dirs['shp_dir'], "tracts.shp"))
-        
+
     def pull_parcels(
-        self,
-        parcel_source="replica",
-        parcel_replica_fields=True,
+            self,
+            parcel_source="replica",
+            parcel_replica_fields=True,
     ):
         print("Downloading parcels...")
         if parcel_source == "DOR":
@@ -293,14 +288,14 @@ class dataMenuDownloader:
 
         parcels.to_file(
             make_path(
-                self.dirs['par_dir'], 
+                self.dirs['par_dir'],
                 f'parcels_{self.years["parcel_year"]}.shp')
-            )
-        
+        )
+
     def pull_OSM(
-        self,
-        add_travel_time=True,
-        trim=True
+            self,
+            add_travel_time=True,
+            trim=True
     ):
         """
         Downloads parcel data for specified boundaries from either Florida 
@@ -330,35 +325,35 @@ class dataMenuDownloader:
         print("Downloading OSM...")
 
         walk = OSMNetwork.walk(
-            geometry=self.summary_areas, 
-            add_travel_time=add_travel_time, 
+            geometry=self.summary_areas,
+            add_travel_time=add_travel_time,
             crs=self.crs
-            )
-        walk.to_shp(self.dirs['net_dir'], 
-                    prefix=f"walk_{self.years['parcel_years']}", 
+        )
+        walk.to_shp(self.dirs['net_dir'],
+                    prefix=f"walk_{self.years['parcel_years']}",
                     trim=trim)
 
         bike = OSMNetwork.bike(
-            geometry=self.summary_areas, 
-            add_travel_time=add_travel_time, 
+            geometry=self.summary_areas,
+            add_travel_time=add_travel_time,
             crs=self.crs
-            )
-        bike.to_shp(self.dirs['net_dir'], 
-                    prefix=f"bike_{self.years['parcel_years']}", 
+        )
+        bike.to_shp(self.dirs['net_dir'],
+                    prefix=f"bike_{self.years['parcel_years']}",
                     trim=trim)
 
         drive = OSMNetwork.drive(
-            geometry=self.summary_areas, 
-            add_travel_time=add_travel_time, 
+            geometry=self.summary_areas,
+            add_travel_time=add_travel_time,
             crs=self.crs
-            )
-        drive.to_shp(self.dirs['net_dir'], 
-                    prefix=f"drive_{self.years['parcel_years']}", 
-                    trim=trim)
-        
+        )
+        drive.to_shp(self.dirs['net_dir'],
+                     prefix=f"drive_{self.years['parcel_years']}",
+                     trim=trim)
+
     def pull_lihtc(
             self
-        ):
+    ):
         """
         Downloads Low-Income Housing Tax Credit (LIHTC) data and saves it as a 
         shapefile.
@@ -381,15 +376,15 @@ class dataMenuDownloader:
         print("Downloading Low Income Housing...")
         lihtc = download_lihtc(
             geoid=self.geoids
-            )
+        )
         lihtc = lihtc.to_crs(self.crs)
-        lihtc.to_file(make_path(self.dirs['lih_dir'], 
+        lihtc.to_file(make_path(self.dirs['lih_dir'],
                                 f"lihtc_{self.years['parcel_years']}.shp"))
-        
+
     def pull_nlcd(
             self,
             dataset
-        ):
+    ):
         """
         Downloads National Land Cover Database (NLCD) data and saves it as a 
         GeoTIFF raster.
@@ -430,16 +425,16 @@ class dataMenuDownloader:
             dataset=dataset
         )
         path = dataset.replace(' ', '_')
-        
+
         nlcd = nlcd.reproject(to_crs=self.crs)
         nlcd.to_file(save_path=make_path(self.dirs['nlcd_dir'],
                                          f'{path}_{self.years["parcel_years"]}.tif')
                      )
-            
+
     def pull_sld(
             self,
             keep_cols
-        ):
+    ):
         """
         Downloads the Smart Location Database (SLD) data and saves it as a 
         shapefile.
@@ -468,14 +463,14 @@ class dataMenuDownloader:
         sld.to_file(
             make_path(self.dirs['sld_dir'], "sld.shp")
         )
-            
+
     def pull_replica_trip_table(
             self,
             mid_week=True,
             link_ids=False,
-            time="all",  
+            time="all",
             purpose="all"
-        ):
+    ):
 
         """
         Downloads Replica Trip Table data for specified parameters and saves it 
@@ -505,25 +500,25 @@ class dataMenuDownloader:
             None
         """
         print("Downloading Replica Trip Table...")
-        org_trips = self.rep_fetch.trip_table(origin=True, 
-                                                link_ids=link_ids, 
-                                                mid_week=mid_week,
-                                                time=time,
-                                                purpose=purpose)
-        
-        dest_trips = self.rep_fetch.trip_table(origin=False, 
-                                                link_ids=link_ids, 
-                                                mid_week=mid_week,
-                                                time=time,
-                                                purpose=purpose)
+        org_trips = self.rep_fetch.trip_table(origin=True,
+                                              link_ids=link_ids,
+                                              mid_week=mid_week,
+                                              time=time,
+                                              purpose=purpose)
+
+        dest_trips = self.rep_fetch.trip_table(origin=False,
+                                               link_ids=link_ids,
+                                               mid_week=mid_week,
+                                               time=time,
+                                               purpose=purpose)
 
         pd.concat([org_trips, dest_trips]).to_csv(
-            make_path(self.dirs['rep_dir'], 
-                        f"all_trips_{self.rep_fetch._yearSQL}.csv")
+            make_path(self.dirs['rep_dir'],
+                      f"all_trips_{self.rep_fetch._yearSQL}.csv")
         )
-            
+
     def pull_replica_network(
-        self
+            self
     ):
         """
         Downloads Replica Network data and saves it as a shapefile.
@@ -545,12 +540,12 @@ class dataMenuDownloader:
         print("Downloading Replica Network...")
         network = self.rep_fetch.network(crs=self.crs)
         network.to_file(
-            make_path(self.dirs['rep_dir'], 
+            make_path(self.dirs['rep_dir'],
                       f"network_{self.rep_fetch._yearSQL}.shp")
         )
-            
+
     def pull_replica_acs(
-        self,
+            self,
     ):
         """
         Pulls Data From Replica Population Table and formats it to be comparable
@@ -559,16 +554,16 @@ class dataMenuDownloader:
         print("Downloading Replica ACS Table...")
         for method in replica_acs_tables:
             df = getattr(self.rep_fetch, method)()
-            
+
             if df.empty == False:
-                df.to_csv(make_path(self.dirs['rep_dir'], 
-                                    f"{method}_{self.rep_fetch._yearSQL}.csv"), 
+                df.to_csv(make_path(self.dirs['rep_dir'],
+                                    f"{method}_{self.rep_fetch._yearSQL}.csv"),
                           index=False)
             else:
                 print(f"{method} returned empty df and is dropped")
-                
+
     def pull_replica_population(
-        self,
+            self,
     ):
         """
         Downloads Replica Population Table data and saves it as a CSV file.
@@ -593,9 +588,9 @@ class dataMenuDownloader:
             make_path(self.dirs['rep_dir'],
                       f"replica_population_{self.rep_fetch._yearSQL}.csv"),
             index=False)
-        
+
     def pull_menu(
-        self, methods
+            self, methods
     ):
         """Provides a convient way to run many methods at once using their
         default arguments.
@@ -611,19 +606,19 @@ class dataMenuDownloader:
         for method, kwargs in methods.items():
             getattr(self, method)(**kwargs)
 
-        
+
 if __name__ == "__main__":
     pass
     # data_dir = make_path(
     #     "D:/Renaissance Planning Group",
     #     "Projects - ComprehensivePlan_2023/tech_group/data"
     #     )
-    
+
     # county = gpd.read_file(make_path(data_dir, 'RAW', "vb_boundary.shp"))
     # county.geometry = county.buffer(distance=-1000)
-    
+
     # fetcher = dataMenuDownloader(
     #     county, data_dir, prj_crs=county.crs
     # )
-    
+
     # fetcher.pull_menu(methods=tod_menu)

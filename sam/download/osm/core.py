@@ -16,7 +16,7 @@ from warnings import warn
 
 import gary
 from algi.dep.BBOX import BBOX
-from osmnx._errors import EmptyOverpassResponse
+from osmnx._errors import ResponseStatusCodeError
 
 # %% Globals
 
@@ -188,7 +188,7 @@ def dl_osm_network(
             )
             nets.append(cg)
             i += 1
-        except EmptyOverpassResponse:
+        except ResponseStatusCodeError:
             pass
 
     # Compose network

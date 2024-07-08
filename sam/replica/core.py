@@ -12,11 +12,13 @@ from sam.config import COUNTIES
 from sam.config import CRED
 from sam.config.helper_functions import create_geo_dict
 
+
 # TODO add rputils iterable
 # TODO add properties, getter and setter
 
-class YearOutOfBounds(UserWarning):     
+class YearOutOfBounds(UserWarning):
     pass
+
 
 def find_mega_region(state):
     """
@@ -80,7 +82,7 @@ class Replica:
                     if is_int(id):
                         id = id.zfill(5)
                     else:
-                        id = us.states.lookup(st).fips #probably replace but likely this formatting is unessesary
+                        id = us.states.lookup(st).fips  # probably replace but likely this formatting is unessesary
         else:
             if isinstance(geoid, int):
                 geoid = [str(geoid).zfill(5)]
@@ -88,7 +90,7 @@ class Replica:
                 if is_int(geoid):
                     geoid = [geoid.zfill(5)]
                 else:
-                    geoid = [us.states.lookup(geoid).fips] #probably replace but likely this formatting is unessesary
+                    geoid = [us.states.lookup(geoid).fips]  # probably replace but likely this formatting is unessesary
 
         # # format counties
         # if isinstance(county, list):
@@ -110,7 +112,7 @@ class Replica:
         #             county = [county.zfill(3)]
         #         else:
         #             raise ValueError("County must be a fips code")
-        
+
         geo_dict = create_geo_dict(geoids=geoid)
 
         self._state = geo_dict.keys()
@@ -633,13 +635,13 @@ class Replica:
             .fillna(0)
         )
         df["trips"] = (
-            df["bike"]
-            + df["car_2p"]
-            + df["car_1"]
-            + df["not_working"]
-            + df["trans"]
-            + df["walk"]
-            + df["wfh"]
+                df["bike"]
+                + df["car_2p"]
+                + df["car_1"]
+                + df["not_working"]
+                + df["trans"]
+                + df["walk"]
+                + df["wfh"]
         )
 
         for col in ["bike", "car_2p", "car_1", "not_working", "trans", "walk", "wfh"]:
@@ -691,12 +693,12 @@ class Replica:
     #     pass #may not have the data
 
     def trip_table(
-        self,
-        origin=True,
-        mid_week=True,
-        link_ids=False,
-        time="am",  # TODO add start and end hours
-        purpose="all",
+            self,
+            origin=True,
+            mid_week=True,
+            link_ids=False,
+            time="am",  # TODO add start and end hours
+            purpose="all",
     ):
         """
         Returns a Pandas DataFrame containing Replica trip data for the
@@ -832,7 +834,7 @@ class Replica:
         Query Replica Google BigQuery database for parcel table
 
         Args:
-            crs (string): Sring specifiying a CRS for the parcels. Defaults to 
+            crs (string): String specifying a CRS for the parcels. Defaults to
                 WGS84
         Returns:
             gdf (gpd.GeoDataFrame): GeoDataFrame of the parcel table
@@ -843,19 +845,21 @@ class Replica:
                 f"Parcels only available for {rpc.replica_parcel_years}",
                 f"not {self._yearSQL}",
             )
-
         df = pandas_gbq.read_gbq(
             f"""
             select *
-            from `nationwide_landuse.landuse_parcels_{self._yearSQL}`
+            from `{self._region}_landuse.landuse_parcels_tables_{self._yearSQL}`
             where 
-                left(BLOCKGROUP, 5) in {self._geoidSQL}
-            """,
+                left(BLOCKGROUP, 5) in {self._geoidSQL} 
+                """,
             project_id="replica-customer",
             credentials=CRED,
         )
         df["geometry"] = df.geometry.apply(wkt.loads)  # TODO look at pure geopandas
         gdf = gpd.GeoDataFrame(df, geometry="geometry", crs="WGS84")
+        # geometry checking to ensure all geometry is of the same type
+        gdf = gdf.loc[gdf.geom_type.isin(["Polygon", "MultiPolygon"])].copy()
+
         if crs != "WGS84":
             gdf = gdf.to_crs(crs=crs)
         gdf = gdf.rename(columns=rep_parcel_shorten)
@@ -893,7 +897,7 @@ class Replica:
             network = network.to_crs(crs=crs)
 
         return network
-    
+
     def population(self):
         """
         Query Replica Google BigQuery database for population table
@@ -912,6 +916,7 @@ class Replica:
             credentials=CRED,
         )
         return df
+
 
 if __name__ == "__main__":
     pass
