@@ -22,6 +22,7 @@ from algi.raster import Raster
 from algi import BBOX
 
 # %% Globals for MRLC download
+# handle potential http issues
 try:
     req = Request("https://www.mrlc.gov/data")
     html_page = urlopen(req)
