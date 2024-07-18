@@ -15,7 +15,7 @@ GOTO %1
 :env
     ENDLOCAL & (
         :: Install MAMBA for faster solves
-        CALL conda install -c conda-forge mamba yaml -y
+        CALL conda install -c conda-forge mamba pyyaml -y
         :: update environment with package dependencies
         CALL python check_package_deps.py --package
         :: Create new environment from environment file
