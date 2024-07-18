@@ -19,7 +19,7 @@ dependencies:
     - -e ../../packages/rputils
     - -e ../../packages/algi
     - -e ../../packages/gary
-    - -e ../../packages/py-mspacman
+    # - -e ../../packages/py-mspacman
 #    - -e ../../packages/emma
 #    - -e ../../packages/biff
 #    - -e ../../packages/roxy
