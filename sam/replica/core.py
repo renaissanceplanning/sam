@@ -16,6 +16,7 @@ from sam.config.helper_functions import create_geo_dict
 # TODO add rputils iterable
 # TODO add properties, getter and setter
 
+
 class YearOutOfBounds(UserWarning):
     pass
 
@@ -82,7 +83,9 @@ class Replica:
                     if is_int(id):
                         id = id.zfill(5)
                     else:
-                        id = us.states.lookup(st).fips  # probably replace but likely this formatting is unessesary
+                        id = us.states.lookup(
+                            st
+                        ).fips  # probably replace but likely this formatting is unessesary
         else:
             if isinstance(geoid, int):
                 geoid = [str(geoid).zfill(5)]
@@ -90,7 +93,9 @@ class Replica:
                 if is_int(geoid):
                     geoid = [geoid.zfill(5)]
                 else:
-                    geoid = [us.states.lookup(geoid).fips]  # probably replace but likely this formatting is unessesary
+                    geoid = [
+                        us.states.lookup(geoid).fips
+                    ]  # probably replace but likely this formatting is unessesary
 
         # # format counties
         # if isinstance(county, list):
@@ -138,7 +143,7 @@ class Replica:
         # Format year for SQL
         if isinstance(year, int):
             if year in rpc.replica_coverage_years:
-                if f'{year}_Q4' in rpc.replica_pop_years:
+                if f"{year}_Q4" in rpc.replica_pop_years:
                     self._yearSQL = f"{year}_Q4"
                 else:
                     self._yearSQL = f"{year}_Q2"
@@ -315,7 +320,7 @@ class Replica:
         a given region, state, and county.
 
         Returns:
-        df (pandas.DataFrame): DataFrame containing counts of households by 
+        df (pandas.DataFrame): DataFrame containing counts of households by
         tenure status and GEOID combination.
             Columns are income groups, index is GEOIDs.
         """
@@ -347,7 +352,7 @@ class Replica:
         a given region, state, and county.
 
         Returns:
-        df (pandas.DataFrame): DataFrame containing counts of households by 
+        df (pandas.DataFrame): DataFrame containing counts of households by
         size and GEOID combination.
             Columns are income groups, index is GEOIDs.
         """
@@ -635,13 +640,13 @@ class Replica:
             .fillna(0)
         )
         df["trips"] = (
-                df["bike"]
-                + df["car_2p"]
-                + df["car_1"]
-                + df["not_working"]
-                + df["trans"]
-                + df["walk"]
-                + df["wfh"]
+            df["bike"]
+            + df["car_2p"]
+            + df["car_1"]
+            + df["not_working"]
+            + df["trans"]
+            + df["walk"]
+            + df["wfh"]
         )
 
         for col in ["bike", "car_2p", "car_1", "not_working", "trans", "walk", "wfh"]:
@@ -693,12 +698,12 @@ class Replica:
     #     pass #may not have the data
 
     def trip_table(
-            self,
-            origin=True,
-            mid_week=True,
-            link_ids=False,
-            time="am",  # TODO add start and end hours
-            purpose="all",
+        self,
+        origin=True,
+        mid_week=True,
+        link_ids=False,
+        time="am",  # TODO add start and end hours
+        purpose="all",
     ):
         """
         Returns a Pandas DataFrame containing Replica trip data for the
@@ -838,7 +843,7 @@ class Replica:
                 WGS84
         Returns:
             gdf (gpd.GeoDataFrame): GeoDataFrame of the parcel table
-        
+
         """
         if self._yearSQL not in rpc.replica_parcel_years:
             raise ValueError(
@@ -848,7 +853,7 @@ class Replica:
         df = pandas_gbq.read_gbq(
             f"""
             select *
-            from `{self._region}_landuse.landuse_parcels_tables_{self._yearSQL}`
+            from `{self._region}_landuse.{self._region}_{self._yearSQL}_landuse_parcels`
             where 
                 left(BLOCKGROUP, 5) in {self._geoidSQL} 
                 """,
@@ -870,11 +875,11 @@ class Replica:
         Query Replica Google BigQuery database for network table
 
         Args:
-            crs (string): Sring specifiying a CRS for the network. Defaults to 
+            crs (string): Sring specifiying a CRS for the network. Defaults to
                 WGS84
         Returns:
             gdf (gpd.GeoDataFrame): GeoDataFrame of the Network table
-        
+
         """
         df = pandas_gbq.read_gbq(
             f"""
@@ -888,9 +893,7 @@ class Replica:
         df["geometry"] = df.geometry.apply(wkt.loads)  # TODO look at pure geopandas
         gdf = gpd.GeoDataFrame(df, geometry="geometry", crs="WGS84")
 
-        cnty = COUNTIES.loc[
-            COUNTIES.GEOID.isin(self._geoid)
-        ].to_crs(crs="WGS84")
+        cnty = COUNTIES.loc[COUNTIES.GEOID.isin(self._geoid)].to_crs(crs="WGS84")
 
         network = gdf.sjoin(cnty[["GEOID", "geometry"]])
         if crs != "WGS84":
@@ -922,7 +925,7 @@ if __name__ == "__main__":
     pass
     # from pprint import pprint
     # state = ['34']
-    # county = ['039', '024']   
+    # county = ['039', '024']
     # nj = Replica(state=state, county=county, year=2023)
     # test = nj.population()
     # pprint(test)
