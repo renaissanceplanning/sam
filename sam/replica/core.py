@@ -763,7 +763,7 @@ class Replica:
             destination_bgrp_lng, origin_land_use_l1, origin_land_use_l2,
             origin_building_use_l1, origin_building_use_l2, destination_land_use_l1, 
             destination_land_use_l2, destination_building_use_l1, 
-            destination_building_use_l2, network_link_ids, transit_link_ids
+            destination_building_use_l2, network_link_ids, transit_route_ids
             """
 
         if time == "am":
