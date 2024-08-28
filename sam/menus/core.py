@@ -469,7 +469,8 @@ class dataMenuDownloader:
             mid_week=True,
             link_ids=False,
             time="all",
-            purpose="all"
+            purpose="all",
+            vehicle_type="all"
     ):
 
         """
@@ -504,13 +505,15 @@ class dataMenuDownloader:
                                               link_ids=link_ids,
                                               mid_week=mid_week,
                                               time=time,
-                                              purpose=purpose)
+                                              purpose=purpose,
+                                              vehicle_type=vehicle_type)
 
         dest_trips = self.rep_fetch.trip_table(origin=False,
                                                link_ids=link_ids,
                                                mid_week=mid_week,
                                                time=time,
-                                               purpose=purpose)
+                                               purpose=purpose,
+                                              vehicle_type=vehicle_type)
 
         pd.concat([org_trips, dest_trips]).to_csv(
             make_path(self.dirs['rep_dir'],

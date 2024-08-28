@@ -126,3 +126,27 @@ replica_acs_tables = [
     "sex", "age", "hh_income", "hh_vehicles", "tenure", "hh_size", "hh_worker", 
     "education", "race", "ethnicity", "minority_status", "mode_share", "totals"
 ]
+
+valid_purposes = [
+            "COMMERCIAL",
+            "EAT",
+            "HOME",
+            "LODGING",
+            "MAINTENANCE",
+            "OTHER",
+            "RECREATION",
+            "REGION_DEPARTURE",
+            "SCHOOL",
+            "SHOP",
+            "SOCIAL",
+            "STAGE",
+            "WORK",
+            "WORK FROM HOME",
+        ]
+
+valid_vehicle = [
+    "PASSENGER_CAR",
+    "MEDIUM_COMMERCIAL",
+    "HEAVY_COMMERCIAL",
+    "MOTORCYCLE"
+]

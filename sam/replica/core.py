@@ -704,6 +704,7 @@ class Replica:
         link_ids=False,
         time="am",  # TODO add start and end hours
         purpose="all",
+        vehicle_type="all"
     ):
         """
         Returns a Pandas DataFrame containing Replica trip data for the
@@ -777,37 +778,35 @@ class Replica:
         else:
             raise ValueError("time must be one of am, pm, md, or all")
 
-        valid_purposes = [
-            "COMMERCIAL",
-            "EAT",
-            "HOME",
-            "LODGING",
-            "MAINTENANCE",
-            "OTHER",
-            "RECREATION",
-            "REGION_DEPARTURE",
-            "SCHOOL",
-            "SHOP",
-            "SOCIAL",
-            "STAGE",
-            "WORK",
-            "WORK FROM HOME",
-        ]
-
         if isinstance(purpose, list):
             for value in purpose:
-                if value not in valid_purposes:
-                    raise ValueError(f"values not in {valid_purposes}")
+                if value not in rpc.valid_purposes:
+                    raise ValueError(f"values not in {rpc.valid_purposes}")
             purpose_sql = repr(purpose).replace("[", "(").replace("]", ")")
             purpose_filter = f"travel_purpose in {purpose_sql}"
         elif purpose == "all":
-            purpose_filter = f"travel_purpose in {valid_purposes}".replace(
+            purpose_filter = f"travel_purpose in {rpc.valid_purposes}".replace(
                 "[", "("
             ).replace("]", ")")
-        elif purpose in valid_purposes:
+        elif purpose in rpc.valid_purposes:
             purpose_filter = f"travel_purpose = '{purpose}'"
         else:
-            raise ValueError(f"values not in {valid_purposes}")
+            raise ValueError(f"values not in {rpc.valid_purposes}")
+        
+        if isinstance(vehicle_type, list):
+            for value in vehicle_type:
+                if value not in rpc.valid_vehicle:
+                    raise ValueError(f"values not in {rpc.valid_vehicle}")
+            vehicle_sql = repr(vehicle_type).replace("[", "(").replace("]", ")")
+            vehicle_filter = f"vehicle_type in {vehicle_sql}"
+        elif vehicle_type == "all":
+            vehicle_filter = f"travel_purpose in {rpc.valid_vehicle}".replace(
+                "[", "("
+            ).replace("]", ")")
+        elif vehicle_type in rpc.valid_vehicle:
+            vehicle_filter = f"travel_purpose = '{purpose}'"
+        else:
+            raise ValueError(f"values not in {rpc.valid_vehicle}")
 
         df = pandas_gbq.read_gbq(
             f"""
@@ -817,7 +816,8 @@ class Replica:
             where 
                 left({end}_bgrp, 5) in {self._geoidSQL} AND
                 {time_filter} AND
-                {purpose_filter}
+                {purpose_filter} AND
+                {vehicle_filter}
             """,
             project_id="replica-customer",
             credentials=CRED,
