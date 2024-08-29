@@ -264,6 +264,31 @@ class dataMenuDownloader:
             parcel_source="replica",
             parcel_replica_fields=True,
     ):
+        """
+        Downloads parcel data for specified boundaries from either Florida 
+        Department of Revenue (FDOR) or Replica and saves it as a shapefile.
+
+        This method downloads parcel data for the specified state and county 
+        boundaries from either source. The downloaded parcel data is then saved 
+        as a shapefile in the designated directory specified in the `dirs` 
+        attribute of the class.
+
+        Note:
+            This function should be called after setting up the necessary 
+            attributes (`state`, `counties`, `crs`, `years`, `dirs`) within the 
+            class instance.
+
+        Args:
+            parcel_source (str, optional): The source from which to download 
+                parcel data. Valid options are "DOR" (Department of Revenue) or 
+                "replica" (Replica source). Defaults to "replica".
+            parcel_replica_fields (bool, optional): A boolean indicating whether 
+                to include replica-specific fields when downloading parcel data 
+                from the Replica source. Defaults to True.
+
+        Returns:
+            None
+        """
         print("Downloading parcels...")
         if parcel_source == "DOR":
             parcels = pd.concat(
@@ -297,31 +322,6 @@ class dataMenuDownloader:
             add_travel_time=True,
             trim=True
     ):
-        """
-        Downloads parcel data for specified boundaries from either Florida 
-        Department of Revenue (FDOR) or Replica and saves it as a shapefile.
-
-        This method downloads parcel data for the specified state and county 
-        boundaries from either source. The downloaded parcel data is then saved 
-        as a shapefile in the designated directory specified in the `dirs` 
-        attribute of the class.
-
-        Note:
-            This function should be called after setting up the necessary 
-            attributes (`state`, `counties`, `crs`, `years`, `dirs`) within the 
-            class instance.
-
-        Args:
-            parcel_source (str, optional): The source from which to download 
-                parcel data. Valid options are "DOR" (Department of Revenue) or 
-                "replica" (Replica source). Defaults to "replica".
-            parcel_replica_fields (bool, optional): A boolean indicating whether 
-                to include replica-specific fields when downloading parcel data 
-                from the Replica source. Defaults to True.
-
-        Returns:
-            None
-        """
         print("Downloading OSM...")
 
         walk = OSMNetwork.walk(

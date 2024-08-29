@@ -19,7 +19,8 @@ from sam.download.osm import dl_osm_network
 # TODO: hierarchies for highway types
 
 _NODES_FIELDS_ = ["x", "y"]
-_EDGES_FIELDS_ = ["u", "v", "key", "highway", "length", "speed_kph", "travel_time"]
+_EDGES_FIELDS_ = ["u", "v", "key", "name", "highway", "length", "speed_kph", 
+                  "travel_time"]
 _OBJ_TYPES_ = ["nx", "pandana", "gdf"]
 
 # %% Helper Functions
