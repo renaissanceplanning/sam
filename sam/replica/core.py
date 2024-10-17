@@ -800,7 +800,7 @@ class Replica:
             vehicle_sql = repr(vehicle_type).replace("[", "(").replace("]", ")")
             vehicle_filter = f"vehicle_type in {vehicle_sql}"
         elif vehicle_type == "all":
-            vehicle_filter = f"vehicle_type in {rpc.valid_vehicle}".replace(
+            vehicle_filter = f"vehicle_type in {rpc.valid_vehicle} or vehicle_type is null".replace(
                 "[", "("
             ).replace("]", ")")
         elif vehicle_type in rpc.valid_vehicle:
