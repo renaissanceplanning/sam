@@ -814,7 +814,7 @@ class Replica:
                 {columns}
             from `{self._region}.{self._region}_{self._yearSQL}_{day}_trip`
             where 
-                left({end}_bgrp, 5) in {self._geoidSQL} AND
+                left({end}_bgrp, 5) in {self._geoidSQL} AND 
                 {time_filter} AND
                 {purpose_filter} AND
                 {vehicle_filter}
