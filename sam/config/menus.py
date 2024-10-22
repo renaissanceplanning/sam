@@ -76,3 +76,7 @@ lanes_menu = {
                    'lodes_level': "bgrp"},
     'pull_tiger': {}
 }
+
+network_menu = {
+    'pull_OSM': {'add_travel_time': True},
+}

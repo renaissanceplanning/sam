@@ -11,23 +11,25 @@ from rasterio.merge import merge
 
 # TODO set to use temp
 
-routes = gpd.read_file(
-    make_path(
-        "D:/Renaissance Planning Group",
-        "District One - TWO_17_DW_BRT_Feasibility_Study",
-        "tech_group","data", "INTERIM","Highlight",
-        "BRTRoutes_HalfMileBuffer.shp"
-    )
-).to_crs(102100)
+# routes = gpd.read_file(
+#     make_path(
+#         "D:/Renaissance Planning Group",
+#         "District One - TWO_17_DW_BRT_Feasibility_Study",
+#         "tech_group","data", "INTERIM","Highlight",
+#         "BRTRoutes_HalfMileBuffer.shp"
+#     )
+# ).to_crs(102100)
 
-test_out_dir = make_path("D:/Renaissance Planning Group",
-                         "District One - TWO_17_DW_BRT_Feasibility_Study",
-                         "tech_group","data","RAW","naip")
+# test_out_dir = make_path("D:/Renaissance Planning Group",
+#                          "District One - TWO_17_DW_BRT_Feasibility_Study",
+#                          "tech_group","data","RAW","naip")
 
-route = routes.loc[routes.RouteName == "I-75"]
+# route = routes.loc[routes.RouteName == "I-75"]
 
-url = (r"https://naip.imagery1.arcgis.com/arcgis/rest/"
-       r"services/NAIP/ImageServer/exportImage?")
+# url = (r"https://naip.imagery1.arcgis.com/arcgis/rest/"
+#        r"services/NAIP/ImageServer/exportImage?")
+
+url = ("https://imagery.nationalmap.gov/arcgis/rest/services/USGSNAIPPlus/ImageServer/exportImage?")
 
 def mosaic_naip(dir, out_dir, out_name):
     """Mosaics NAIP imagery chunks into a single GeoTIFF file.
