@@ -176,30 +176,30 @@ def test_dl_acs():
 
 if __name__ == "__main__":
     # test rac
-    rac_df = test_dl_rac()
-    print(rac_df.head())
+    # rac_df = test_dl_rac()
+    # print(rac_df.head())
 
-    # test wac
-    wac_df = test_dl_wac()
-    print(wac_df.head())
+    # # test wac
+    # wac_df = test_dl_wac()
+    # print(wac_df.head())
 
-    # test lodes
-    lodes_df = test_dl_lodes()
-    print(lodes_df.head())
+    # # test lodes
+    # lodes_df = test_dl_lodes()
+    # print(lodes_df.head())
 
-    # test xwalk
-    xwalk_df = test_dl_xwalk()
-    print(xwalk_df.head())
+    # # test xwalk
+    # xwalk_df = test_dl_xwalk()
+    # print(xwalk_df.head())
 
-    # test aggregation
-    rac_bg, wac_bg, od_bg = test_aggregate_census()
-    print(rac_bg.head())
-    print(wac_bg.head())
-    print(od_bg.head())
+    # # test aggregation
+    # rac_bg, wac_bg, od_bg = test_aggregate_census()
+    # print(rac_bg.head())
+    # print(wac_bg.head())
+    # print(od_bg.head())
 
-    # test sld
-    sld_df = test_dl_sld()
-    print(sld_df.head())
+    # # test sld
+    # sld_df = test_dl_sld()
+    # print(sld_df.head())
 
     # test parcel dl
     par_df = test_dl_fl_par()

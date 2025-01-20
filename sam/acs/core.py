@@ -57,10 +57,6 @@ def _check_breaks(config, breaks=None):
         else:
             raise ValueError("Reclass not supported for this variable")
 
-
-# TODO fix break bug
-
-
 def _check_name(config, name=None):
     """
     Validate name provided for aliasing or preset reclassification of ACS
@@ -92,7 +88,6 @@ def _check_name(config, name=None):
         return name
     else:
         raise ValueError("Invalid name; must be one of: " f"{', '.join(config._opts_)}")
-
 
 def _combine_levels(df, idcol, config, breaks=None, name="full"):
     """
@@ -159,7 +154,6 @@ def _combine_levels(df, idcol, config, breaks=None, name="full"):
         )
     return dt
 
-
 def _discrete_processing(geography, config, geoid, year, name="full"):
     """
     Download ACS data, and perform aliasing or preset reclassification for
@@ -209,7 +203,6 @@ def _discrete_processing(geography, config, geoid, year, name="full"):
         
     tbl = pd.concat(tbl_out)
     return tbl
-
 
 def _numeric_processing(
     geography, config, geoid, year, breaks=None, name="full"

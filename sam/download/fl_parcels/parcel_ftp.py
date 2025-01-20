@@ -14,6 +14,9 @@ import numpy as np
 
 # %% Functions
 
+# as of 2025 the FTP site is no longer in use, this code is deprecated but this 
+# script is left as is for future ftp work
+
 # https://stackoverflow.com/questions/1854572/traversing-ftp-listing
 def traverse(ftp, depth=None):
     """

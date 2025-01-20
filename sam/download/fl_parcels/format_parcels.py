@@ -116,6 +116,13 @@ def dl_parcel_gis(gis_url, crs):
     print("----> downloading the shape")
 
     gdf = gpd.read_file(gis_url)
+    
+    # rename PARCEL_ID to PARCELNO
+    if "PARCEL_ID" in gdf.columns:
+        gdf.rename(columns={"PARCEL_ID": "PARCELNO"}, inplace=True) 
+    
+    
+    
     gdf = gdf.astype({"PARCELNO": str})
 
     # remove non-polygons
@@ -270,12 +277,12 @@ def dl_parcel_nal(nal_url, field_specs={}):
 
     # reset dtype (and cover PARCELNO manually just to be safe)
     df = df.astype(fdt)
-    df = df.astype({"PARCEL_ID": str})
+    df = df.astype({"PARCELNO": str})
 
     # aggregating
     # -----------
 
-    if len(np.unique(df.PARCEL_ID)) < len(df.index):
+    if len(np.unique(df.PARCELNO)) < len(df.index):
         print("----> aggregating to parcel ID")
 
         # extract how we're aggregating

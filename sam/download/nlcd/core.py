@@ -50,31 +50,35 @@ for vr in views_row:
         else:
             pass
     except:
-        continue
-    # Geography (and title fix based off geography)
-    geog = re.search(r"\((.*?)\)", title).group(0)
-    title = re.sub(geog.replace("(", "\(").replace(")", "\)"), "", title)
-    title = title.replace("Percent", "")
-    title = re.sub(title_start, "", title)
-    title = re.sub("^Imperviousness", "Developed Imperviousness", title)
-    geog = re.sub(r"\(|\)", "", geog).lower()
-    if bool(re.search("Zone 8", title)) == True:
-        geog = geog + " zone 8"
-        title = title.replace("Zone 8", "")
-    else:
         pass
-    title = re.sub(r"\s{2,}", " ", title).strip().lower()
-    # Year
-    region_year = vr.findAll("h3")[0].text
-    region, year = region_year.split("|")
-    year = re.sub(r"\s", "", year).strip()
-    # Link
-    link = vr.findAll("a", text="Download")[0]["href"]
-    # Append info
-    info = (dst, title, geog, year, link)
-    __NLCD__.append(info)
+    try:
+    # Geography (and title fix based off geography)
+        geog = re.search(r"\((.*?)\)", title).group()
+        title = re.sub(geog.replace("(", "\(").replace(")", "\)"), "", title)
+        title = title.replace("Percent", "")
+        title = re.sub(title_start, "", title)
+        title = re.sub("^Imperviousness", "Developed Imperviousness", title)
+        geog = re.sub(r"\(|\)", "", geog).lower()
+        if bool(re.search("Zone 8", title)) == True:
+            geog = geog + " zone 8"
+            title = title.replace("Zone 8", "")
+        else:
+            pass
+        title = re.sub(r"\s{2,}", " ", title).strip().lower()
+        # Year
+        region_year = vr.findAll("span")[0].text
+        region, year = region_year.split("|")
+        year = re.sub(r"\s", "", year).strip()
+        # Link
+        link = vr.findAll("a", text="Download")[0]["href"]
+        # Append info
+        info = (dst, title, geog, year, link)
+        __NLCD__.append(info)
+    except:
+        continue
+    
 __NLCD__ = pd.DataFrame(__NLCD__, columns=["family", "dataset", "geog", "year", "link"])
-__ALL_YEARS__ = "2019,2016,2013,2011,2008,2006,2004,2001"
+__ALL_YEARS__ = "2023,2019,2016,2013,2011,2008,2006,2004,2001"
 
 # %% Functions
 
