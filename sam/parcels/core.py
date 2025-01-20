@@ -12,63 +12,64 @@ from sam.config.parcel_config import (
     rep_parcel_shorten,
 )
 from sam.download.fl_parcels import (
-    fdor_gis_and_tax,
-    fdor_availability,
+    # fdor_gis_and_tax,
+    # fdor_availability,
     process_parcels,
     process_parcels_csv,
+    build_url
 )
 from sam.config import is_int
 
 
-def extract_urls(county, year):
-    urls_df = fdor_gis_and_tax()
-    county_urls = fdor_availability(df=urls_df, county=county, year=year)
+# def extract_urls(county, year):
+#     urls_df = fdor_gis_and_tax()
+#     county_urls = fdor_availability(df=urls_df, county=county, year=year)
 
-    try:
-        gis_url = county_urls.loc[
-            (county_urls.year == year)
-            & (county_urls.file == "GIS")
-            & (county_urls.url.str.contains("pin\."))
-        ][["url"]].squeeze()
-        nal_url = county_urls.loc[
-            (county_urls.year == year)
-            & (county_urls.file == "TaxRoll")
-            & (county_urls.url.str.contains("DBF"))
-            & (county_urls.url.str.contains("Final"))
-        ][["url"]].squeeze()
+#     try:
+#         gis_url = county_urls.loc[
+#             (county_urls.year == year)
+#             & (county_urls.file == "GIS")
+#             & (county_urls.url.str.contains("pin\."))
+#         ][["url"]].squeeze()
+#         nal_url = county_urls.loc[
+#             (county_urls.year == year)
+#             & (county_urls.file == "TaxRoll")
+#             & (county_urls.url.str.contains("DBF"))
+#             & (county_urls.url.str.contains("Final"))
+#         ][["url"]].squeeze()
 
-        if (type(gis_url) != str) or (
-            type(gis_url) != str
-        ):  # checks to ensure that strings not sereis are returned
-            raise ValueError(
-                f"None string url returned",
-                f"gis type: {type(gis_url)}",
-                f"nal type: {type(nal_url)}",
-            )
+#         if (type(gis_url) != str) or (
+#             type(gis_url) != str
+#         ):  # checks to ensure that strings not sereis are returned
+#             raise ValueError(
+#                 f"None string url returned",
+#                 f"gis type: {type(gis_url)}",
+#                 f"nal type: {type(nal_url)}",
+#             )
 
-    except:
-        gis_url = county_urls.loc[
-            (county_urls.year == year)
-            & (county_urls.file == "GIS")
-            & (county_urls.url.str.contains("pin\."))
-            & (county_urls.url.str.contains("condo") == False)
-        ][["url"]].squeeze()
-        nal_url = county_urls.loc[
-            (county_urls.year == year)
-            & (county_urls.file == "TaxRoll")
-            & (county_urls.url.str.contains(f"NAL {year}"))
-        ][["url"]].squeeze()
+#     except:
+#         gis_url = county_urls.loc[
+#             (county_urls.year == year)
+#             & (county_urls.file == "GIS")
+#             & (county_urls.url.str.contains("pin\."))
+#             & (county_urls.url.str.contains("condo") == False)
+#         ][["url"]].squeeze()
+#         nal_url = county_urls.loc[
+#             (county_urls.year == year)
+#             & (county_urls.file == "TaxRoll")
+#             & (county_urls.url.str.contains(f"NAL {year}"))
+#         ][["url"]].squeeze()
 
-        if (type(gis_url) != str) or (
-            type(gis_url) != str
-        ):  # checks to ensure that strings not sereis are returned
-            raise ValueError(
-                f"None string url returned",
-                f"gis type: {type(gis_url)}",
-                f"nal type: {type(nal_url)}",
-            )
+#         if (type(gis_url) != str) or (
+#             type(gis_url) != str
+#         ):  # checks to ensure that strings not sereis are returned
+#             raise ValueError(
+#                 f"None string url returned",
+#                 f"gis type: {type(gis_url)}",
+#                 f"nal type: {type(nal_url)}",
+#             )
 
-    return gis_url, nal_url
+#     return gis_url, nal_url
 
 
 # Functions
