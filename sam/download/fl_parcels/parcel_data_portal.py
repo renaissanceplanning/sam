@@ -17,9 +17,9 @@ gis_2024_url = "https://floridarevenue.com/property/dataportal/Documents/PTO%20D
 gis_file_name = "{county_name}_{year}Pin.zip"
 nal_file_name = "{county_name}%20{county_number}%20Final%20NAL%20{year}.zip"
 
-county_name = "Alachua"
-year = 2024
-print(gis_file_name.format(county_name=county_name, year=year))
+# county_name = "Alachua"
+# year = 2024
+# print(gis_file_name.format(county_name=county_name, year=year))
 
 # ----------------------------------------------------------------------------
 
@@ -311,13 +311,15 @@ def build_url(county, year):
 # ----------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    gis_url, nal_url = build_url(county_name, year)
+    pass
+    # gis_url, nal_url = build_url(county_name, year)
     
-    print(nal_url)
-    # print(gis_url)
+    # print(nal_url)
+    # # print(gis_url)
     
-    from pprint import pprint
-    import geopandas as gpd
+    # from pprint import pprint
+    # import geopandas as gpd
     
-    pprint(gpd.read_file(gis_url))
-    pprint(pd.read_csv(nal_url))
+    # pprint(gpd.read_file(gis_url))
+    # pprint(pd.read_csv(nal_url))
+    
