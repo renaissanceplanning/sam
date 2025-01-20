@@ -104,9 +104,11 @@ def download_fl_parcels(county, crs, year=None, config=fl_par_config, replica=Tr
     if config is None:
         config = {}
 
-    # TODO convert fips to name add function
-
-    gis_url, nal_url = extract_urls(county=county, year=year)
+    # TODO replace when we can automate scraping the new portal.
+    # gis_url, nal_url = extract_urls(county=county, year=year) 
+    
+    gis_url, nal_url = build_url(county=county, year=year) 
+    
     parcels = process_parcels(
         gis_url=gis_url, nal_url=nal_url, transform_crs=crs, field_specs=config
     )
