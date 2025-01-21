@@ -74,7 +74,7 @@ from sam.config import is_int
 
 # Functions
 # TODO ensure it can accept fips
-def download_fl_parcels(county, crs, year=None, config=fl_par_config, replica=True):
+def download_fl_parcels(county, crs, year=None, config=fl_par_config_csv, replica=True):
     """Will download DOR parcels from Florida
 
     Args:
@@ -123,7 +123,7 @@ def download_fl_parcels(county, crs, year=None, config=fl_par_config, replica=Tr
 
     if replica:
         parcels = parcels["result"].merge(FL_TO_REPLICA).copy()
-        parcels = parcels.rename(columns=fl_parcel_rename)
+        parcels = parcels.rename(columns=fl_parcel_csv_rename)
         parcels["lat"] = parcels.centroid.y
         parcels["lng"] = parcels.centroid.x
         parcels["BLOCKGROUP"] = parcels["BLOCKGROUP"].str.zfill(12)
