@@ -99,8 +99,8 @@ def download_fl_parcels(county, crs, year=None, config=fl_par_config_csv, replic
         - An object with a to_json method
     Any of these would be valid inputs to the `transform_crs` parameter
     """
-    if year is None:
-        year = date.today().year - 1
+    if year != date.today().year - 1:
+        year = date.today().year - 1 #at leas until the DOR downloader is fully fixed keep this as is.
 
     if config is None:
         config = {}

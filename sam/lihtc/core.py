@@ -2,9 +2,10 @@ import us
 import geopandas as gpd
 import numpy as np
 import pandas as pd
+import urllib3
 
 from io import BytesIO
-from urllib import request
+from urllib.request import Request, urlopen
 from zipfile import ZipFile
 from sam.config import is_int
 from sam.config.ref_config import COUNTIES
@@ -60,7 +61,13 @@ def download_lihtc(geoid):
     
     std_ctys = COUNTIES.loc[COUNTIES['GEOID'].isin(geoid)]
 
-    url = request.urlopen("https://lihtc.huduser.gov/lihtcpub.zip").read()
+    # url = request.urlopen('https://lihtc.huduser.gov/lihtcpub.zip').read()
+    req = Request(
+        url='https://lihtc.huduser.gov/lihtcpub.zip', 
+        headers={'User-Agent': 'Mozilla/5.0'}
+    )
+    url = urlopen(req).read()
+    
     files = ZipFile(BytesIO(url))
     lihtc = pd.read_csv(files.open("LIHTCPUB.CSV"))
     lihtc = gpd.GeoDataFrame(
