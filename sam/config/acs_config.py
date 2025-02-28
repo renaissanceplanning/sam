@@ -623,8 +623,8 @@ _RACE_CONFIG_ = ACSConfig(
 _ETHNICITY_CONFIG_ = ACSConfig(
     pd.DataFrame.from_dict(
         {
-            "B03002_002": "hisp",
-            "B03002_012": "nonhisp",
+            "B03002_002": "nonhisp",
+            "B03002_012": "hisp",
         },
         orient="index",
         columns=["full"],
