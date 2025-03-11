@@ -802,7 +802,7 @@ class Replica:
             vehicle_sql = repr(vehicle_type).replace("[", "(").replace("]", ")")
             vehicle_filter = f"vehicle_type in {vehicle_sql}"
         elif vehicle_type == "all":
-            vehicle_filter = f"vehicle_type in {rpc.valid_vehicle} or vehicle_type is null".replace(
+            vehicle_filter = f"(vehicle_type in {rpc.valid_vehicle} or vehicle_type is null)".replace(
                 "[", "("
             ).replace("]", ")")
         elif vehicle_type in rpc.valid_vehicle:
@@ -814,7 +814,7 @@ class Replica:
             for value in mode:
                 if value not in rpc.valid_mode:
                     raise ValueError(f"values not in {rpc.valid_mode}")
-            mode_sql = repr(vehicle_type).replace("[", "(").replace("]", ")")
+            mode_sql = repr(mode).replace("[", "(").replace("]", ")")
             mode_filter = f"mode in {mode_sql}"
         elif mode == "all":
             mode_filter = f"mode in {rpc.valid_mode} or mode is null".replace(
