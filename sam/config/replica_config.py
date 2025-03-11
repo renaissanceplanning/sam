@@ -151,3 +151,14 @@ valid_vehicle = [
     "HEAVY_COMMERCIAL",
     "MOTORCYCLE"
 ]
+
+valid_mode = [
+    "CARPOOL",
+    "WALKING",
+    "PRIVATE_AUTO",
+    "ON_DEMAND_AUTO",
+    "OTHER_TRAVEL_MODE",
+    "COMMERCIAL",
+    "BIKING",
+    "PUBLIC_TRANSIT"  
+]

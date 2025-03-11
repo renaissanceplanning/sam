@@ -704,7 +704,9 @@ class Replica:
         link_ids=False,
         time="am",  # TODO add start and end hours
         purpose="all",
-        vehicle_type="all"
+        mode="all",
+        vehicle_type="all",
+        block_group = False
     ):
         """
         Returns a Pandas DataFrame containing Replica trip data for the
@@ -807,21 +809,54 @@ class Replica:
             vehicle_filter = f"travel_purpose = '{purpose}'"
         else:
             raise ValueError(f"values not in {rpc.valid_vehicle}")
-
-        df = pandas_gbq.read_gbq(
-            f"""
-            select 
-                {columns}
-            from `{self._region}.{self._region}_{self._yearSQL}_{day}_trip`
-            where 
-                left({end}_bgrp, 5) in {self._geoidSQL} AND 
-                {time_filter} AND
-                {purpose_filter} AND
-                {vehicle_filter}
-            """,
-            project_id="replica-customer",
-            credentials=CRED,
-        )
+        
+        if isinstance(mode, list):
+            for value in mode:
+                if value not in rpc.valid_mode:
+                    raise ValueError(f"values not in {rpc.valid_mode}")
+            mode_sql = repr(vehicle_type).replace("[", "(").replace("]", ")")
+            mode_filter = f"mode in {mode_sql}"
+        elif mode == "all":
+            mode_filter = f"mode in {rpc.valid_mode} or mode is null".replace(
+                "[", "("
+            ).replace("]", ")")
+        elif mode in rpc.valid_mode:
+            mode_filter = f"mode = '{mode}'"
+        else:
+            raise ValueError(f"values not in {rpc.valid_mode}")
+        
+        if block_group:
+            df = pandas_gbq.read_gbq(
+                f"""
+                select 
+                    {columns}
+                from `{self._region}.{self._region}_{self._yearSQL}_{day}_trip`
+                where 
+                    {end}_bgrp in {self._geoidSQL} AND 
+                    {time_filter} AND
+                    {purpose_filter} AND
+                    {mode_filter} AND
+                    {vehicle_filter}
+                """,
+                project_id="replica-customer",
+                credentials=CRED,
+            )
+        else:
+            df = pandas_gbq.read_gbq(
+                f"""
+                select 
+                    {columns}
+                from `{self._region}.{self._region}_{self._yearSQL}_{day}_trip`
+                where 
+                    left({end}_bgrp, 5) in {self._geoidSQL} AND 
+                    {time_filter} AND
+                    {purpose_filter} AND
+                    {mode_filter} AND
+                    {vehicle_filter}
+                """,
+                project_id="replica-customer",
+                credentials=CRED,
+            )
 
         df["trip_start"] = "inside"
 
