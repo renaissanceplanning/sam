@@ -228,7 +228,8 @@ def dl_parcel_nal(nal_url, field_specs={}):
         df = gpd.read_file(load_path)
         shutil.rmtree(td)
 
-    df = pd.DataFrame(df.drop(columns="geometry"))
+    # df = pd.DataFrame(df.drop(columns="geometry"))
+    
     if field_specs != {}:
         if "NO_RES_UNT" in list(field_specs.keys()):
             if "NO_RES_UNTS" in list(df.columns):
@@ -277,12 +278,12 @@ def dl_parcel_nal(nal_url, field_specs={}):
 
     # reset dtype (and cover PARCELNO manually just to be safe)
     df = df.astype(fdt)
-    df = df.astype({"PARCELNO": str})
+    df = df.astype({"PARCEL_ID": str})
 
     # aggregating
     # -----------
 
-    if len(np.unique(df.PARCELNO)) < len(df.index):
+    if len(np.unique(df.PARCEL_ID)) < len(df.index):
         print("----> aggregating to parcel ID")
 
         # extract how we're aggregating
@@ -293,7 +294,7 @@ def dl_parcel_nal(nal_url, field_specs={}):
 
         # if there's any aggfuncs missing, add them in
         agg_miss = [
-            c for c in df.columns.tolist() if c not in ["PARCELNO"] + list(faggr.keys())
+            c for c in df.columns.tolist() if c not in ["PARCEL_ID"] + list(faggr.keys())
         ]
         if agg_miss == []:
             dfdt = df.dtypes
@@ -304,7 +305,7 @@ def dl_parcel_nal(nal_url, field_specs={}):
                     agg_miss[c] = sum
 
         # aggregate
-        df = df.groupby("PARCELNO").agg(faggr).reset_index()
+        df = df.groupby("PARCEL_ID").agg(faggr).reset_index()
 
         # modes are returned weirdly, so extract value
         mode_cols = [key for key, value in faggr.items() if value == stats.mode]
@@ -649,7 +650,7 @@ def process_parcels(gis_url, nal_url, transform_crs, field_specs={}):
     # ------
     print("2. Downloading parcel NAL data")
 
-    nal = dl_parcel_nal(nal_url=nal_url, field_specs=field_specs)
+    nal = dl_parcel_nal_csv(nal_url=nal_url, field_specs=field_specs)
 
     # 3. save
     # -------

@@ -18,7 +18,8 @@ replica_regions = {
 replica_pop_years = ["2019_Q4", 
                      "2021_Q2", "2021_Q4", 
                      "2022_Q2", "2022_Q4",
-                     "2023_Q2", "2023_Q4"]
+                     "2023_Q2", "2023_Q4",
+                     "2024_Q2"]
 
 replica_coverage_years = pd.Series(
     [int(year[0:4]) for year in replica_pop_years]
@@ -149,4 +150,15 @@ valid_vehicle = [
     "MEDIUM_COMMERCIAL",
     "HEAVY_COMMERCIAL",
     "MOTORCYCLE"
+]
+
+valid_mode = [
+    "CARPOOL",
+    "WALKING",
+    "PRIVATE_AUTO",
+    "ON_DEMAND_AUTO",
+    "OTHER_TRAVEL_MODE",
+    "COMMERCIAL",
+    "BIKING",
+    "PUBLIC_TRANSIT"  
 ]
