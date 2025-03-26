@@ -177,6 +177,7 @@ class OSMNetwork(nx.MultiDiGraph):
         nodes, edges = ox.graph_to_gdfs(self)
         # TODO: hierarchy the highway types?
         edges = edges.reset_index().drop(columns="osmid")
+        # edges['osmid'] = edges['osmid'].astype(str)
 
         edges["highway"] = [
             "-".join(np.sort(hwy)) if isinstance(hwy, list) else hwy
