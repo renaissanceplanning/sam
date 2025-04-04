@@ -10,6 +10,7 @@ ref_path = os.path.abspath(os.path.join(__script_path__, "..", "..", "ref_data")
 PAR_RECODE = pd.read_csv(os.path.join(ref_path, "land_use_recode.csv"))
 COUNTIES = gpd.read_file(os.path.join(ref_path, "counties.geojson"))
 TEST_AOI = gpd.read_file(os.path.join(ref_path, "miami_dade_county.geojson"))
+CENSUS_XW = pd.read_csv(os.path.join(ref_path, "census_bg10_to_bg20.txt"), delimiter='|')
 FL_TO_REPLICA = pd.read_csv(os.path.join(ref_path, "florida_lu_to_replica.csv"))
 STATE_DF = pd.DataFrame(
     [

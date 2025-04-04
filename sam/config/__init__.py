@@ -1,5 +1,5 @@
 # general configuration imports
-from .ref_config import PAR_RECODE, COUNTIES, STATE_DF, TEST_AOI, FL_TO_REPLICA
+from .ref_config import PAR_RECODE, COUNTIES, STATE_DF, TEST_AOI, FL_TO_REPLICA, CENSUS_XW
 from .helper_functions import is_int, validate_data_dir, extract_fips
 from .parcel_config import fl_par_config_csv as PAR_CONF
 
