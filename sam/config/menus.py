@@ -81,7 +81,7 @@ network_menu = {
     'pull_OSM': {'add_travel_time': True},
 }
 
-replic_persons_trips = {
+replica_persons_trips = {
     'pull_replica_trip_table': {'mid_week': True,
                                 'link_ids': False,
                                 'time': "all",  
