@@ -612,6 +612,8 @@ class dataMenuDownloader:
 
 if __name__ == "__main__":
     pass
+    # from sam.config import COUNTIES
+    # from sam.config import replic_persons_trips
     # data_dir = make_path(
     #     "D:/Renaissance Planning Group",
     #     "Projects - ComprehensivePlan_2023/tech_group/data"
@@ -624,4 +626,4 @@ if __name__ == "__main__":
     #     county, data_dir, prj_crs=county.crs
     # )
 
-    # fetcher.pull_menu(methods=tod_menu)
+    # fetcher.pull_menu(methods=replic_persons_trips)
