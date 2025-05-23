@@ -13,7 +13,7 @@ from sam.config.helper_functions import create_geo_dict
 from sam.config.replica_config import replica_acs_tables
 from sam.lihtc import download_lihtc
 from sam.lodes import lodes
-from sam.nlcd import download_nlcd
+# from sam.nlcd import download_nlcd
 from sam.osm import OSMNetwork
 from sam.parcels import download_fl_parcels
 from sam.replica import Replica
@@ -381,55 +381,55 @@ class dataMenuDownloader:
         lihtc.to_file(make_path(self.dirs['lih_dir'],
                                 f"lihtc_{self.years['parcel_year']}.shp"))
 
-    def pull_nlcd(
-            self,
-            dataset
-    ):
-        """
-        Downloads National Land Cover Database (NLCD) data and saves it as a 
-        GeoTIFF raster.
+    # def pull_nlcd(
+    #         self,
+    #         dataset
+    # ):
+    #     """
+    #     Downloads National Land Cover Database (NLCD) data and saves it as a 
+    #     GeoTIFF raster.
 
-        This method downloads NLCD data for the specified state and county 
-        boundaries and saves it as a GeoTIFF raster in the designated directory 
-        specified in the `dirs` attribute of the class. The NLCD dataset can be 
-        selected using the `dataset` parameter.
+    #     This method downloads NLCD data for the specified state and county 
+    #     boundaries and saves it as a GeoTIFF raster in the designated directory 
+    #     specified in the `dirs` attribute of the class. The NLCD dataset can be 
+    #     selected using the `dataset` parameter.
 
-        Note:
-            This function should be called after setting up the necessary 
-            attributes (`state`, `counties`, `crs`, `dirs`, `years`) within the 
-            class instance.
+    #     Note:
+    #         This function should be called after setting up the necessary 
+    #         attributes (`state`, `counties`, `crs`, `dirs`, `years`) within the 
+    #         class instance.
 
-        Args:
-            dataset (str): The NLCD dataset to be downloaded.
-            NLCD Data Sets:
-                - 'land cover change index'
-                - 'land cover all years'
-                - 'land cover'
-                - 'land cover change'
-                - 'land cover change pixels'
-                - 'developed imperviousness all years'
-                - 'developed imperviousness'
-                - 'developed imperviousness descriptor'
-                - 'developed urban descriptor'
-                - 'developed imperviousness change'
-                - 'tree canopy cover'
-                - 'tree canopy change'
+    #     Args:
+    #         dataset (str): The NLCD dataset to be downloaded.
+    #         NLCD Data Sets:
+    #             - 'land cover change index'
+    #             - 'land cover all years'
+    #             - 'land cover'
+    #             - 'land cover change'
+    #             - 'land cover change pixels'
+    #             - 'developed imperviousness all years'
+    #             - 'developed imperviousness'
+    #             - 'developed imperviousness descriptor'
+    #             - 'developed urban descriptor'
+    #             - 'developed imperviousness change'
+    #             - 'tree canopy cover'
+    #             - 'tree canopy change'
 
-        Returns:
-            None
-        """
-        print("Downloading Replica Trip Table...")
-        nlcd = download_nlcd(
-            geoid=self.geoids,
-            year=self.years["parcel_year"],
-            dataset=dataset
-        )
-        path = dataset.replace(' ', '_')
+    #     Returns:
+    #         None
+    #     """
+    #     print("Downloading Replica Trip Table...")
+    #     nlcd = download_nlcd(
+    #         geoid=self.geoids,
+    #         year=self.years["parcel_year"],
+    #         dataset=dataset
+    #     )
+    #     path = dataset.replace(' ', '_')
 
-        nlcd = nlcd.reproject(to_crs=self.crs)
-        nlcd.to_file(save_path=make_path(self.dirs['nlcd_dir'],
-                                         f'{path}_{self.years["parcel_year"]}.tif')
-                     )
+    #     nlcd = nlcd.reproject(to_crs=self.crs)
+    #     nlcd.to_file(save_path=make_path(self.dirs['nlcd_dir'],
+    #                                      f'{path}_{self.years["parcel_year"]}.tif')
+    #                  )
 
     def pull_sld(
             self,
@@ -612,6 +612,8 @@ class dataMenuDownloader:
 
 if __name__ == "__main__":
     pass
+    # from sam.config import COUNTIES
+    # from sam.config import replic_persons_trips
     # data_dir = make_path(
     #     "D:/Renaissance Planning Group",
     #     "Projects - ComprehensivePlan_2023/tech_group/data"
@@ -624,4 +626,4 @@ if __name__ == "__main__":
     #     county, data_dir, prj_crs=county.crs
     # )
 
-    # fetcher.pull_menu(methods=tod_menu)
+    # fetcher.pull_menu(methods=replic_persons_trips)

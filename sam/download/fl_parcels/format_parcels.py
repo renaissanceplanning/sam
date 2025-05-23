@@ -285,6 +285,7 @@ def dl_parcel_nal(nal_url, field_specs={}):
 
     if len(np.unique(df.PARCEL_ID)) < len(df.index):
         print("----> aggregating to parcel ID")
+        df = df.rename(columns={"PARCELNO": "PARCEL_ID"})
 
         # extract how we're aggregating
         faggr = {}
@@ -305,7 +306,7 @@ def dl_parcel_nal(nal_url, field_specs={}):
                     agg_miss[c] = sum
 
         # aggregate
-        df = df.groupby("PARCEL_ID").agg(faggr).reset_index()
+        df = df.groupby("PARCELNO").agg(faggr).reset_index()
 
         # modes are returned weirdly, so extract value
         mode_cols = [key for key, value in faggr.items() if value == stats.mode]
@@ -411,7 +412,7 @@ def dl_parcel_nal_csv(nal_url, field_specs):
         with zipfile.ZipFile(fp) as z:
             load_file = z.namelist()[0]
         load_path = "".join(["zip://", fp, "!", load_file])
-        df = df = pd.read_csv(
+        df = pd.read_csv(
             nal_url,
             usecols=field_specs.keys(),
             dtype={key: field_specs[key]["dtype"] for key in field_specs.keys()},
@@ -474,6 +475,10 @@ def dl_parcel_nal_csv(nal_url, field_specs):
 
     if len(np.unique(df.PARCEL_ID)) < len(df.index):
         print("----> aggregating to parcel ID")
+        if "PARCEL_ID" not in df.columns:
+            df['PARCEL_ID'] = df['PARCELNO']
+        if "PARCELNO" not in df.columns:
+            df['PARCELNO'] = df['PARCEL_ID']
 
         # extract how we're aggregating
         faggr = {}
@@ -483,7 +488,7 @@ def dl_parcel_nal_csv(nal_url, field_specs):
 
         # if there's any aggfuncs missing, add them in
         agg_miss = [
-            c for c in df.columns.tolist() if c not in ["PARCELNO"] + list(faggr.keys())
+            c for c in df.columns.tolist() if c not in ["PARCEL_ID"] + list(faggr.keys())
         ]
         if agg_miss == []:
             dfdt = df.dtypes
@@ -552,6 +557,8 @@ def merge_parcels(gis_gdf, nal_df):
     # merge
     # -----
     print("----> merging shape and table")
+    if list(nal_df.columns).count("PARCELNO") > 1:
+        nal_df = nal_df.loc[:,~nal_df.columns.duplicated()]
 
     # Use a dict to organize the information for the return
     rd = {

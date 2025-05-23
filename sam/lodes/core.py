@@ -4,6 +4,8 @@ Created on Fri Feb 18 15:42:42 2022
 
 @author: Aaron Weinstock
 """
+import os
+os.environ["DC_STATEHOOD"]="1"
 
 import re
 import us
@@ -14,6 +16,8 @@ import pandas as pd
 
 from sam.download.census import dl_lodes, dl_xwalk
 from sam.config.helper_functions import create_geo_dict
+
+
 
 #TODO bring more in line with other downloads 
 # add the conversions to POSTAL in here not part of menu
@@ -73,10 +77,15 @@ class lodes:
         geo_dict = create_geo_dict(geoids=geoid)
         out = []
         for st in geo_dict.keys():
-            state = us.states.lookup(st).abbr
-            df = dl_xwalk(ST=state)
-            df = df.drop(columns=["blklatdd", "blklondd", "createdate"])
-            out.append(df)
+            if st == '11':
+                df = dl_xwalk(ST="DC")
+                df = df.drop(columns=["blklatdd", "blklondd", "createdate"])
+                out.append(df)
+            else:
+                state = us.states.lookup(st).abbr
+                df = dl_xwalk(ST=state)
+                df = df.drop(columns=["blklatdd", "blklondd", "createdate"])
+                out.append(df)
         df = pd.concat(out)
 
         return df
@@ -99,9 +108,14 @@ class lodes:
         geo_dict = create_geo_dict(geoids=geoid)
         out = []
         for st in geo_dict.keys():
-            state = us.states.lookup(st).abbr
-            df = _dlfm_lodes_ac(file="rac", state=state, 
-                                year=year, idcol="h_geocode")
+            if st == '11':
+                # state = us.states.lookup(st).abbr
+                df = _dlfm_lodes_ac(file="rac", state='DC', 
+                                    year=year, idcol="h_geocode")
+            else:
+                state = us.states.lookup(st).abbr
+                df = _dlfm_lodes_ac(file="rac", state=state, 
+                                    year=year, idcol="h_geocode")
             out.append(df)
         df = pd.concat(out)
         return df
@@ -123,12 +137,16 @@ class lodes:
         geo_dict = create_geo_dict(geoids=geoid)
         out = []
         for st in geo_dict.keys():
-            state = us.states.lookup(st).abbr
-            df = _dlfm_lodes_ac(file="wac", state=state, 
-                                year=year, idcol="w_geocode")
+            if st == "11":
+                # state = us.states.lookup(st).abbr
+                df = _dlfm_lodes_ac(file="wac", state="DC", 
+                                    year=year, idcol="w_geocode")
+            else:
+                state = us.states.lookup(st).abbr
+                df = _dlfm_lodes_ac(file="wac", state=state, 
+                                    year=year, idcol="w_geocode")
             out.append(df)
         df = pd.concat(out)
-        return df
         return df
 
     def od(geoid, year):
@@ -150,17 +168,30 @@ class lodes:
         geo_dict = create_geo_dict(geoids=geoid)
         out = []
         for st in geo_dict.keys():
-            state = us.states.lookup(st).abbr
-            main = dl_lodes(
-                file="od", ST=state, TYPE="JT00", YEAR=year, SEG=None, PART="main"
-            )
-            aux = dl_lodes(
-                file="od", ST=state, TYPE="JT00", YEAR=year, SEG=None, PART="aux"
-            )
-            df = pd.concat([main, aux])
-            df["h_geocode"] = df.h_geocode.astype(str)
-            df["w_geocode"] = df.w_geocode.astype(str)
-            df = df.drop(columns="createdate")
+            if st == "11":
+                state = "DC"
+                main = dl_lodes(
+                    file="od", ST=state, TYPE="JT00", YEAR=year, SEG=None, PART="main"
+                )
+                aux = dl_lodes(
+                    file="od", ST=state, TYPE="JT00", YEAR=year, SEG=None, PART="aux"
+                )
+                df = pd.concat([main, aux])
+                df["h_geocode"] = df.h_geocode.astype(str)
+                df["w_geocode"] = df.w_geocode.astype(str)
+                df = df.drop(columns="createdate")
+            else:
+                state = us.states.lookup(st).abbr
+                main = dl_lodes(
+                    file="od", ST=state, TYPE="JT00", YEAR=year, SEG=None, PART="main"
+                )
+                aux = dl_lodes(
+                    file="od", ST=state, TYPE="JT00", YEAR=year, SEG=None, PART="aux"
+                )
+                df = pd.concat([main, aux])
+                df["h_geocode"] = df.h_geocode.astype(str)
+                df["w_geocode"] = df.w_geocode.astype(str)
+                df = df.drop(columns="createdate")
             out.append(df)
         df = pd.concat(out)
         # df.lodes.__dict__['__datastate__'] = state

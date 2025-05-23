@@ -7,11 +7,11 @@ fl_par_config = {
         "aggfunc": "first",
         "na_value": "unknown"
     },
-    "PARCEL_ID": {
-        "dtype": str,
-        "aggfunc": "first",
-        "na_value": "unknown"
-    },
+    # "PARCEL_ID": {
+    #     "dtype": str,
+    #     "aggfunc": "first",
+    #     "na_value": "unknown"
+    # },
     "DOR_UC": {
         "dtype": str,
         "aggfunc": "first",
