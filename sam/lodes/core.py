@@ -17,12 +17,6 @@ import pandas as pd
 from sam.download.census import dl_lodes, dl_xwalk
 from sam.config.helper_functions import create_geo_dict
 
-
-
-#TODO bring more in line with other downloads 
-# add the conversions to POSTAL in here not part of menu
-
-
 # Helper functions
 def _dlfm_lodes_ac(file, state, year, idcol):
     """
@@ -223,7 +217,6 @@ class lodes:
         pd.DataFrame
 
         """
-        # TODO add handleing for fips to string (fix bug with OD)
         # lodes_st = us.states.lookup(self.__datastate__)
         # XWalk_st = us.states.lookup(XWalk.lodes.__datastate__)
 

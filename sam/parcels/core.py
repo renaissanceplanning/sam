@@ -20,7 +20,6 @@ from sam.download.fl_parcels import (
 )
 from sam.config import is_int
 
-
 # def extract_urls(county, year):
 #     urls_df = fdor_gis_and_tax()
 #     county_urls = fdor_availability(df=urls_df, county=county, year=year)
@@ -73,7 +72,6 @@ from sam.config import is_int
 
 
 # Functions
-# TODO ensure it can accept fips
 def download_fl_parcels(county, crs, year=None, config=fl_par_config_csv, replica=True):
     """Will download DOR parcels from Florida
 
@@ -105,7 +103,6 @@ def download_fl_parcels(county, crs, year=None, config=fl_par_config_csv, replic
     if config is None:
         config = {}
 
-    # TODO replace when we can automate scraping the new portal.
     # gis_url, nal_url = extract_urls(county=county, year=year) 
     
     gis_url, nal_url = build_url(county=county, year=year) 

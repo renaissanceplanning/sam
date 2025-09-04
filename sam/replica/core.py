@@ -12,11 +12,6 @@ from sam.config import COUNTIES
 from sam.config import CRED
 from sam.config.helper_functions import create_geo_dict
 
-
-# TODO add rputils iterable
-# TODO add properties, getter and setter
-
-
 class YearOutOfBounds(UserWarning):
     pass
 

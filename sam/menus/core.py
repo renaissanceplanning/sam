@@ -131,7 +131,7 @@ class dataMenuDownloader:
 
         if "od" in lodes_data:
             od = lodes.od(geoid=self.geoids, year=self.years["lodes_year"])
-            # od = od.lodes.aggregate(XWalk=xw, to=lodes_level) TODO fix the aggregate method
+            # od = od.lodes.aggregate(XWalk=xw, to=lodes_level) 
             # od_out.append(od)
 
         # rac = pd.concat(rac_out)
@@ -177,7 +177,6 @@ class dataMenuDownloader:
             None
         """
         print("Downloading ACS...")
-        # TODO use the get attribute method and a list
         methods = [
             func
             for func in dir(ACS)
@@ -380,6 +379,8 @@ class dataMenuDownloader:
         lihtc = lihtc.to_crs(self.crs)
         lihtc.to_file(make_path(self.dirs['lih_dir'],
                                 f"lihtc_{self.years['parcel_year']}.shp"))
+
+    # TODO uncomment when the NLCD downloader is fixed
 
     # def pull_nlcd(
     #         self,

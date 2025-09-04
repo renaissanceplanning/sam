@@ -3,16 +3,16 @@ tod_menu = {
                    'lodes_level': "bgrp"},
     'pull_acs': {},
     'pull_tiger': {},
-    'pull_parcels': {'parcel_source': "replica",
-                     'parcel_replica_fields': True},
+    # 'pull_parcels': {'parcel_source': "replica",
+    #                  'parcel_replica_fields': True},
     'pull_OSM': {'add_travel_time': False},
     # 'pull_lihtc': {},
-    'pull_replica_trip_table': {'mid_week': True,
-                                'link_ids': False,
-                                'time': "all",  
-                                'purpose': "all"},
-    'pull_replica_acs': {},
-    'pull_replica_population': {},
+    # 'pull_replica_trip_table': {'mid_week': True,
+    #                             'link_ids': False,
+    #                             'time': "all",  
+    #                             'purpose': "all"},
+    # 'pull_replica_acs': {},
+    # 'pull_replica_population': {},
 }
 
 tod_menu_fdot = {
@@ -24,12 +24,12 @@ tod_menu_fdot = {
                      'parcel_replica_fields': False},
     'pull_OSM': {'add_travel_time': False},
     # 'pull_lihtc': {},
-    'pull_replica_trip_table': {'mid_week': True,
-                                'link_ids': False,
-                                'time': "all",  
-                                'purpose': "all"},
-    'pull_replica_acs': {},
-    'pull_replica_population': {},
+    # 'pull_replica_trip_table': {'mid_week': True,
+    #                             'link_ids': False,
+    #                             'time': "all",  
+    #                             'purpose': "all"},
+    # 'pull_replica_acs': {},
+    # 'pull_replica_population': {},
 }
 
 parcels_menu = {

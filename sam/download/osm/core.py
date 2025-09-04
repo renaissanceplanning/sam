@@ -183,7 +183,7 @@ def dl_osm_network(
                 simplify=True,
                 retain_all=True,
                 truncate_by_edge=True,
-                clean_periphery=False,
+                # clean_periphery=False,
                 custom_filter=osm_query,
             )
             nets.append(cg)

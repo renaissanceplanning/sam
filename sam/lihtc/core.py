@@ -10,14 +10,15 @@ from zipfile import ZipFile
 from sam.config import is_int
 from sam.config.ref_config import COUNTIES
 
+# TODO last time I attempted to run this it did though an error the link was not working 
+# could be the new administration but could just be a dead link haven't had 
+# a use case to check for it and we don't use this data that often.
 
 def download_lihtc(geoid):
     """Pull LIHTC from HUD
 
     Args:
-        geometry (GeoDataFrame): GDF of area to pull values.
-
-    
+        geometry (GeoDataFrame): GDF of area to pull values. Must contain the 5 digit GEOID
 
     Returns:
         gpd.GeoDataFrame: LIHTC point level dataframe

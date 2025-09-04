@@ -182,8 +182,9 @@ def fetch_naip(gdf, out_dir, out_name):
 
 
 if __name__ == "__main__":
-    fetch_naip(
-        gdf = route,
-        out_dir=test_out_dir,
-        out_name="func_test"
-    )
+    pass
+    # fetch_naip(
+    #     gdf = route,
+    #     out_dir=test_out_dir,
+    #     out_name="func_test"
+    # )

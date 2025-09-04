@@ -19,7 +19,7 @@ from sam.download.osm import dl_osm_network
 # TODO: hierarchies for highway types
 
 _NODES_FIELDS_ = ["x", "y"]
-_EDGES_FIELDS_ = ["u", "v", "key", "name", "highway", "length", "speed_kph", 
+_EDGES_FIELDS_ = ["u", "v", "osmid","key", "name", "highway", "length", "speed_kph", 
                   "travel_time"]
 _OBJ_TYPES_ = ["nx", "pandana", "gdf"]
 
@@ -176,7 +176,7 @@ class OSMNetwork(nx.MultiDiGraph):
         """
         nodes, edges = ox.graph_to_gdfs(self)
         # TODO: hierarchy the highway types?
-        edges = edges.reset_index().drop(columns="osmid")
+        # edges = edges.reset_index().drop(columns="osmid")
         # edges['osmid'] = edges['osmid'].astype(str)
 
         edges["highway"] = [
@@ -253,7 +253,8 @@ class OSMNetwork(nx.MultiDiGraph):
         
         for col in edges.columns:
             edges[col] = [
-                "-".join(np.sort(edge)) if isinstance(edge, list) else edge
+                "-".join([str(elem) for elem in np.sort(edge)]) 
+                if isinstance(edge, list) else edge
                 for edge in edges[col]
             ]
         

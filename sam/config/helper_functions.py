@@ -40,7 +40,6 @@ def extract_fips(gdf):
     Returns:
         tuple: A tuple containing strings for geoids and county names.
     """
-    # TODO increase precision to single county
     gdf = gdf.to_crs(county_shapes.crs)
     county = county_shapes[county_shapes.intersects(gdf.dissolve().geometry[0])]
     # counties = county["COUNTYFP"].unique().tolist()

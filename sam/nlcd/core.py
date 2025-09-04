@@ -19,7 +19,6 @@ from shapely import geometry
 from sam.config import COUNTIES as county_shapes
 from sam.download.nlcd import dl_nlcd
 
-
 def closest(lst, K):
     """
     Find the value in the list `lst` that is closest to the given value `K`.
