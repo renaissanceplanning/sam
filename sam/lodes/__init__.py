@@ -1,8 +1,10 @@
-# -*- coding: utf-8 -*-
 """
-Created on Mon Feb 28 15:43:31 2022
+LODES (Longitudinal Employer-Household Dynamics) data module.
 
-@author: AZ7
+Provides access to employment data including residence area characteristics (RAC),
+workplace area characteristics (WAC), and origin-destination flows (OD).
 """
 
 from .core import lodes
+
+__all__ = ['lodes']

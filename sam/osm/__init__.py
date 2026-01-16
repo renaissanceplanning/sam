@@ -1,8 +1,9 @@
-# -*- coding: utf-8 -*-
 """
-Created on Mon Feb 28 15:43:31 2022
+OpenStreetMap (OSM) network data module.
 
-@author: AZ7
+Provides access to walk, bike, and drive network data from OpenStreetMap.
 """
 
 from .core import OSMNetwork
+
+__all__ = ['OSMNetwork']

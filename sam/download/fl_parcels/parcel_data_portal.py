@@ -2,6 +2,7 @@ import re
 import pandas as pd
 import numpy as np
 from urllib.request import Request, urlopen
+import requests
 
 from bs4 import BeautifulSoup, SoupStrainer
 # Replacement for parcel_ftp.py as the DOR no longer uses a FTP
@@ -292,6 +293,15 @@ def extract_county_number(url):
 
 # ----------------------------------------------------------------------------
 
+def test_url(url):
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()  # Raises an HTTPError for bad responses
+        return True, f"Success: {response.status_code}"
+    except requests.exceptions.RequestException as e:
+        return False, f"Error: {e}"
+
+
 def build_url(county, year):
     if type(county) != str:
         raise TypeError("county must be type str")
@@ -306,6 +316,9 @@ def build_url(county, year):
     else:
         gis_url = f"{gis_base_url}/{year}F/{gis_file_name.format(county_name=county_name,year=year)}"
     nal_url = f"{base_nal_url}/{year}F/{nal_file_name.format(county_name=county_name, county_number=county_number,year=year)}"
+    works, message = test_url(nal_url)
+    if not works:
+        nal_url = f"{base_nal_url}/{year}P/{nal_file_name.format(county_name=county_name, county_number=county_number,year=year)}"
     return gis_url, nal_url
 
 # ----------------------------------------------------------------------------

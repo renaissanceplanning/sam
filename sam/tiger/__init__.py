@@ -1,8 +1,9 @@
-# -*- coding: utf-8 -*-
 """
-Created on Mon Feb 28 15:43:31 2022
+TIGER/Line geographic boundary data module.
 
-@author: AZ7
+Provides access to Census TIGER/Line shapefiles for blocks, block groups, and tracts.
 """
 
 from .core import Tiger
+
+__all__ = ['Tiger']

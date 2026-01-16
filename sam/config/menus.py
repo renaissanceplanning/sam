@@ -69,6 +69,20 @@ corridor_studies = {
     'pull_replica_population': {},
 }
 
+florida_corridor_studies = {
+    'pull_lodes': {'lodes_data': ["rac", "wac", "od"],
+                   'lodes_level': "bgrp"}, 
+    'pull_acs': {},
+    'pull_tiger': {},
+    'pull_parcels': {'parcel_source': "DOR",
+                     'parcel_replica_fields': False},
+    'pull_OSM': {'add_travel_time': False},
+    'pull_replica_network' : {},
+    'pull_replica_trip_table': {},
+    'pull_replica_acs': {},
+    'pull_replica_population': {},
+}
+
 lanes_menu = {
     'pull_parcels': {'parcel_source': "replica",
                      'parcel_replica_fields': True},

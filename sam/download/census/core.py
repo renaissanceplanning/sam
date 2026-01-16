@@ -10,7 +10,7 @@ Created on Mon Jan 24 13:59:55 2022
 # TODO: get R libs in the environment.yml, then just load these
 
 # %% Imports
-
+import os
 import pyproj
 import shapely.wkt
 import numpy as np
@@ -21,12 +21,17 @@ from rpy2.robjects import pandas2ri
 from rpy2.robjects.conversion import Converter, localconverter
 from rpy2.robjects.packages import importr
 from sam.config import is_int
+from sam.config import CENSUS_API_KEY
 
 # Import tigris, sf, and lwgeom -- these are the packages we need functions from
 Rlibs = ["base", "tigris", "sf", "lwgeom", "tidycensus"]
 for lib in Rlibs:
     importr(lib)
-
+    if lib == "tidycensus":
+        tidy = importr(lib)
+        tidy.census_api_key(CENSUS_API_KEY, install=True, overwrite=True)
+        print(f"API key set: {CENSUS_API_KEY}")
+    
 
 # Convert Nones to nulls
 def _none2null(none_obj):

@@ -1,6 +1,6 @@
 import os
 os.environ["PROJ_LIB"] = r"C:\ProgramData\miniforge3\envs\sam\Library\share\proj\proj.db"
-from sam.menus import dataMenuDownloader
+from sam.menus import DataMenuDownloader
 import rputils
 import geopandas as gpd
 
@@ -12,7 +12,7 @@ AOI = gpd.read_file(rputils.Path(DATA_ROOT, "test_geom", "AOI.shp"))
 
 
 if __name__ == '__main__':
-    fetcher = dataMenuDownloader(
+    fetcher = DataMenuDownloader(
         summary_areas=AOI,
         data_dir=DATA.dir_data,
         prj_crs=None,

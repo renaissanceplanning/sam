@@ -1,8 +1,9 @@
-# -*- coding: utf-8 -*-
 """
-Created on Mon Feb 28 15:43:31 2022
+American Community Survey (ACS) data module.
 
-@author: AZ7
+Provides access to ACS demographic and socioeconomic data tables.
 """
 
 from .core import ACS
+
+__all__ = ['ACS']

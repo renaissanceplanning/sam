@@ -9,6 +9,8 @@ from . import ref_config as REF_CONF
 from .replica_config import replica_regions
 from .menus import *
 
+CENSUS_API_KEY = "069cfb8bf769673e697705dc52eb849c4d9b47b5"
+
 import pydata_google_auth
 
 """ 

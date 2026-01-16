@@ -1,3 +1,3 @@
-from .core import *
-from .core import _find_nlcd
-from .core import _nlcd_raster_path_from_zip
+from .core import download_nlcd, get_closest_nlcd_year, build_nlcd_url
+
+__all__ = ['download_nlcd', 'get_closest_nlcd_year', 'build_nlcd_url']

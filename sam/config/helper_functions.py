@@ -1,6 +1,11 @@
-import os
+from pathlib import Path
+from typing import Dict, List, Optional
+import logging
+
 import geopandas as gpd
 from sam.config import COUNTIES as county_shapes
+
+logger = logging.getLogger(__name__)
 
 
 def is_int(element):
@@ -51,71 +56,6 @@ def extract_fips(gdf):
     return geoids, county_names
 
 
-def validate_data_dir(data_dir):
-    """
-    Validates and creates a directory structure for storing various data sources.
-
-    This function ensures the existence of a specific directory structure
-    required to store different data sources related to various geographic data
-    processing tasks. If the directories do not exist, it creates them.
-
-    Args:
-        data_dir (str): The root directory where the data structure should be created
-            and validated.
-
-    Returns:
-        dict: A dictionary containing directory paths for different data sources.
-            The keys in the dictionary include 'raw_dir', 'lodes_dir', 'acs_dir',
-            'shp_dir', 'net_dir', 'par_dir', 'lih_dir', and 'rep_dir'.
-
-    Example:
-        >>> data_directory = '/path/to/data'
-        >>> data_dirs = validate_data_dir(data_directory)
-        >>> print(data_dirs)
-        {'raw_dir': '/path/to/data/RAW',
-         'lodes_dir': '/path/to/data/RAW/lodes',
-         'acs_dir': '/path/to/data/RAW/acs',
-         'shp_dir': '/path/to/data/RAW/tiger',
-         'net_dir': '/path/to/data/RAW/osm',
-         'par_dir': '/path/to/data/RAW/parcels',
-         'lih_dir': '/path/to/data/RAW/lihtc',
-         'rep_dir': '/path/to/data/RAW/replica'}
-
-    Note:
-        The function assures proper project directories are followed by creating
-        directories when the appropriate directories are not created
-    """
-    data_dir = os.path.normpath(data_dir)
-    raw_dir = os.path.join(data_dir, "RAW")
-    lodes_dir = os.path.join(raw_dir, "lodes")
-    acs_dir = os.path.join(raw_dir, "acs")
-    shp_dir = os.path.join(raw_dir, "tiger")
-    net_dir = os.path.join(raw_dir, "osm")
-    par_dir = os.path.join(raw_dir, "parcels")
-    lih_dir = os.path.join(raw_dir, "lihtc")
-    rep_dir = os.path.join(raw_dir, "replica")
-    nlcd_dir = os.path.join(raw_dir, "nlcd")
-    sld_dir = os.path.join(raw_dir, "sld")
-
-    for dire in [raw_dir, lodes_dir, acs_dir, shp_dir, net_dir, par_dir, 
-                 lih_dir, rep_dir, nlcd_dir, sld_dir]:
-        if os.path.exists(dire) != True:
-            os.mkdir(dire)
-    
-    dirs = {
-        'raw_dir': raw_dir,
-        'lodes_dir': lodes_dir,
-        'acs_dir': acs_dir,
-        'shp_dir': shp_dir,
-        'net_dir': net_dir,
-        'par_dir': par_dir,
-        'lih_dir': lih_dir,
-        'rep_dir': rep_dir
-    }
-            
-    return dirs
-
-
 def create_geo_dict(geoids):
     """
     Creates a dictionary mapping U.S. state codes to their associated county codes.
@@ -141,3 +81,135 @@ def create_geo_dict(geoids):
         }
     
     return geo_dict
+
+
+# =============================================================================
+# Directory Management
+# =============================================================================
+
+def get_data_dir_paths(data_dir: str | Path) -> Dict[str, Path]:
+    """
+    Get dictionary of data directory paths WITHOUT creating them.
+    
+    This function returns a mapping of directory keys to their paths,
+    but does not create any directories on the filesystem. Directories
+    should be created explicitly when needed using ensure_dir_exists().
+
+    Args:
+        data_dir: Root directory path for data storage.
+
+    Returns:
+        Dictionary mapping directory keys to Path objects (not yet created).
+        Available keys:
+            - 'raw_dir': Main RAW data directory
+            - 'lodes_dir': LODES employment data
+            - 'acs_dir': American Community Survey data
+            - 'shp_dir': TIGER/Line shapefiles
+            - 'net_dir': OpenStreetMap network data
+            - 'par_dir': Parcel data
+            - 'lih_dir': Low Income Housing Tax Credit data
+            - 'rep_dir': Replica data
+            - 'nlcd_dir': National Land Cover Database
+            - 'sld_dir': School district data
+
+    Examples:
+        >>> paths = get_data_dir_paths('/path/to/data')
+        >>> print(paths['lodes_dir'])
+        /path/to/data/RAW/lodes
+        >>> # Note: Directory not created yet!
+    """
+    data_dir = Path(data_dir)
+    
+    return {
+        'raw_dir': data_dir / "RAW",
+        'lodes_dir': data_dir / "RAW" / "lodes",
+        'acs_dir': data_dir / "RAW" / "acs",
+        'shp_dir': data_dir / "RAW" / "tiger",
+        'net_dir': data_dir / "RAW" / "osm",
+        'par_dir': data_dir / "RAW" / "parcels",
+        'lih_dir': data_dir / "RAW" / "lihtc",
+        'rep_dir': data_dir / "RAW" / "replica",
+        'nlcd_dir': data_dir / "RAW" / "nlcd",
+        'sld_dir': data_dir / "RAW" / "sld"
+    }
+
+
+def ensure_dir_exists(path: Path | str) -> Path:
+    """
+    Ensure a directory exists, creating it if necessary.
+    
+    This function creates the directory and any necessary parent directories.
+    If the directory already exists, no action is taken.
+
+    Args:
+        path: Directory path to create.
+
+    Returns:
+        The path as a Path object (for chaining).
+
+    Raises:
+        OSError: If directory creation fails due to permissions or other OS errors.
+
+    Examples:
+        >>> data_path = ensure_dir_exists('/path/to/data/lodes')
+        >>> print(data_path.exists())
+        True
+        >>> 
+        >>> # Can be chained
+        >>> csv_path = ensure_dir_exists(Path('/data/acs')) / 'output.csv'
+    """
+    path = Path(path)
+    path.mkdir(parents=True, exist_ok=True)
+    logger.debug(f"Ensured directory exists: {path}")
+    return path
+
+
+def validate_data_dir(
+    data_dir: str | Path,
+    required_dirs: Optional[List[str]] = None
+) -> Dict[str, Path]:
+    """
+    Get data directory paths, optionally creating only specified directories.
+    
+    This function replaces the old validate_data_dir that created all directories
+    upfront. Now you have explicit control over which directories are created.
+
+    Args:
+        data_dir: Root directory path for data storage.
+        required_dirs: Optional list of directory keys to create immediately.
+            If None (default), no directories are created upfront - they should
+            be created explicitly when needed using ensure_dir_exists().
+            Valid keys: 'raw_dir', 'lodes_dir', 'acs_dir', 'shp_dir', 'net_dir',
+            'par_dir', 'lih_dir', 'rep_dir', 'nlcd_dir', 'sld_dir'
+
+    Returns:
+        Dictionary mapping directory keys to Path objects.
+
+    Examples:
+        >>> # Option 1: No directories created (recommended)
+        >>> dirs = validate_data_dir('/path/to/data')
+        >>> # Later, create only when needed:
+        >>> lodes_dir = ensure_dir_exists(dirs['lodes_dir'])
+        
+        >>> # Option 2: Pre-create specific directories
+        >>> dirs = validate_data_dir(
+        ...     '/path/to/data',
+        ...     required_dirs=['lodes_dir', 'acs_dir']
+        ... )
+        >>> # lodes_dir and acs_dir now exist on filesystem
+    """
+    dir_paths = get_data_dir_paths(data_dir)
+    
+    # Create only specified directories if requested
+    if required_dirs:
+        logger.info(f"Pre-creating directories: {required_dirs}")
+        for dir_key in required_dirs:
+            if dir_key in dir_paths:
+                ensure_dir_exists(dir_paths[dir_key])
+            else:
+                logger.warning(
+                    f"Unknown directory key '{dir_key}'. "
+                    f"Valid keys: {list(dir_paths.keys())}"
+                )
+    
+    return dir_paths

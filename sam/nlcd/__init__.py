@@ -1,8 +1,12 @@
-# -*- coding: utf-8 -*-
 """
-Created on Mon Feb 28 15:43:31 2022
+NLCD data manipulation and analysis.
 
-@author: AZ7
+This module provides tools for working with National Land Cover Database
+rasters after they've been downloaded.
 """
 
-from .core import download_nlcd
+from .core import NLCD, NLCD_CLASSES, DEVELOPED_RECLASSIFICATION, NATURAL_RECLASSIFICATION
+
+from sam.download.nlcd import download_nlcd
+
+__all__ = ['NLCD', 'NLCD_CLASSES', 'DEVELOPED_RECLASSIFICATION', 'NATURAL_RECLASSIFICATION', download_nlcd]

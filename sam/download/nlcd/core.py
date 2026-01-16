@@ -1,342 +1,331 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Jan 25 16:08:14 2022
+Updated NLCD downloader that works with current MRLC website structure.
 
-@author: AZ7
+The MRLC website changed their data structure, so this provides a simplified
+approach that downloads NLCD data directly from known URLs.
 """
 
-# %% Imports
-
-import re
-import requests
 import geopandas as gpd
-import numpy as np
-import pandas as pd
-from bs4 import BeautifulSoup
-from io import BytesIO
-from urllib.request import Request, urlopen
-from warnings import warn
-from zipfile import ZipFile
+from shapely import geometry
+from typing import Literal, Optional
+import requests
+from pathlib import Path
 
-from algi.raster import Raster
-from algi import BBOX
+from sam.config import COUNTIES as county_shapes
 
-# %% Globals for MRLC download
-# handle potential http issues
-try:
-    req = Request("https://www.mrlc.gov/data")
-    html_page = urlopen(req)
-    soup = BeautifulSoup(html_page, "lxml")
-    views_row = soup.findAll("div", class_="views-row")  # dataset elements
-    __NLCD__ = []
-    title_start = "[A-Z]{4} ([0-9]{4} |[A-Z]{4} )?(from-to |to )?([0-9]{4} )?([A-Z]{4} )?(High Resolution )?"
-except requests.HTTPError:
-    print("HTTP Error, try again")
+# Available NLCD years (as of 2024)
+NLCD_YEARS = [2021, 2019, 2016, 2013, 2011, 2008, 2006, 2004, 2001]
 
-for vr in views_row:
-    # Title
-    try:
-        title = vr.findAll("h2")[0].text
-        ft = title
-        title = title.strip()
-        title = re.sub(r"\bImpervious\b", "Imperviousness", title)
-        dst = (
-            re.search("Land Cover|Imperviousness|Urban|Tree Canopy", title)
-            .group(0)
-            .lower()
-        )
-        if dst == "urban":
-            dst = "imperviousness"
-        else:
-            pass
-    except:
-        pass
-    try:
-    # Geography (and title fix based off geography)
-        geog = re.search(r"\((.*?)\)", title).group()
-        title = re.sub(geog.replace("(", "\(").replace(")", "\)"), "", title)
-        title = title.replace("Percent", "")
-        title = re.sub(title_start, "", title)
-        title = re.sub("^Imperviousness", "Developed Imperviousness", title)
-        geog = re.sub(r"\(|\)", "", geog).lower()
-        if bool(re.search("Zone 8", title)) == True:
-            geog = geog + " zone 8"
-            title = title.replace("Zone 8", "")
-        else:
-            pass
-        title = re.sub(r"\s{2,}", " ", title).strip().lower()
-        # Year
-        region_year = vr.findAll("span")[0].text
-        region, year = region_year.split("|")
-        year = re.sub(r"\s", "", year).strip()
-        # Link
-        link = vr.findAll("a", text="Download")[0]["href"]
-        # Append info
-        info = (dst, title, geog, year, link)
-        __NLCD__.append(info)
-    except:
-        continue
+# NLCD dataset types
+NLCD_DATASETS = {
+    'land_cover': 'Land_Cover',
+    'impervious': 'Impervious',
+    'impervious_descriptor': 'Impervious_descriptor',
+    'tree_canopy': 'Tree_Canopy'
+}
+
+
+def get_closest_nlcd_year(target_year: int) -> int:
+    """
+    Find the closest available NLCD year to the target year.
     
-__NLCD__ = pd.DataFrame(__NLCD__, columns=["family", "dataset", "geog", "year", "link"])
-__ALL_YEARS__ = "2023,2019,2016,2013,2011,2008,2006,2004,2001"
-
-# %% Functions
-
-
-def _find_nlcd(family=None, dataset=None, geog=None, year=None):
+    Args:
+        target_year: The desired year
+        
+    Returns:
+        The closest available NLCD year
+        
+    Examples:
+        >>> get_closest_nlcd_year(2020)
+        2019
+        >>> get_closest_nlcd_year(2024)
+        2021
     """
-    Find an NLCD land cover, developed imperviousness, or tree canopy dataset
-    for a given geography and year.
+    return min(NLCD_YEARS, key=lambda year: abs(year - target_year))
 
-    Parameters
-    ----------
-    family : str
-        The NLCD dataset family: one of "land cover", "imperviousness", or
-        "tree canopy". The default is None, in which case no filtering on
-        family takes place.
-    dataset : str, optional
-        The dataset name. The default is None, in which case no filtering on
-        dataset takes place.
-    geog : str, optional
-        The geography for the dataset: one of "conus" (lower 48), "alaska",
-        "hawaii", or "puerto rico". The default is None, in which case no
-        filtering on geography takes place.
-    year : int or str, optional
-        The year for the dataset. For change datasets, provide both years as
-        strings separated by a ",", as in "year1,year2"; for "all years"
-        datasets, set `year == "all"`; for single year datasets, provide the
-        year as an integer or string. The default is None, in which case no
-        filtering on year takes place.
 
-    Notes
-    -----
-    To see all available NLCD datasets, run this function with the defaults.
-
-    Returns
-    -------
-    pd.DataFrame
-        All NLCD datasets that meet the specifications of the inputs.
-
+def build_nlcd_url(
+    year: int,
+    dataset: Literal['land_cover', 'impervious', 'impervious_descriptor', 'tree_canopy'] = 'land_cover',
+    region: Literal['conus', 'alaska', 'hawaii', 'puerto_rico'] = 'conus'
+) -> str:
     """
-    # Find the family
-    if family is None:
-        df = __NLCD__.copy()
-    else:
-        fl = family.lower()
-        if fl in __NLCD__.family.values:
-            df = __NLCD__[__NLCD__.family == fl]
-        else:
-            raise ValueError(
-                f"{family} is not an available NLCD dataset "
-                "family; must be one of "
-                f"{', '.join(__NLCD__.family.unique())}"
-            )
-    # Find the dataset
-    if dataset is None:
-        pass
-    else:
-        dl = dataset.lower()
-        if dl in df.dataset.values:
-            df = df[df.dataset == dl]
-        else:
-            raise ValueError(
-                f"{dataset} is not an available NLCD dataset in "
-                f"the {family} family; must be one of "
-                f"{', '.join(np.sort(df.dataset.unique()))}"
-            )
-    # Set the geog
-    if geog is None:
-        gl = df.geog.unique()
-    else:
-        gl = geog.lower()
-        if gl == "alaska":
-            gl = ["alaska", "alaska zone 8"]
-        else:
-            gl = [gl]
-    # Set the year
-    if year is None:
-        yl = df.year.unique()
-    else:
-        if year == "all":
-            yl = [__ALL_YEARS__]
-        else:
-            yl = [re.sub(r"\{s}", "", str(year))]
-    # Find the datasets matching the geog/year
-    found = df[(df.geog.isin(gl)) & (df.year.isin(yl))]
-    if len(found) > 0:
-        return found
-    else:
-        available = "\n".join(["- " + g + ": " + y for g, y in zip(df.geog, df.year)])
-        raise ValueError(
-            f"{geog}/{year} is not available for the {dataset} "
-            "dataset; the following are the available combos:\n"
-            f"{available}"
-        )
-
-
-def _nlcd_raster_path_from_zip(zip_link):
+    Build the direct download URL for NLCD data.
+    
+    The MRLC changed their website structure, but data is still available
+    via direct URLs following a predictable pattern.
+    
+    Args:
+        year: NLCD year (will use closest available if exact year not available)
+        dataset: Type of NLCD data
+        region: Geographic region
+        
+    Returns:
+        Direct download URL for the NLCD GeoTIFF
+        
+    Examples:
+        >>> build_nlcd_url(2021, 'land_cover', 'conus')
+        'https://s3-us-west-2.amazonaws.com/mrlc/nlcd_2021_land_cover_l48_20230630.zip'
     """
-    Extract a rasterio-interpretable path to an NLCD raster from the zip file
-    containing that raster.
+    # Get closest available year
+    nlcd_year = get_closest_nlcd_year(year)
+    
+    # Base URL for MRLC S3 bucket
+    base_url = "https://s3-us-west-2.amazonaws.com/mrlc"
+    
+    # Dataset naming in URLs
+    dataset_name = NLCD_DATASETS.get(dataset, 'Land_Cover')
+    
+    # Region codes
+    region_codes = {
+        'conus': 'l48',
+        'alaska': 'ak',
+        'hawaii': 'hi', 
+        'puerto_rico': 'pr'
+    }
+    region_code = region_codes.get(region, 'l48')
+    
+    # Build URL based on common NLCD naming patterns
+    # Format: nlcd_{year}_{dataset}_{region}_{release_date}.zip
+    # Release dates vary by year - using known patterns
+    release_dates = {
+        2021: '20230630',
+        2019: '20210604',
+        2016: '20210604',
+        2013: '20210604',
+        2011: '20210604',
+        2008: '20210604',
+        2006: '20210604',
+        2004: '20210604',
+        2001: '20210604'
+    }
+    
+    release_date = release_dates.get(nlcd_year, '20210604')
+    
+    # Construct filename
+    filename = f"nlcd_{nlcd_year}_{dataset}_{region_code}_{release_date}.zip"
+    
+    return f"{base_url}/{filename}"
 
-    Parameters
-    ----------
-    zip_link : str
-        URL to an NLCD zipped dataset.
 
-    Returns
-    -------
-    str
-        Download path for the raster; may be passed directly to
-        `rasterio.open`.
-
+def download_nlcd(
+    geoid: list[str],
+    year: int,
+    dataset: Literal['land_cover', 'impervious', 'impervious_descriptor', 'tree_canopy'] = 'land_cover',
+    output_path: Optional[Path] = None,
+    clip_to_aoi: bool = False,
+    summary_areas: Optional[gpd.GeoDataFrame] = None
+) -> Path:
     """
-    req_zip_link = requests.get(zip_link, stream=True)
-    zip_open = ZipFile(BytesIO(req_zip_link.content))
-    zip_files = zip_open.namelist()
-    ras = zip_files[np.where([bool(re.search(".img$", f)) for f in zip_files])[0][0]]
-    full_link = "".join(["zip+", zip_link, "!", ras])
-    return full_link
-
-
-# TODO: make window a gpd.GeoDataFrame, add masking option
-def dl_nlcd(dataset, geog, year, window=None, mask=False):
+    Download NLCD data for specified counties.
+    
+    Args:
+        geoid: List of 5-digit GEOID codes (state + county FIPS)
+        year: Desired year (will use closest available)
+        dataset: Type of NLCD data to download
+        output_path: Where to save the downloaded file (optional)
+        clip_to_aoi: If True, clips the raster to the bounding box of the geoids
+            after download. Requires rasterio. Default: False (downloads full tile)
+        summary_areas: Optional GeoDataFrame to use for clipping instead of geoid bounds
+        
+    Returns:
+        Path to the downloaded/clipped file
+        
+    Examples:
+        >>> # Download full CONUS tile
+        >>> path = download_nlcd(['37183'], 2021, 'land_cover')
+        
+        >>> # Download and clip to counties
+        >>> path = download_nlcd(['37183'], 2021, 'land_cover', clip_to_aoi=True)
     """
-    Download an NLCD dataset.
+    from sam.config import COUNTIES as county_shapes
+    
+    # Determine region from first geoid
+    state_fips = geoid[0][:2]
+    
+    # Map state FIPS to region
+    if state_fips == '02':  # Alaska
+        region = 'alaska'
+    elif state_fips == '15':  # Hawaii
+        region = 'hawaii'
+    elif state_fips == '72':  # Puerto Rico
+        region = 'puerto_rico'
+    else:
+        region = 'conus'
+    
+    # Get the closest available year
+    nlcd_year = get_closest_nlcd_year(year)
+    
+    if nlcd_year != year:
+        print(f"Note: NLCD {year} not available, using {nlcd_year} instead")
+    
+    # Build download URL
+    url = build_nlcd_url(nlcd_year, dataset, region)
+    
+    # Set output path for downloaded zip
+    if output_path is None:
+        output_path = Path(f"nlcd_{nlcd_year}_{dataset}_{region}.zip")
+    else:
+        output_path = Path(output_path)
+    
+    # Download the file
+    print(f"Downloading NLCD {nlcd_year} {dataset} from {url}")
+    print(f"This may take a while - NLCD files are large (typically 1-5 GB)")
+    
+    try:
+        response = requests.get(url, stream=True)
+        response.raise_for_status()
+        
+        # Download with progress indication
+        total_size = int(response.headers.get('content-length', 0))
+        block_size = 8192
+        downloaded = 0
+        
+        with open(output_path, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=block_size):
+                if chunk:
+                    f.write(chunk)
+                    downloaded += len(chunk)
+                    if total_size > 0:
+                        percent = (downloaded / total_size) * 100
+                        print(f"\rProgress: {percent:.1f}%", end='')
+        
+        print(f"\nDownload complete: {output_path}")
+        
+        # Clip if requested
+        if clip_to_aoi:
+            print("\nClipping raster to area of interest...")
+            try:
+                import rasterio
+                from rasterio.mask import mask as rio_mask
+                import zipfile
+                
+                # Extract the zip to find the .tif or .img file
+                with zipfile.ZipFile(output_path, 'r') as zip_ref:
+                    # Find the raster file
+                    raster_files = [f for f in zip_ref.namelist() 
+                                   if f.endswith(('.tif', '.img'))]
+                    if not raster_files:
+                        print("Warning: No raster file found in zip, skipping clip")
+                        return output_path
+                    
+                    # Extract to temp location
+                    temp_dir = output_path.parent / 'temp_nlcd'
+                    temp_dir.mkdir(exist_ok=True)
+                    zip_ref.extractall(temp_dir)
+                    raster_file = temp_dir / raster_files[0]
+                
+                # Get clipping geometry
+                if summary_areas is not None:
+                    clip_geom = summary_areas
+                else:
+                    # Use county boundaries
+                    counties = county_shapes[county_shapes.GEOID.isin(geoid)]
+                    clip_geom = counties
+                
+                # Create bounding box
+                bounds = clip_geom.total_bounds
+                bbox_geom = geometry.box(bounds[0], bounds[1], bounds[2], bounds[3])
+                bbox_gdf = gpd.GeoDataFrame(
+                    {'geometry': [bbox_geom]}, 
+                    crs=clip_geom.crs
+                )
+                
+                # Clip the raster
+                with rasterio.open(raster_file) as src:
+                    # Reproject bbox to match raster CRS
+                    bbox_reproj = bbox_gdf.to_crs(src.crs)
+                    
+                    # Clip
+                    out_image, out_transform = rio_mask(
+                        src,
+                        bbox_reproj.geometry,
+                        crop=True
+                    )
+                    
+                    # Update metadata
+                    out_meta = src.meta.copy()
+                    out_meta.update({
+                        "driver": "GTiff",
+                        "height": out_image.shape[1],
+                        "width": out_image.shape[2],
+                        "transform": out_transform
+                    })
+                    
+                    # Save clipped raster
+                    clipped_path = output_path.parent / f"{output_path.stem}_clipped.tif"
+                    with rasterio.open(clipped_path, "w", **out_meta) as dest:
+                        dest.write(out_image)
+                    
+                    print(f"Clipped raster saved to: {clipped_path}")
+                
+                # Clean up temp files
+                import shutil
+                shutil.rmtree(temp_dir)
+                
+                return clipped_path
+                
+            except ImportError:
+                print("Warning: rasterio not available, skipping clip")
+                print("Install rasterio to enable automatic clipping: pip install rasterio")
+                return output_path
+            except Exception as e:
+                print(f"Warning: Clipping failed: {e}")
+                print("Returning full downloaded file")
+                return output_path
+        
+        return output_path
+        
+    except requests.exceptions.HTTPError as e:
+        print(f"Error downloading NLCD data: {e}")
+        print(f"URL attempted: {url}")
+        print(f"\nThe URL structure may have changed. Try visiting:")
+        print(f"https://www.mrlc.gov/data to find current download links")
+        raise
 
-    Parameters
-    ----------
-    dataset : str
-        NLCD dataset name.
-    geog : str, optional
-        The geography for the dataset: one of "conus" (lower 48), "alaska",
-        "hawaii", or "puerto rico".
-    year : int or str, optional
-        The year for the dataset. For change datasets, provide both years as
-        strings separated by a ",", as in "year1,year2"; for "all years"
-        datasets, set `year = "all"`; for single year datasets, provide the
-        year as an integer or string.
-    window : gpd.GeoDataFrame or gpd.GeoSeries, optional
-        The area in which to read the dataset; if provided, ONLY the portion
-        of the raster within the bounding box of this geometry will be read.
-        CRS conflicts will be resolved on the fly. The default is None, in
-        which case the entire product is returned.
-    mask : bool, optional
-        If a window is provided, should the raster be masked to match the
-        exact boundaries of the geometry? The default is False, in which case
-        all values within the bounding box of the window will be represented
-        in the raster. Ignored if `window is None`
 
-    Returns
-    -------
-    algi.raster.Raster
-        Raster of the NLCD product according to the input specifications
-
+def get_nlcd_bbox(geoid: list[str]) -> gpd.GeoDataFrame:
     """
-    # Dataset, geog, and year uniquely identify datasets, so this will always
-    # be one or zero rows. And if it's zero, it should fail in the function
-    ds = _find_nlcd(family=None, dataset=dataset, geog=geog, year=year)
-    # Warn the user if it's alaska zone 8
-    if geog.lower() == "alaska" and ds.geog.iloc[0] == "alaska zone 8":
-        warn("Note: this product only covers Alaska Zone 8")
-    else:
-        pass
-    # Grab the link
-    zip_link = ds.link.iloc[0]
-    dl_link = _nlcd_raster_path_from_zip(zip_link=zip_link)
-    # Load the raster
-    if window is None:
-        bboxobj = None
-    elif isinstance(window, (gpd.GeoSeries, gpd.GeoDataFrame)):
-        bboxobj = BBOX(window.total_bounds, window.crs)
-    else:
-        raise TypeError(
-            "Expected gpd.GeoSeries or GeoDataFrame for " "'window'; got {type(window)}"
-        )
-    R = Raster.from_file(read_path=dl_link, window=bboxobj)
-    # Mask if requested
-    if window is None:
-        return R.mask(geometry=window)
-    else:
-        return R
+    Get bounding box for NLCD download based on county GEOIDs.
+    
+    Args:
+        geoid: List of 5-digit GEOID codes
+        
+    Returns:
+        GeoDataFrame with bounding box geometry
+    """
+    # Get counties
+    counties = county_shapes[county_shapes.GEOID.isin(geoid)]
+    
+    # Get bounding box
+    bounds = counties.total_bounds
+    
+    # Create bbox geodataframe
+    bbox_dict = {
+        "id": ["nlcd_bbox"],
+        "geometry": [geometry.box(bounds[0], bounds[1], bounds[2], bounds[3])],
+    }
+    
+    bbox = gpd.GeoDataFrame(bbox_dict, crs=counties.crs).to_crs("EPSG:4326")
+    
+    return bbox
 
 
-# %% Reference for writing rasters
-
-# def _write_raster(from_file, to_file, dst_crs=None, window=None):
-#     '''
-#     Save a raster from a source file, optionally within a window geometry
-#     and optionally with a transform from the source CRS
-
-#     Parameters
-#     ----------
-#     from_file : str
-#         Path to the source raster; must be parsable by `rasterio.open` in
-#         mode "r"
-#     to_file : str
-#         Path for the output raster; must be parsable by `rasterio.open` in
-#         mode "w"
-#     dst_crs : anything accepted by `pyproj.crs.CRS.from_input()`, optional
-#         A specification for a transform CRS. The default is None, in which
-#         case no transformation is performed and the raster is saved in its
-#         source CRS
-#     window : geopandas GeoDataFrame or GeoSeries, optional
-#         A geometry in which to read the raster; if provided, ONLY the portion
-#         of the raster within the bbox of `window`
-#         be cropped to the bounding box of `window` prior . The default is None.
-
-#     Returns
-#     -------
-#     None.
-
-#     '''
-#     if window is None:
-#         with rio.open(from_file) as src:
-#             if dst_crs is None:
-#                 kwargs = src.meta.copy()
-#                 kwargs.update({"driver": "GTiff"})
-#                 with rio.open(to_file, "w", **kwargs) as dst:
-#                     dst.write(src)
-#             else:
-#                 dst_transform, dst_width, dst_height = calculate_default_transform(
-#                     src.crs, dst_crs, src.width, src.height, *src.bounds
-#                 )
-#                 kwargs = src.meta.copy()
-#                 kwargs.update({"driver": "GTiff", "transform": dst_transform,
-#                                "width": dst_width, "height": dst_height,
-#                                "crs": dst_crs})
-#                 with rio.open(to_file, "w", **kwargs) as dst:
-#                     reproject(source=rio.band(src, 1),
-#                               destination=rio.band(dst, 1),
-#                               src_transform=src.transform,
-#                               src_crs=src.crs,
-#                               dst_transform=dst_transform,
-#                               dst_crs=dst_crs,
-#                               resampling=Resampling.nearest)
-#     else:
-#         window_bbox = window.total_bounds
-#         with rio.open(from_file) as src:
-#             cw = src.window(*window_bbox)
-#             src_trans = src.window_transform(cw)
-#             if dst_crs is None:
-#                 kwargs = src.meta.copy()
-#                 kwargs.update({"driver": "GTiff", "transform": src_trans,
-#                                "width": cw.width, "height": cw.height})
-#                 with rio.open(to_file, "w", **kwargs) as dst:
-#                     dst.write(src)
-#             else:
-#                 dst_transform, dst_width, dst_height = calculate_default_transform(
-#                     src.crs, dst_crs, cw.width, cw.height, *window_bbox
-#                 )
-#                 kwargs = src.meta.copy()
-#                 kwargs.update({"driver": "GTiff", "transform": dst_transform,
-#                                "width": dst_width, "height": dst_height,
-#                                "crs": dst_crs})
-#                 with rio.open(to_file, "w", **kwargs) as dst:
-#                     reproject(source=rio.band(src, 1),
-#                               destination=rio.band(dst, 1),
-#                               src_transform=src_trans,
-#                               src_crs=src.crs,
-#                               dst_transform=dst_transform,
-#                               dst_crs=dst_crs,
-#                               resampling=Resampling.nearest)
+# Example usage and testing
+if __name__ == "__main__":
+    # Test closest year function
+    print("Testing get_closest_nlcd_year:")
+    print(f"2020 → {get_closest_nlcd_year(2020)}")  # Should return 2019
+    print(f"2024 → {get_closest_nlcd_year(2024)}")  # Should return 2021
+    print(f"2013 → {get_closest_nlcd_year(2013)}")  # Should return 2013
+    
+    # Test URL building
+    print("\nTesting build_nlcd_url:")
+    url = build_nlcd_url(2021, 'land_cover', 'conus')
+    print(f"2021 Land Cover CONUS: {url}")
+    
+    # Test download (commented out - uncomment to actually download)
+    # print("\nTesting download:")
+    # geoids = ['37183']  # Wake County, NC
+    # path = download_nlcd(geoids, 2021, 'land_cover', Path('test_nlcd.zip'))

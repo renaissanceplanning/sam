@@ -5,7 +5,7 @@ Created on Wed Jan 26 16:02:52 2022
 @author: AZ7
 """
 
-from setuptools import setup
+from setuptools import setup, find_packages
 import pathlib
 
 here = pathlib.Path(__file__).parent.resolve()
@@ -14,7 +14,7 @@ here = pathlib.Path(__file__).parent.resolve()
 long_description = (here / "README.md").read_text(encoding="utf-8")
 setup(name="sam",
       version="0.1",
-      packages=[],
+      packages=find_packages(),
       url="https://github.com/renaissanceplanning/sam",
       license="",
       author="Aaron Weinstock",

@@ -9,6 +9,10 @@ if r_home is None:
     r_home = os.path.join(sys.exec_prefix, "lib", "R")
 os.environ["R_HOME"] = r_home
 
+# Initialize logging (must be before other imports)
+from .logging_config import setup_logging, get_logger
+setup_logging()
+
 from . import config
 from . import acs
 from . import download
@@ -20,7 +24,7 @@ from . import parcels
 from . import tiger
 from . import replica
 
-from .menus import dataMenuDownloader
+from .menus import DataMenuDownloader
 
 # """ 
 #     integrated into the init of replica module and will only run the first time sam is imported 
