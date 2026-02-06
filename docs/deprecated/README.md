@@ -6,6 +6,22 @@ This directory contains deprecated implementations kept for historical reference
 
 ---
 
+## features/ (entire directory)
+
+**Status**: DEPRECATED (date unknown)
+**Replaced by**: Functionality moved to other modules or removed
+
+### What it was
+Old R-based feature engineering module with census download helpers.
+Contained R implementations that predated the current Python architecture.
+
+### Why it was deprecated
+- Used rpy2 and R packages (tigris, tidycensus, sf, lwgeom)
+- Superseded by newer census download implementations
+- Not imported or used by any active code
+
+---
+
 ## core_r_backup.py
 
 **Status**: DEPRECATED as of 2026-02-04

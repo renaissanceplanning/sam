@@ -1,17 +1,20 @@
 name: sam
-channels: 
+channels:
   - conda-forge
 dependencies:
-  - r
+  # R dependencies removed 2026-02-06 - now using pure Python (pygris, censusdata)
+  # - r
+  # - rpy2=3.4.5
+  # - r-tidycensus
+  # - r-tigris
+  # - r-sf
+  # - r-lwgeom
   - conda-forge::pandas-gbq
   - conda-forge::pydata-google-auth
   - osmnx
-  - rpy2=3.4.5
   - bs4
-  - r-tidycensus
-  - r-tigris
-  - r-sf
-  - r-lwgeom
+  - pygris  # Replaces r-tigris
+  - censusdata  # Replaces r-tidycensus
   - pip
   - pip:
     - us
