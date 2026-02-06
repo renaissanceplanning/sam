@@ -1,13 +1,4 @@
-import os
-import sys
 # import pydata_google_auth
-
-from rpy2 import situation
-
-r_home = situation.r_home_from_registry()
-if r_home is None:
-    r_home = os.path.join(sys.exec_prefix, "lib", "R")
-os.environ["R_HOME"] = r_home
 
 # Initialize logging (must be before other imports)
 from .logging_config import setup_logging, get_logger
