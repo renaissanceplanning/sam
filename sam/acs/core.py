@@ -140,6 +140,13 @@ def _combine_levels(df, idcol, config, breaks=None, name="full"):
             ].tolist()
             dt[col] = dt[idx].sum(axis=1)
             cols.append(col)
+
+        # Add total column by summing all created bracket columns
+        numeric_cols = [c for c in cols if c != idcol]
+        if numeric_cols:
+            dt[f'{pref}_total'] = dt[numeric_cols].sum(axis=1)
+            cols.append(f'{pref}_total')
+
         dt = dt[cols]
     elif breaks is None and name is not None:
         cfg = config._df_.reset_index().rename(columns={"index": "variable"})
@@ -148,6 +155,13 @@ def _combine_levels(df, idcol, config, breaks=None, name="full"):
         dt = dt.groupby([idcol, name])[["estimate"]].sum().reset_index()
         dt = dt.pivot(index=idcol, columns=name, values="estimate")
         dt = dt.reset_index()  # .drop(columns=name)
+
+        # Add total column by summing all non-ID numeric columns
+        numeric_cols = [c for c in dt.columns if c != idcol and pd.api.types.is_numeric_dtype(dt[c])]
+        if numeric_cols:
+            # Extract prefix from first column (e.g., "age" from "age_0_4")
+            prefix = df.alias.iloc[0].split("_")[0] if len(df) > 0 and 'alias' in df.columns else "total"
+            dt[f'{prefix}_total'] = dt[numeric_cols].sum(axis=1)
     else:
         raise ValueError(
             "One of breaks and name must be provided, and " "the other must be None"
