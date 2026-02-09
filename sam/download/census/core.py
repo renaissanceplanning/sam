@@ -21,12 +21,13 @@ logger = logging.getLogger(__name__)
 
 # Try to import censusdis (unified API for both data and geometry)
 try:
-    import censusdis.data as ced
-    import censusdis.variables as cev
-    import censusdis.maps as cem
+    from censusdis import data as ced
+    from censusdis import maps as cem
     CENSUSDIS_AVAILABLE = True
 except ImportError:
     CENSUSDIS_AVAILABLE = False
+    ced = None
+    cem = None
     logger.warning("censusdis not available. Install with: pip install censusdis")
 
 from sam.config import CENSUS_API_KEY
@@ -249,15 +250,15 @@ def _transform_censusdis_output(df: pd.DataFrame, geography: str) -> pd.DataFram
         # GEOID: STATE(2)
         df['GEOID'] = df['STATE'].astype(str).str.zfill(2)
 
-    # Set GEOID as index (matching censusdata behavior)
-    df = df.set_index('GEOID')
-
-    # Drop geographic component columns, keep NAME and variable columns
+    # Drop geographic component columns (keep GEOID as column, not index)
+    # The ACS processing code expects GEOID as a column, not an index
     geo_cols = ['STATE', 'COUNTY', 'TRACT', 'BLOCK_GROUP']
     df = df.drop(columns=[c for c in geo_cols if c in df.columns], errors='ignore')
 
-    # Keep only estimate columns (_E suffix), drop margin of error (_M)
-    var_cols = [col for col in df.columns if col.endswith('E')]
+    # Keep only GEOID, NAME, and estimate columns (_E suffix)
+    # Drop margin of error (_M) and annotation columns
+    var_cols = ['GEOID']
+    var_cols.extend([col for col in df.columns if col.endswith('E')])
     if 'NAME' in df.columns:
         var_cols.append('NAME')
     df = df[var_cols]
@@ -328,9 +329,9 @@ def dl_census_python(
     if table is not None and variables is None:
         # censusdis requires individual variable codes
         # For tables, we need to get all variables that belong to that table
-        # censusdis.variables.group_leaves returns list of leaf variables from table/group
+        # ced.variables.group_leaves returns list of leaf variables from table/group
         try:
-            variables = cev.group_leaves('acs/acs5', year, table, skip_annotations=True)
+            variables = ced.variables.group_leaves('acs/acs5', year, table, skip_annotations=True)
 
             if not variables or len(variables) == 0:
                 # censusdis returned empty - generate variables manually
