@@ -305,21 +305,79 @@ def test_url(url):
 def build_url(county, year):
     if type(county) != str:
         raise TypeError("county must be type str")
-    
+
     formatted_names = format_florida_counties(county=county)
-    
+
     county_name = fl_co.loc[fl_co.format.isin(formatted_names), "format"].item()
     county_number = fl_co.loc[fl_co.format.isin(formatted_names), "co_no"].item()
-    
-    if year == 2024:
-        gis_url = f"{gis_2024_url}/{gis_file_name.format(county_name=county_name,year=year)}"
-    else:
-        gis_url = f"{gis_base_url}/{year}F/{gis_file_name.format(county_name=county_name,year=year)}"
-    nal_url = f"{base_nal_url}/{year}F/{nal_file_name.format(county_name=county_name, county_number=county_number,year=year)}"
-    works, message = test_url(nal_url)
-    if not works:
-        nal_url = f"{base_nal_url}/{year}P/{nal_file_name.format(county_name=county_name, county_number=county_number,year=year)}"
-    return gis_url, nal_url
+
+    # Try requested year first, then fall back to most recent available
+    # Florida DOR typically releases data with 1-2 year lag
+    years_to_try = [year, year - 1, year - 2, 2024, 2023]
+    years_to_try = sorted(set(years_to_try), reverse=True)  # Remove duplicates and sort descending
+
+    gis_url = None
+    nal_url = None
+    successful_year = None
+
+    for try_year in years_to_try:
+        # Build GIS URL based on year
+        if try_year >= 2024:
+            # 2024+ uses new URL structure with PIN subfolder
+            test_gis_url = f"{gis_base_url}/{try_year}F/{try_year}F%20PIN/{gis_file_name.format(county_name=county_name,year=try_year)}"
+        else:
+            test_gis_url = f"{gis_base_url}/{try_year}F/{gis_file_name.format(county_name=county_name,year=try_year)}"
+
+        # Test if GIS URL works
+        gis_works, _ = test_url(test_gis_url)
+
+        if gis_works:
+            # Build NAL URL - try same year first, then try adjacent years
+            # Sometimes NAL is released for different year than GIS
+            nal_years_to_try = [try_year, try_year + 1, try_year - 1]
+
+            found_nal = False
+            for nal_year in nal_years_to_try:
+                # Try Final first
+                test_nal_url_f = f"{base_nal_url}/{nal_year}F/{nal_file_name.format(county_name=county_name, county_number=county_number,year=nal_year)}"
+                nal_works, _ = test_url(test_nal_url_f)
+
+                if nal_works:
+                    test_nal_url = test_nal_url_f
+                    found_nal = True
+                    break
+
+                # Try Provisional
+                test_nal_url_p = f"{base_nal_url}/{nal_year}P/{nal_file_name.format(county_name=county_name, county_number=county_number,year=nal_year)}"
+                nal_works, _ = test_url(test_nal_url_p)
+
+                if nal_works:
+                    test_nal_url = test_nal_url_p
+                    found_nal = True
+                    break
+
+            if not found_nal:
+                # No NAL found for this GIS year or adjacent years, try next GIS year
+                continue
+
+            # Both GIS and NAL URLs work - success!
+            gis_url = test_gis_url
+            nal_url = test_nal_url
+            successful_year = try_year
+
+            if successful_year != year:
+                print(f"Note: {year} parcel data not available for {county_name}, using GIS {try_year}")
+            break
+
+    if gis_url is None or nal_url is None:
+        raise ValueError(
+            f"Could not find parcel data for {county_name}. "
+            f"Tried years: {years_to_try}. "
+            f"Check https://floridarevenue.com/property/dataportal for availability."
+        )
+
+    # Return URLs and the actual year of data found
+    return gis_url, nal_url, successful_year
 
 # ----------------------------------------------------------------------------
 

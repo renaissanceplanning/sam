@@ -7,8 +7,8 @@ Tests the new downloader architecture without requiring external dependencies.
 import sys
 from pathlib import Path
 
-# Add sam package to path
-sys.path.insert(0, str(Path(__file__).parent))
+# Add sam package to path (3 levels up: core -> tests -> sam -> repo root)
+sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
 from sam.core.downloader import BaseDownloader
 from sam.core.downloaders import HTTPDownloader, ZipDownloader, GeoDataDownloader, RasterDownloader

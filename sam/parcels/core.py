@@ -74,7 +74,7 @@ from sam.config import is_int
 
 # Functions
 # TODO ensure it can accept fips
-def download_fl_parcels(county, crs, year=None, config=fl_par_config_csv, replica=True):
+def download_fl_parcels(county, crs, year=None, config=fl_par_config_csv, replica=True, keep_raw=False):
     """Will download DOR parcels from Florida
 
     Args:
@@ -83,9 +83,12 @@ def download_fl_parcels(county, crs, year=None, config=fl_par_config_csv, replic
         year (int, optional): Year to pull data from. Defaults to None.
         config (dict, optional): Formates data columnes if Non returns all.
             Defaults to None.
+        keep_raw (bool, optional): If True, return both processed and raw GIS data.
+            Defaults to False.
 
     Returns:
-        geodataframe: cleaned parcels dataframe.
+        If keep_raw=False: geodataframe of cleaned parcels
+        If keep_raw=True: tuple of (cleaned parcels geodataframe, raw GIS geodataframe, actual_year)
 
     Notes
     -----
@@ -106,10 +109,10 @@ def download_fl_parcels(county, crs, year=None, config=fl_par_config_csv, replic
         config = {}
 
     # TODO replace when we can automate scraping the new portal.
-    # gis_url, nal_url = extract_urls(county=county, year=year) 
-    
-    gis_url, nal_url = build_url(county=county, year=year) 
-    
+    # gis_url, nal_url = extract_urls(county=county, year=year)
+
+    gis_url, nal_url, actual_year = build_url(county=county, year=year)
+
     parcels = process_parcels(
         gis_url=gis_url, nal_url=nal_url, transform_crs=crs, field_specs=config
     )
@@ -119,7 +122,13 @@ def download_fl_parcels(county, crs, year=None, config=fl_par_config_csv, replic
     # add a join for recoded DOR UC
     # parcels['result'] = parcels['result'].merge(PAR_RECODE)
 
+    # Store raw GIS data if needed
+    raw_gis = parcels['gis'] if keep_raw else None
+
     parcels["result"]["DOR_UC"] = parcels["result"]["DOR_UC"].astype(np.int64)
+
+    # Add data vintage/year column to track actual year of data
+    parcels["result"]["DATA_YEAR"] = actual_year
 
     if replica:
         parcels = parcels["result"].merge(FL_TO_REPLICA).copy()
@@ -134,7 +143,10 @@ def download_fl_parcels(county, crs, year=None, config=fl_par_config_csv, replic
     else:
         parcels = parcels["result"].merge(PAR_RECODE).copy()
 
-    return parcels
+    if keep_raw:
+        return parcels, raw_gis, actual_year
+    else:
+        return parcels
 
 
 def download_old_fl_parcels(

@@ -665,6 +665,9 @@ def process_parcels(gis_url, nal_url, transform_crs, field_specs={}):
 
     save_info = merge_parcels(gis_gdf=gis, nal_df=nal)
 
+    # Add raw GIS to save_info for optional raw file saving
+    save_info['gis'] = gis
+
     # done
     # ----
     print("Done!")
@@ -763,6 +766,9 @@ def process_parcels_csv(gis_url, nal_url, transform_crs, field_specs):
     print("3. Merging and saving")
 
     save_info = merge_parcels(gis_gdf=gis, nal_df=nal)
+
+    # Add raw GIS to save_info for optional raw file saving
+    save_info['gis'] = gis
 
     # done
     # ----

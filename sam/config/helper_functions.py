@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 import logging
 
 import geopandas as gpd
@@ -37,7 +37,7 @@ def is_int(element):
 
 
 def extract_fips(gdf):
-    """Finds the county level fips and names for a give geometry
+    """Finds the county level fips and names for a given geometry
 
     Args:
         gdf (gpd.GeoDataFrame): A gdf containing summary area polygons
@@ -45,14 +45,27 @@ def extract_fips(gdf):
     Returns:
         tuple: A tuple containing strings for geoids and county names.
     """
-    # TODO increase precision to single county
+    # Reproject to match county shapes CRS
     gdf = gdf.to_crs(county_shapes.crs)
-    county = county_shapes[county_shapes.intersects(gdf.dissolve().geometry[0])]
-    # counties = county["COUNTYFP"].unique().tolist()
-    # states = county["STATEFP"].unique().tolist()
+    dissolved = gdf.dissolve().geometry[0]
+
+    # Find all intersecting counties
+    intersecting = county_shapes[county_shapes.intersects(dissolved)]
+
+    if len(intersecting) == 1:
+        # Only one county intersects - use it
+        county = intersecting
+    else:
+        # Multiple counties intersect - use the one with largest overlap
+        # Calculate intersection area for each county
+        intersecting = intersecting.copy()
+        intersecting['overlap_area'] = intersecting.geometry.intersection(dissolved).area
+        # Sort by overlap area and take the largest
+        county = intersecting.nlargest(1, 'overlap_area')
+
     geoids = county["GEOID"].unique().tolist()
     county_names = county["NAME"].unique().tolist()
-    # return states, counties, county_names
+
     return geoids, county_names
 
 
@@ -87,7 +100,7 @@ def create_geo_dict(geoids):
 # Directory Management
 # =============================================================================
 
-def get_data_dir_paths(data_dir: str | Path) -> Dict[str, Path]:
+def get_data_dir_paths(data_dir: Union[str, Path]) -> Dict[str, Path]:
     """
     Get dictionary of data directory paths WITHOUT creating them.
     
@@ -134,7 +147,7 @@ def get_data_dir_paths(data_dir: str | Path) -> Dict[str, Path]:
     }
 
 
-def ensure_dir_exists(path: Path | str) -> Path:
+def ensure_dir_exists(path: Union[Path, str]) -> Path:
     """
     Ensure a directory exists, creating it if necessary.
     
@@ -165,7 +178,7 @@ def ensure_dir_exists(path: Path | str) -> Path:
 
 
 def validate_data_dir(
-    data_dir: str | Path,
+    data_dir: Union[str, Path],
     required_dirs: Optional[List[str]] = None
 ) -> Dict[str, Path]:
     """

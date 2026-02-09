@@ -10,10 +10,11 @@ import logging
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
+import geopandas as gpd
 import numpy as np
 import pandas as pd
 import us
-from rputils import make_path
+# from rputils import make_path  # Not used - only in commented examples
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +25,18 @@ from sam.config.helper_functions import create_geo_dict, ensure_dir_exists
 from sam.config.replica_config import replica_acs_tables
 from sam.lihtc import download_lihtc
 from sam.lodes import lodes
-from sam.osm import OSMNetwork
+# OSM import is optional - requires algi/rputils dependencies
+try:
+    from sam.osm import OSMNetwork
+    HAS_OSM = True
+except ImportError as e:
+    logger.warning(f"OSM import failed: {e}")
+    OSMNetwork = None
+    HAS_OSM = False
+except Exception as e:
+    logger.warning(f"Unexpected error importing OSM: {e}")
+    OSMNetwork = None
+    HAS_OSM = False
 from sam.parcels import download_fl_parcels
 from sam.replica import Replica
 from sam.sld import download_sld
@@ -96,7 +108,8 @@ class DataMenuDownloader:
         
         # Store other attributes
         self.summary_areas = summary_areas
-        self.crs = prj_crs
+        # Use provided CRS or fallback to summary_areas CRS
+        self.crs = prj_crs if prj_crs is not None else summary_areas.crs
         
         # Initialize Replica fetcher
         self.rep_fetch = Replica(
@@ -330,7 +343,7 @@ class DataMenuDownloader:
         except Exception as e:
             logger.error(f"Failed to download tracts: {e}")
 
-    def pull_parcels(self, parcel_source: str = "replica", parcel_replica_fields: bool = True,) -> None:
+    def pull_parcels(self, parcel_source: str = "replica", parcel_replica_fields: bool = True, keep_raw: bool = False) -> None:
         """
         Download parcel data from either Florida DOR or Replica.
 
@@ -359,37 +372,90 @@ class DataMenuDownloader:
 
         logger.info("Downloading parcels...")
 
-        try:
-            if parcel_source == "DOR":
+        if parcel_source == "DOR":
                 # Download from Florida Department of Revenue
                 logger.info("Downloading parcels from Florida DOR...")
+                print(f"  Downloading parcels for {len(self.county_names)} counties from Florida DOR...")
 
-                # Download each county separately and concatenate
+                # Download each county separately
                 parcel_list = []
-                for county in self.county_names:
+                county_data = []  # Track (county_name, parcels, year) tuples
+
+                for i, county in enumerate(self.county_names, 1):
                     logger.info(f"  Downloading {county} County parcels...")
-                    county_parcels = download_fl_parcels(
+                    print(f"  [{i}/{len(self.county_names)}] {county} County...")
+
+                    # Download parcels with optional raw data
+                    result = download_fl_parcels(
                         county=county,
                         crs=self.crs,
                         year=self.years["parcel_year"],
                         config=PAR_CONF,
-                        replica=parcel_replica_fields
+                        replica=parcel_replica_fields,
+                        keep_raw=keep_raw
                     )
+
+                    # Unpack based on keep_raw setting
+                    if keep_raw:
+                        county_parcels, raw_gis, county_year = result
+                        # Save raw file if requested
+                        raw_output = par_dir / f"parcels_{county}_{county_year}_raw.shp"
+                        print(f"      Saving raw GIS data: {raw_output.name}")
+                        raw_gis.to_file(raw_output, driver='ESRI Shapefile')
+                        print(f"      ✓ Saved {len(raw_gis):,} raw parcels (geometry only)")
+                    else:
+                        county_parcels = result
+                        # Get actual data year from this county's parcels
+                        if 'DATA_YEAR' in county_parcels.columns:
+                            county_year = int(county_parcels['DATA_YEAR'].mode()[0])
+                        else:
+                            county_year = self.years["parcel_year"]
+
+                    county_data.append((county, county_parcels, county_year))
                     parcel_list.append(county_parcels)
+                    print(f"      ✓ Downloaded {len(county_parcels):,} parcels from {county} ({county_year} data)")
 
-                # Combine all counties
-                parcels = pd.concat(parcel_list, ignore_index=True)
-                logger.info(f"Combined parcels from {len(self.county_names)} counties")
+                # Determine if we should save separately or combined
+                if len(self.county_names) == 1:
+                    # Single county - save just that one
+                    county, parcels, actual_year = county_data[0]
+                    print(f"  Data vintage: {actual_year}")
+                else:
+                    # Multiple counties - save each separately
+                    print(f"  Saving {len(self.county_names)} counties individually...")
+                    for county, county_parcels, county_year in county_data:
+                        county_output = par_dir / f"parcels_{county}_{county_year}.shp"
+                        print(f"    Saving {county} County: {county_output.name}")
+                        county_parcels.to_file(county_output, driver='ESRI Shapefile')
+                        logger.info(f"Saved {county} County parcels to {county_output}")
+                        print(f"      ✓ Saved {len(county_parcels):,} parcels")
 
-            else:  # parcel_source == "replica"
-                # Download from Replica
-                logger.info("Downloading parcels from Replica...")
-                parcels = self.rep_fetch.parcels(crs=self.crs)
+                    # Also save a combined file for convenience
+                    print(f"  Creating combined file with all {len(self.county_names)} counties...")
+                    parcels = pd.concat(parcel_list, ignore_index=True)
+                    actual_year = int(parcels['DATA_YEAR'].mode()[0]) if 'DATA_YEAR' in parcels.columns else self.years["parcel_year"]
 
-            # Save to shapefile
-            output_file = par_dir / f"parcels_{self.years['parcel_year']}.shp"
-            parcels.to_file(output_file)
-            logger.info(f"Saved parcels to {output_file}")
+                    print(f"  ✓ Combined total: {len(parcels):,} parcels")
+                    print(f"  Data vintage: {actual_year}")
+
+        else:  # parcel_source == "replica"
+            # Download from Replica
+            logger.info("Downloading parcels from Replica...")
+            parcels = self.rep_fetch.parcels(crs=self.crs)
+            actual_year = self.years["parcel_year"]
+
+        # Save to Shapefile format
+        if parcel_source == "DOR" and len(self.county_names) == 1:
+            # Single county - use county name in filename
+            output_file = par_dir / f"parcels_{self.county_names[0]}_{actual_year}.shp"
+        else:
+            # Multiple counties or Replica - use generic name
+            output_file = par_dir / f"parcels_{actual_year}.shp"
+
+        print(f"  Saving to: {output_file}")
+        parcels.to_file(output_file, driver='ESRI Shapefile')
+        logger.info(f"Saved parcels to {output_file}")
+        print(f"  ✓ Saved {len(parcels):,} parcels to {output_file.name}")
 
     def pull_lihtc(self) -> None:
         """
@@ -424,6 +490,17 @@ class DataMenuDownloader:
         Returns:
             None. Saves network shapefile to the osm directory.
         """
+        logger.debug(f"pull_OSM called - HAS_OSM={HAS_OSM}, OSMNetwork={OSMNetwork}")
+        if not HAS_OSM:
+            logger.error(f"OSM functionality not available - HAS_OSM={HAS_OSM}")
+            logger.error(f"OSMNetwork value: {OSMNetwork}")
+            logger.error("Missing dependencies: algi, gary, rputils, or osmnx")
+            logger.error("Install with: pip install -e C:/github/packages/algi")
+            logger.error("Install with: pip install -e C:/github/packages/gary")
+            logger.error("Install with: pip install -e C:/github/packages/rputils")
+            logger.error("Install with: pip install osmnx")
+            raise ImportError("OSM functionality requires algi, gary, rputils, and osmnx packages")
+
         # Create OSM directory only when needed
         net_dir = ensure_dir_exists(self.dirs['net_dir'])
         logger.info("Downloading OSM network data")
@@ -445,36 +522,54 @@ class DataMenuDownloader:
         except Exception as e:
             logger.error(f"Failed to download OSM network: {e}")
 
-    def pull_nlcd(self, dataset: str = 'land_cover', clip_to_aoi: bool = True) -> None:
+    def pull_nlcd(self, dataset: Union[str, list[str], None] = None, clip_to_aoi: bool = True) -> None:
         """
         Download National Land Cover Database (NLCD) data.
 
         Downloads NLCD raster data for the project area. The method automatically
         selects the closest available NLCD year to the project's parcel year.
 
+        **Updated Feb 2026:** Now supports Annual NLCD products (2019-2024) with new
+        MRLC URLs. Old S3 bucket URLs no longer work.
+
         Args:
-            dataset: Type of NLCD data to download. Options:
-                - 'land_cover': Land cover classification (default)
-                - 'impervious': Percent impervious surface
-                - 'impervious_descriptor': Impervious surface descriptor
-                - 'tree_canopy': Percent tree canopy cover
+            dataset: Type(s) of NLCD data to download. Can be a string, list, or None:
+                - None: Download all available datasets (land_cover + impervious + tree_canopy) - DEFAULT
+                - 'land_cover': Land cover classification only ✓
+                - 'impervious': Fractional impervious surface only (0-100%) ✓
+                - 'tree_canopy': Tree canopy cover (annual 1985-2023, USFS) ✓
+                - 'impervious_descriptor': Not yet available ✗
+                - ['land_cover', 'impervious']: Download specific multiple datasets
             clip_to_aoi: If True, automatically clips the raster to the project's
                 summary areas after download. If False, downloads full regional
                 tile. Default: True (matches original behavior)
-                
+
         Returns:
-            None. Downloads NLCD file to the nlcd directory.
-            
+            None. Downloads NLCD file(s) to the nlcd directory.
+
         Notes:
-            - NLCD data files are large (1-5 GB for full tiles) and may take time
-            - Available years: 2021, 2019, 2016, 2013, 2011, 2008, 2006, 2004, 2001
-            - With clip_to_aoi=True: Requires rasterio, creates clipped GeoTIFF
-            - With clip_to_aoi=False: Downloads full tile as zip file
-            - Clipping matches original SAM behavior that used algi library
-            
+            - Land Cover & Impervious: Annual NLCD 2019-2024 (MRLC)
+            - Tree Canopy: Annual 1985-2023 (USDA Forest Service v2023-5)
+            - Tree Canopy files are larger (~3.6 GB vs ~1.3 GB for other products)
+            - Legacy NLCD years: 2021, 2019, 2016, 2013, 2011, 2008, 2006, 2004, 2001
+            - With clip_to_aoi=True: Requires rasterio, creates clipped GeoTIFF, deletes zips
+            - With clip_to_aoi=False: Downloads full tile as zip file, keeps zips
+
         Examples:
-            >>> fetcher.pull_nlcd('land_cover')  # Downloads and clips
-            >>> fetcher.pull_nlcd('impervious', clip_to_aoi=False)  # Full tile
+            >>> # Download all available datasets (land_cover + impervious + tree_canopy)
+            >>> fetcher.pull_nlcd()
+
+            >>> # Download only land cover
+            >>> fetcher.pull_nlcd('land_cover')
+
+            >>> # Download only tree canopy
+            >>> fetcher.pull_nlcd('tree_canopy')
+
+            >>> # Download specific multiple datasets
+            >>> fetcher.pull_nlcd(['land_cover', 'impervious'])
+
+            >>> # Download without clipping (full tile)
+            >>> fetcher.pull_nlcd(clip_to_aoi=False)
         """
         # Import here to avoid circular imports
         from sam.download.nlcd import download_nlcd, get_closest_nlcd_year
@@ -487,43 +582,66 @@ class DataMenuDownloader:
         target_year = self.years['parcel_year']
         nlcd_year = get_closest_nlcd_year(target_year)
 
-        logger.info(f"Downloading NLCD {dataset} data...")
+        # Default to all available datasets if none specified
+        if dataset is None:
+            datasets = ['land_cover', 'impervious', 'tree_canopy']  # All available NLCD products
+            logger.info(f"No dataset specified, downloading all available products")
+        elif isinstance(dataset, str):
+            datasets = [dataset]
+        else:
+            datasets = dataset
+
+        logger.info(f"Downloading NLCD data...")
+        logger.info(f"  Datasets: {', '.join(datasets)}")
         if nlcd_year != target_year:
-            logger.info(f"Note: Requested year {target_year}, using closest available year {nlcd_year}")
+            logger.info(f"  Note: Requested year {target_year}, using closest available year {nlcd_year}")
+        else:
+            logger.info(f"  Year: {nlcd_year}")
 
-        try:
-            # Set output path
-            if clip_to_aoi:
-                output_filename = f"nlcd_{nlcd_year}_{dataset}_clipped.tif"
-            else:
-                output_filename = f"nlcd_{nlcd_year}_{dataset}.zip"
+        # Download each dataset
+        downloaded_files = []
+        for ds in datasets:
+            try:
+                logger.info(f"  Downloading {ds}...")
 
-            output_path = nlcd_dir / output_filename
+                # Set output path
+                if clip_to_aoi:
+                    output_filename = f"nlcd_{nlcd_year}_{ds}_clipped.tif"
+                else:
+                    output_filename = f"nlcd_{nlcd_year}_{ds}.zip"
 
-            # Download NLCD data (with optional clipping)
-            downloaded_path = download_nlcd(
-                geoid=self.geoids,
-                year=target_year,
-                dataset=dataset,
-                output_path=nlcd_dir / f"nlcd_{nlcd_year}_{dataset}.zip",
-                clip_to_aoi=clip_to_aoi,
-                summary_areas=self.summary_areas
-            )
+                output_path = nlcd_dir / output_filename
 
-            logger.info(f"NLCD data saved to: {downloaded_path}")
+                # Download NLCD data (with optional clipping)
+                downloaded_path = download_nlcd(
+                    geoid=self.geoids,
+                    year=target_year,
+                    dataset=ds,
+                    output_path=nlcd_dir / f"nlcd_{nlcd_year}_{ds}.zip",
+                    clip_to_aoi=clip_to_aoi,
+                    summary_areas=self.summary_areas
+                )
 
+                downloaded_files.append(downloaded_path)
+                logger.info(f"    ✓ Saved to: {downloaded_path}")
+
+            except Exception as e:
+                logger.error(f"    ✗ Failed to download {ds}: {e}")
+                logger.info("    Troubleshooting:")
+                logger.info("    - Check your internet connection")
+                logger.info("    - Verify NLCD data is available at https://www.mrlc.gov/data")
+                logger.info("    - If clip_to_aoi=True, ensure rasterio is installed: pip install rasterio")
+                logger.info("    - Some datasets may not be available for all years")
+
+        # Summary
+        if downloaded_files:
+            logger.info(f"\n✓ Downloaded {len(downloaded_files)}/{len(datasets)} NLCD datasets")
             if not clip_to_aoi:
                 logger.info("Next steps:")
-                logger.info("1. Extract the zip file")
-                logger.info("2. Clip the raster to your area of interest if needed")
-
-        except Exception as e:
-            logger.error(f"Failed to download NLCD data: {e}")
-            logger.info("Troubleshooting:")
-            logger.info("- Check your internet connection")
-            logger.info("- Verify NLCD data is available at https://www.mrlc.gov/data")
-            logger.info("- If clip_to_aoi=True, ensure rasterio is installed: pip install rasterio")
-            logger.info("- The MRLC website structure may have changed")
+                logger.info("1. Extract the zip files")
+                logger.info("2. Clip the rasters to your area of interest if needed")
+        else:
+            logger.error("Failed to download any NLCD datasets")
 
     def pull_sld(self, keep_cols: Optional[List[str]] = None) -> None:
         """

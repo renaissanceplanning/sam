@@ -1,210 +1,478 @@
-# -*- coding: utf-8 -*-
 """
-Created on Mon Jan 24 13:59:55 2022
+Python-based Census data downloads (replacement for R-based core.py).
 
-@author: Aaron Weinstock
+Uses censusdis for both TIGER shapefiles and ACS data (unified API).
+No R dependencies required.
+
+History:
+    - 2026-02-06: Migrated from R (r-tigris, r-tidycensus) to Python (pygris, censusdata)
+    - 2026-02-08: Consolidated to censusdis for unified, actively-maintained API
+
+Install dependencies:
+    pip install censusdis
 """
-
-# TODO: this deprecates census.geom and census.geometries
-# TODO: this deprecates download.lodes and download.lodes_class
-# TODO: get R libs in the environment.yml, then just load these
-
-# %% Imports
-import os
-import pyproj
-import shapely.wkt
+import logging
+from typing import Optional, Dict, Any, List
 import numpy as np
 import pandas as pd
 import geopandas as gpd
-import rpy2.robjects as ro
-from rpy2.robjects import pandas2ri
-from rpy2.robjects.conversion import Converter, localconverter
-from rpy2.robjects.packages import importr
-from sam.config import is_int
+
+logger = logging.getLogger(__name__)
+
+# Try to import censusdis (unified API for both data and geometry)
+try:
+    import censusdis.data as ced
+    import censusdis.variables as cev
+    import censusdis.maps as cem
+    CENSUSDIS_AVAILABLE = True
+except ImportError:
+    CENSUSDIS_AVAILABLE = False
+    logger.warning("censusdis not available. Install with: pip install censusdis")
+
 from sam.config import CENSUS_API_KEY
 
-# Import tigris, sf, and lwgeom -- these are the packages we need functions from
-Rlibs = ["base", "tigris", "sf", "lwgeom", "tidycensus"]
-for lib in Rlibs:
-    importr(lib)
-    if lib == "tidycensus":
-        tidy = importr(lib)
-        tidy.census_api_key(CENSUS_API_KEY, install=True, overwrite=True)
-        print(f"API key set: {CENSUS_API_KEY}")
-    
 
-# Convert Nones to nulls
-def _none2null(none_obj):
-    return ro.r("NULL")
-
-
-none_converter = Converter("None converter")
-none_converter.py2rpy.register(type(None), _none2null)
-
-# Define the global R functions
-st_geometry = ro.r["st_geometry"]
-st_drop_geometry = ro.r["st_drop_geometry"]
-st_crs = ro.r["st_crs"]
-st_astext = ro.r["st_as_text"]
-
-# %% Global configurations
-
-# dl_tiger
-__TIGRIS__ = [
-    "address_ranges",
-    "alaska_native_regional_corporations",
-    "area_water",
-    "blocks",
-    "block_groups",
-    "coastline",
-    "combined_statistical_areas",
-    "congressional_districts",
-    "core_based_statistical_areas",
-    "counties",
-    "county_subdivisions",
-    "divisions",
-    "landmarks",
-    "linear_water",
-    "metro_divisions",
-    "military",
-    "nation",
-    "native_areas",
-    "new_england",
-    "places",
-    "primary_roads",
-    "primary_secondary_roads",
-    "pumas",
-    "rails",
-    "regions",
-    "roads",
-    "school_districts",
-    "states",
-    "state_legislative_districts",
-    "tracts",
-    "tribal_block_groups",
-    "tribal_census_tracts",
-    "tribal_subdivisions_national",
-    "urban_areas",
-    "voting_districts",
-    "zctas",
-]
-
-# dl_census
-__TIDYCENSUS__ = ["acs", "decennial", "estimates", "flows", "pums"]
-
-# dl_lodes/dl_xwalk
-__LODES_YEAR__ = 2022
-__LODES_VERSION__ = 8
-__LODES_URL__ = "https://lehd.ces.census.gov/data/lodes/LODES"
-
-
-# %% Functions
-
-
-def dl_tiger(geom, **kwargs):
+def dl_tiger_python(geom: str, **kwargs) -> gpd.GeoDataFrame:
     """
-    Download Census geographies using the R `tigris` package.
+    Download Census TIGER shapefiles using censusdis (Python).
 
-    Parameters
-    ----------
-    geom : str
-        The geography to download. Must be a name of a `tigris` function.
-    **kwargs
-        Passed to `tigris::{geom}`. Most commonly, these will include
-        "state", "county", "year", and "cb".
+    Replacement for R-based dl_tiger function. Uses censusdis.maps for unified API.
 
-    Returns
-    -------
-    gpd.GeoDataFrame
-        Shape of the `geom` according to any specifications in the `kwargs`.
+    Args:
+        geom: Geography type. Options:
+            - 'counties', 'tracts', 'block_groups', 'blocks'
+            - 'primary_roads', 'primary_secondary_roads' (not yet supported by censusdis)
+            - 'area_water', 'linear_water' (not yet supported by censusdis)
+        **kwargs: Common args:
+            - state: State FIPS code (2-digit string, e.g., '12')
+            - county: County FIPS code (3-digit string, e.g., '057')
+            - year: Year (default: 2020)
+            - cb: Use cartographic boundary files (default: True for faster downloads)
 
+    Returns:
+        GeoDataFrame with TIGER features in EPSG:4269 (NAD83)
+
+    Example:
+        >>> # Get Hillsborough County boundary
+        >>> counties_gdf = dl_tiger_python('counties', state='12', county='057', year=2022)
+        >>>
+        >>> # Get block groups in county
+        >>> bgs = dl_tiger_python('block_groups', state='12', county='057', year=2022)
     """
-    # convert 5 digit county codes into 3 digit for tigris
-    # TODO extract to function
-    if "county" in kwargs:
-        if isinstance(kwargs["county"], list):
-            kwargs["county"] = [
-                county[-3:] if is_int(county) & (len(county) > 3) else county
-                for county in kwargs["county"]
-            ]
-        else:
-            if is_int(kwargs["county"]) & (len(kwargs["county"]) > 3):
-                kwargs["county"] = kwargs["county"][-3:]
+    if not CENSUSDIS_AVAILABLE:
+        raise ImportError("censusdis is required. Install with: pip install censusdis")
 
-    # Check out the kwargs, and make sure they're legit
-    if geom in __TIGRIS__:
-        pass
+    # Map SAM geometry names to censusdis geography levels
+    geom_map = {
+        'counties': 'county',
+        'tracts': 'tract',
+        'block_groups': 'bg',  # censusdis uses 'bg' for block groups
+        'blocks': 'block',
+        # Roads and water features not yet supported by censusdis maps API
+        # May need to keep fallback or wait for censusdis support
+    }
+
+    if geom not in geom_map:
+        raise ValueError(
+            f"'{geom}' is not supported. "
+            f"Valid options: {list(geom_map.keys())}"
+        )
+
+    geography = geom_map[geom]
+
+    # Extract parameters
+    state = kwargs.get('state')
+    county = kwargs.get('county')
+    year = kwargs.get('year', 2020)
+    use_cb = kwargs.get('cb', True)  # Default to cartographic boundaries
+
+    if not state:
+        raise ValueError("'state' parameter is required")
+
+    # Convert 5-digit county codes to 3-digit (last 3 digits)
+    if county:
+        if isinstance(county, str) and len(county) == 5:
+            county = county[-3:]
+        elif isinstance(county, list):
+            # Handle list of counties - download each separately and concatenate
+            gdfs = []
+            for c in county:
+                c_code = c[-3:] if len(c) == 5 else c
+                gdf = _download_single_tiger(geography, state, c_code, year, use_cb)
+                gdfs.append(gdf)
+            return pd.concat(gdfs, ignore_index=True)
+
+    return _download_single_tiger(geography, state, county, year, use_cb)
+
+
+def _download_single_tiger(geography: str, state: str, county: Optional[str], year: int, use_cb: bool) -> gpd.GeoDataFrame:
+    """
+    Download a single TIGER shapefile using censusdis.maps.
+
+    Args:
+        geography: censusdis geography type ('county', 'tract', 'bg', 'block')
+        state: State FIPS code (2-digit)
+        county: County FIPS code (3-digit), optional
+        year: Year for shapefiles
+        use_cb: Use cartographic boundary files (faster, lower resolution)
+
+    Returns:
+        GeoDataFrame with TIGER features
+    """
+    # Build shapefile scope (state code for state-specific, 'us' for national)
+    shapefile_scope = state if state else 'us'
+
+    logger.info(f"Downloading {geography} for state={state}, county={county} with censusdis (year={year}, cb={use_cb})")
+
+    # Create ShapeReader for the year
+    reader = cem.ShapeReader(year=year)
+
+    # Download shapefile
+    if use_cb:
+        # Cartographic boundaries (simpler, good for plotting)
+        gdf = reader.read_cb_shapefile(
+            shapefile_scope=shapefile_scope,
+            geography=geography,
+            resolution='500k'  # 500k is default, good balance
+        )
     else:
-        raise ValueError(f"'{geom}' is not a valid tigris function")
-    # Define the tigris function to use
-    tigris_geometry_fun = ro.r[geom]
-    # Load the tiger data using tigris. If there are any errors from the
-    # **kwargs, we'll let R handle them
-    with localconverter(ro.default_converter + none_converter):
-        sf_obj = tigris_geometry_fun(**kwargs)
-    # Extract the data, the geometry, and the crs -- these will all be
-    # converted to their pythonic forms individually
-    sf_df = st_drop_geometry(sf_obj)
-    sf_geometry = st_astext(st_geometry(sf_obj))
-    sf_crs = st_crs(sf_obj)
-    # Convert the data to DataFrame, the geometry to GeoSeries, and the crs
-    # to CRS
-    with localconverter(ro.default_converter + pandas2ri.converter):
-        pd_df = ro.conversion.rpy2py(sf_df)
-    gpd_gs = [shapely.wkt.loads(g) for g in sf_geometry]
-    pyproj_crs = pyproj.crs.CRS(list(list(sf_crs)[1])[0])
-    # Form a gdf from the 3 inputs
-    gdf = gpd.GeoDataFrame(pd_df, geometry=gpd_gs, crs=pyproj_crs)
+        # Full TIGER files (more detail, larger)
+        gdf = reader.read_shapefile(
+            shapefile_scope=shapefile_scope,
+            geography=geography
+        )
+
+    # Filter by county if specified
+    if county and geography in ['tract', 'bg', 'block']:
+        # Build expected county FIPS from state + county
+        county_fips = f"{state}{county}"
+
+        # Filter to specific county
+        # TIGER files have COUNTYFP column for county FIPS
+        if 'COUNTYFP' in gdf.columns:
+            gdf = gdf[gdf['COUNTYFP'] == county].copy()
+        elif 'COUNTY' in gdf.columns:
+            gdf = gdf[gdf['COUNTY'] == county].copy()
+
+    # Ensure CRS is EPSG:4269 (NAD83) to match pygris behavior
+    if gdf.crs != 'EPSG:4269':
+        gdf = gdf.to_crs('EPSG:4269')
+
     return gdf
 
 
-def dl_census(survey, **kwargs):
+def _build_geo_kwargs(geography: str, state: str, county: Optional[str] = None, tract: Optional[str] = None) -> dict:
     """
-    Download Census data using the R `tidycensus` package.
+    Build censusdis geography keyword arguments.
 
-    Parameters
-    ----------
-    survey : str
-        The geography to download. Must be a survey name referenced in a
-        `tidycensus::get_{}` function.
-    **kwargs
-        Passed to `tidycensus::get_{survey}`. Most commonly, these will
-        include "geography", "table", "variables", "state", "county", and
-        "year".
+    Helper function to construct kwargs for censusdis.data.download() for different geography types.
+    County parameter must be a single string (not a list).
 
-    Returns
-    -------
-    pd.DataFrame
-        Table of survey data according to any specifications in the `kwargs`.
+    Args:
+        geography: Geography level ('block group', 'tract', 'county', 'state')
+        state: State FIPS code (2-digit string)
+        county: County FIPS code (3-digit string), optional
+        tract: Tract code (string), optional
 
+    Returns:
+        Dictionary of kwargs for censusdis.data.download()
     """
-    if ("county" in kwargs) & (kwargs["county"] is not None):
-        if isinstance(kwargs["county"], list):
-            kwargs["county"] = [
-                county[-3:] if is_int(county) & (len(county) > 3) else county
-                for county in kwargs["county"]
-            ]
-        else:
-            if is_int(kwargs["county"]) & (len(kwargs["county"]) > 3):
-                kwargs["county"] = kwargs["county"][-3:]
-
-    # if 'county' in kwargs:
-    #     kwargs['county'] = ro.vectors.StrVector(kwargs['county'])
-    # Check out the kwargs, and make sure they're legit
-    if survey in __TIDYCENSUS__:
-        pass
+    if geography == 'block group':
+        return {'state': state, 'county': county, 'block_group': '*'}
+    elif geography == 'tract':
+        return {'state': state, 'county': county, 'tract': tract if tract else '*'}
+    elif geography == 'county':
+        return {'state': state, 'county': county if county else '*'}
+    elif geography == 'state':
+        return {'state': state if state else '*'}
     else:
-        raise ValueError(f"'get_{survey}' is not a valid tidycensus function")
-    # Define the tidycensus function to use
-    tidycensus_survey_fun = ro.r["_".join(["get", survey])]
-    # Load the survey data using tidycensus. If there are any errors from the
-    # **kwargs, we'll let R handle them
-    with localconverter(ro.default_converter + none_converter):
-        df_obj = tidycensus_survey_fun(**kwargs)
-    # Convert the data to DataFrame
-    with localconverter(ro.default_converter + pandas2ri.converter):
-        pd_df = ro.conversion.rpy2py(df_obj)
-    return pd_df
+        raise ValueError(f"Geography '{geography}' not supported")
+
+
+def _generate_table_variables(table: str, max_vars: int = 50) -> list:
+    """
+    Generate Census variable codes for a given table.
+
+    Creates variable codes with _E (estimate) suffix for a table.
+    Example: 'B01001' → ['B01001_001E', 'B01001_002E', ...]
+
+    Args:
+        table: ACS table code (e.g., 'B01001', 'B19001')
+        max_vars: Maximum number of variables to generate (default 50)
+
+    Returns:
+        List of variable codes with _E suffix
+
+    Notes:
+        - Most ACS tables have fewer than 50 variables
+        - Using 50 as conservative maximum to avoid requesting too many invalid variables
+        - Census API will return only valid variables and ignore invalid ones
+        - For tables with more than 50 variables, this will return a subset
+    """
+    return [f"{table}_{i:03d}E" for i in range(1, max_vars + 1)]
+
+
+def _transform_censusdis_output(df: pd.DataFrame, geography: str) -> pd.DataFrame:
+    """
+    Transform censusdis output to match censusdata output format.
+
+    censusdis returns columns: STATE, COUNTY, TRACT, BLOCK_GROUP, NAME, variables...
+    censusdata returned: GEOID as index with variables as columns
+
+    This function maintains backward compatibility by transforming censusdis output
+    to match the expected format from censusdata.
+
+    Args:
+        df: DataFrame from censusdis.data.download()
+        geography: Geography level for GEOID construction
+
+    Returns:
+        DataFrame with GEOID index matching censusdata format
+    """
+    # Build GEOID from geographic components
+    if geography == 'block group':
+        # GEOID: STATE(2) + COUNTY(3) + TRACT(6) + BLOCK_GROUP(1) = 12 digits
+        df['GEOID'] = (df['STATE'].astype(str).str.zfill(2) +
+                      df['COUNTY'].astype(str).str.zfill(3) +
+                      df['TRACT'].astype(str).str.zfill(6) +
+                      df['BLOCK_GROUP'].astype(str))
+    elif geography == 'tract':
+        # GEOID: STATE(2) + COUNTY(3) + TRACT(6) = 11 digits
+        df['GEOID'] = (df['STATE'].astype(str).str.zfill(2) +
+                      df['COUNTY'].astype(str).str.zfill(3) +
+                      df['TRACT'].astype(str).str.zfill(6))
+    elif geography == 'county':
+        # GEOID: STATE(2) + COUNTY(3) = 5 digits
+        df['GEOID'] = (df['STATE'].astype(str).str.zfill(2) +
+                      df['COUNTY'].astype(str).str.zfill(3))
+    elif geography == 'state':
+        # GEOID: STATE(2)
+        df['GEOID'] = df['STATE'].astype(str).str.zfill(2)
+
+    # Set GEOID as index (matching censusdata behavior)
+    df = df.set_index('GEOID')
+
+    # Drop geographic component columns, keep NAME and variable columns
+    geo_cols = ['STATE', 'COUNTY', 'TRACT', 'BLOCK_GROUP']
+    df = df.drop(columns=[c for c in geo_cols if c in df.columns], errors='ignore')
+
+    # Keep only estimate columns (_E suffix), drop margin of error (_M)
+    var_cols = [col for col in df.columns if col.endswith('E')]
+    if 'NAME' in df.columns:
+        var_cols.append('NAME')
+    df = df[var_cols]
+
+    return df
+
+
+def dl_census_python(
+    survey: str,
+    geography: Optional[str] = None,
+    variables: Optional[List[str]] = None,
+    table: Optional[str] = None,
+    year: Optional[int] = None,
+    state: Optional[str] = None,
+    county: Optional[str] = None,
+    **kwargs
+) -> pd.DataFrame:
+    """
+    Download Census data using censusdis (Python).
+
+    Replacement for R-based dl_census function. Maintains backward compatibility
+    with the R version's API.
+
+    Args:
+        survey: Survey type - currently only 'acs' is supported (for backward compatibility)
+        geography: Geography level ('county', 'tract', 'block group', 'block')
+        variables: List of ACS variable codes (e.g., ['B01001_001E', 'B19013_001E'])
+        table: ACS table code (e.g., 'B01001'). If provided, downloads all variables from table
+        year: ACS year
+        state: State FIPS code (2 digits)
+        county: County FIPS code (3 or 5 digits)
+        **kwargs: Additional arguments
+
+    Returns:
+        DataFrame with census data (GEOID as index, variables as columns)
+
+    Example:
+        >>> # Get population by block group (matching R API)
+        >>> data = dl_census_python(
+        ...     'acs',
+        ...     geography='block group',
+        ...     table='B01001',
+        ...     year=2022,
+        ...     state='12',
+        ...     county='057'
+        ... )
+    """
+    if not CENSUSDIS_AVAILABLE:
+        raise ImportError("censusdis is required. Install with: pip install censusdis")
+
+    # Only support ACS for now (matching old R functionality)
+    if survey != 'acs':
+        raise ValueError(f"Survey '{survey}' not supported. Only 'acs' is currently supported.")
+
+    # Handle county as list or string - if list, process each county separately
+    county_list = None
+    if county is not None:
+        if isinstance(county, list):
+            # Convert 5-digit to 3-digit for each county in list
+            county_list = [c[-3:] if len(c) == 5 else c for c in county]
+            # We'll process this list later by looping
+        else:
+            # Single county - convert to string
+            county = county[-3:] if len(county) == 5 else county
+
+    # Handle table vs variables
+    # In R tidycensus, you can specify either 'table' (gets all vars) or 'variables' (specific vars)
+    if table is not None and variables is None:
+        # censusdis requires individual variable codes
+        # For tables, we need to get all variables that belong to that table
+        # censusdis.variables.group_leaves returns list of leaf variables from table/group
+        try:
+            variables = cev.group_leaves('acs/acs5', year, table, skip_annotations=True)
+
+            if not variables or len(variables) == 0:
+                # censusdis returned empty - generate variables manually
+                logger.info(f"censusdis returned no variables for {table}. Generating manually.")
+                variables = _generate_table_variables(table)
+            else:
+                logger.info(f"Expanded table {table} to {len(variables)} variables")
+        except Exception as e:
+            # censusdis threw exception - generate variables manually
+            # This creates variable codes in the format Census API expects: B01001_001E, B01001_002E, etc.
+            logger.warning(f"Could not expand table {table}: {e}. Generating manually.")
+            variables = _generate_table_variables(table)
+
+    if variables is None:
+        raise ValueError("Either 'variables' or 'table' must be provided")
+
+    if geography is None:
+        raise ValueError("'geography' must be provided")
+
+    if year is None:
+        raise ValueError("'year' must be provided")
+
+    # Handle multiple counties by looping and concatenating
+    if county_list is not None:
+        logger.info(f"Downloading ACS {year} data for {len(county_list)} counties in {geography}")
+        dfs = []
+        for county_str in county_list:
+            try:
+                # Build geo kwargs for this specific county
+                geo_kwargs = _build_geo_kwargs(geography, state, county_str)
+
+                # Download data for this county using censusdis
+                df = ced.download('acs/acs5', year, variables, **geo_kwargs)
+
+                # Transform to match censusdata output format (GEOID index)
+                df = _transform_censusdis_output(df, geography)
+                dfs.append(df)
+            except Exception as e:
+                logger.error(f"Failed to download data for county {county_str}: {e}")
+                # Continue with other counties
+
+        if not dfs:
+            raise ValueError("Failed to download data for all counties")
+
+        # Concatenate all DataFrames
+        result = pd.concat(dfs, ignore_index=False)
+        logger.info(f"Downloaded {len(result)} records across {len(dfs)} counties")
+        return result
+
+    # Single county or no county specified
+    # Build geography kwargs for censusdis
+    if geography in ['block group', 'tract']:
+        if not state or not county:
+            raise ValueError(f"state and county required for {geography} geography")
+
+    geo_kwargs = _build_geo_kwargs(geography, state, county)
+
+    logger.info(f"Downloading ACS {year} data for {geography}: {variables if not table else f'table {table}'}")
+
+    # Download data using censusdis
+    # censusdis uses format: acs/acs5 for 5-year ACS estimates
+    df = ced.download('acs/acs5', year, variables, **geo_kwargs)
+
+    # Transform to match expected output format (GEOID index, variable columns)
+    return _transform_censusdis_output(df, geography)
+
+
+# Convenience functions matching SAM's existing API
+def dl_acs_python(
+    variables: List[str],
+    geography: str = 'block group',
+    year: int = 2022,
+    state: Optional[str] = None,
+    county: Optional[str] = None,
+    **kwargs
+) -> gpd.GeoDataFrame:
+    """
+    Download ACS data with geometry (combines census data + TIGER shapes).
+
+    Args:
+        variables: List of ACS variable codes
+        geography: Geography level
+        year: ACS year
+        state: State FIPS code
+        county: County FIPS code
+
+    Returns:
+        GeoDataFrame with ACS data and geometry
+    """
+    # Download census data
+    census_df = dl_census_python(
+        geography=geography,
+        variables=variables,
+        year=year,
+        state=state,
+        county=county,
+        **kwargs
+    )
+
+    # Download corresponding geometries
+    geom_map = {
+        'block group': 'block_groups',
+        'tract': 'tracts',
+        'county': 'counties',
+    }
+
+    if geography not in geom_map:
+        raise ValueError(f"Geometry not available for geography '{geography}'")
+
+    tiger_kwargs = {'year': year}
+    if state:
+        tiger_kwargs['state'] = state
+    if county and geography in ['block group', 'tract']:
+        tiger_kwargs['county'] = county
+
+    geom_gdf = dl_tiger_python(geom_map[geography], **tiger_kwargs)
+
+    # Merge census data with geometry
+    # The index of census_df contains GEOIDs
+    census_df['GEOID'] = census_df.index.astype(str)
+
+    # Merge
+    result = geom_gdf.merge(census_df, on='GEOID', how='inner')
+
+    return result
+
+
+# Backward compatibility aliases
+dl_tiger = dl_tiger_python
+dl_census = dl_census_python
+dl_acs = dl_acs_python
+
+
+# =============================================================================
+# LODES (Longitudinal Employer-Household Dynamics) Functions
+# These functions don't use R - they download directly from Census FTP
+# =============================================================================
+
+# LODES constants
+__LODES_YEAR__ = 2022
+__LODES_VERSION__ = 8
+__LODES_URL__ = "https://lehd.ces.census.gov/data/lodes/LODES"
 
 
 def dl_lodes(file, ST, TYPE, YEAR, SEG=None, PART=None):
@@ -511,7 +779,6 @@ def dl_lodes(file, ST, TYPE, YEAR, SEG=None, PART=None):
         lodes = pd.read_csv(dl_url, compression="gzip")
         return lodes
 
-
 def dl_xwalk(ST):
     """
     Download the geography crosswalk for Census geographies in a state.
@@ -600,20 +867,3 @@ def dl_xwalk(ST):
             raise ValueError(f"{ST} is an invalid 'ST' input'")
     else:
         raise TypeError(f"'ST' is {type(ST)}, not str")
-
-
-if __name__ == "__main__":
-    rac = dl_lodes(file="rac", ST="nc", TYPE="JT00", YEAR=2020, SEG="S000", PART="main")
-
-    print(rac)
-
-    wac = dl_lodes(file="wac", ST="nc", TYPE="JT00", YEAR=2020, SEG="S000", PART="main")
-
-    print(wac)
-
-    od = dl_lodes(file="od", ST="nc", TYPE="JT00", YEAR=2020, SEG="S000", PART="main")
-
-    print(od)
-
-    xw = dl_xwalk(ST="nc")
-    print(xw)

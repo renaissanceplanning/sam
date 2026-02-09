@@ -160,7 +160,12 @@ refactor_docs/
 
 2. **Run test suite**
    ```bash
-   python test_base_downloader.py
+   # Run all tests
+   python sam/tests/run_tests.py
+
+   # Or run specific test suites
+   python sam/tests/run_tests.py core
+   python sam/tests/run_tests.py logging
    ```
 
 3. **Integration test with NLCD**
@@ -226,7 +231,9 @@ Following REFACTORING_PLAN.md:
 - ✅ All files in `refactor_docs/`
 
 ### Test Suite (Ready for execution)
-- ✅ `test_base_downloader.py`
+- ✅ `sam/tests/core/test_base_downloader.py` - BaseDownloader tests
+- ✅ `sam/tests/test_logging_simple.py` - Logging tests
+- ✅ `sam/tests/run_tests.py` - Test runner
 
 ---
 

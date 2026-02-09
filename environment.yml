@@ -3,18 +3,20 @@ channels:
   - conda-forge
 dependencies:
   # R dependencies removed 2026-02-06 - now using pure Python (pygris, censusdata)
+  # pygris and censusdata replaced with censusdis 2026-02-08 for unified API
   # - r
   # - rpy2=3.4.5
   # - r-tidycensus
   # - r-tigris
   # - r-sf
   # - r-lwgeom
+  # - pygris  # Replaced by censusdis 2026-02-08
+  # - censusdata  # Replaced by censusdis 2026-02-08
   - conda-forge::pandas-gbq
   - conda-forge::pydata-google-auth
   - osmnx
   - bs4
-  - pygris  # Replaces r-tigris
-  - censusdata  # Replaces r-tidycensus
+  - censusdis  # Unified API for both ACS data and TIGER geometry
   - pip
   - pip:
     - us
