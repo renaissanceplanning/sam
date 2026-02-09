@@ -85,7 +85,11 @@ def dl_tiger_python(geom: str, **kwargs) -> gpd.GeoDataFrame:
     state = kwargs.get('state')
     county = kwargs.get('county')
     year = kwargs.get('year', 2020)
-    use_cb = kwargs.get('cb', True)  # Default to cartographic boundaries
+
+    # Blocks don't have cartographic boundary files - must use full TIGER
+    # All other geometries default to CB for faster downloads
+    default_cb = True if geography != 'block' else False
+    use_cb = kwargs.get('cb', default_cb)
 
     if not state:
         raise ValueError("'state' parameter is required")

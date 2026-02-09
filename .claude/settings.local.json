@@ -58,7 +58,8 @@
       "Bash(python3:*)",
       "Bash(where:*)",
       "Bash(C:UsersCharlesRudderminiconda3envsrenplanpython.exe C:/temp/test_acs_download_fixed.py)",
-      "WebFetch(domain:censusdis.readthedocs.io)"
+      "WebFetch(domain:censusdis.readthedocs.io)",
+      "Bash(publish the shapefile you are looking for\"\n\nThis fix allows blocks to download successfully using full TIGER files.\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
     ]
   }
 }
