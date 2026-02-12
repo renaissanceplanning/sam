@@ -16,10 +16,10 @@ dependencies:
   - conda-forge::pydata-google-auth
   - osmnx
   - bs4
-  - censusdis  # Unified API for both ACS data and TIGER geometry
   - pip
   - pip:
     - us
+    - censusdis  # Unified API for both ACS data and TIGER geometry
     - censusgeocode
     - -e ../../packages/rputils
     - -e ../../packages/algi
@@ -31,9 +31,14 @@ dependencies:
 #    - -e ../../packages/sophia
 
 rp_dependencies:
-  - pip
+  - conda-forge::pandas-gbq
+  - conda-forge::pydata-google-auth
+  - osmnx
+  - bs4
   - pip:
     - us
+    - censusdis  # Unified API for both ACS data and TIGER geometry
+    - censusgeocode
     - -e ../rputils
     - -e ../algi
     - -e ../gary

@@ -316,10 +316,10 @@ class DataMenuDownloader:
         except Exception as e:
             logger.error(f"Failed to download 2020 block groups: {e}")
 
-        # Download Blocks
+        # Download Blocks (always use decennial year for proper block definitions)
         try:
-            logger.info("Downloading TIGER blocks...")
-            blocks = tiger.blocks(geoid=self.geoids, year=self.years["acs_year"])
+            logger.info("Downloading TIGER blocks (2020 decennial)...")
+            blocks = tiger.blocks(geoid=self.geoids, year=2020)
             blocks = blocks.to_crs(self.crs)
 
             # Handle different GEOID column names across years

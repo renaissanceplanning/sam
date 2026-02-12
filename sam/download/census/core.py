@@ -127,6 +127,9 @@ def _download_single_tiger(geography: str, state: str, county: Optional[str], ye
     # Build shapefile scope (state code for state-specific, 'us' for national)
     shapefile_scope = state if state else 'us'
 
+    # Blocks are full TIGER files (large) and need a longer timeout
+    timeout = 300 if geography == 'block' else 60
+
     logger.info(f"Downloading {geography} for state={state}, county={county} with censusdis (year={year}, cb={use_cb})")
 
     # Create ShapeReader for the year
@@ -138,13 +141,15 @@ def _download_single_tiger(geography: str, state: str, county: Optional[str], ye
         gdf = reader.read_cb_shapefile(
             shapefile_scope=shapefile_scope,
             geography=geography,
-            resolution='500k'  # 500k is default, good balance
+            resolution='500k',  # 500k is default, good balance
+            timeout=timeout
         )
     else:
         # Full TIGER files (more detail, larger)
         gdf = reader.read_shapefile(
             shapefile_scope=shapefile_scope,
-            geography=geography
+            geography=geography,
+            timeout=timeout
         )
 
     # Filter by county if specified
@@ -219,55 +224,76 @@ def _generate_table_variables(table: str, max_vars: int = 50) -> list:
 
 def _transform_censusdis_output(df: pd.DataFrame, geography: str) -> pd.DataFrame:
     """
-    Transform censusdis output to match censusdata output format.
+    Transform censusdis wide-format output to long format matching the
+    format expected by sam.acs processing code.
 
-    censusdis returns columns: STATE, COUNTY, TRACT, BLOCK_GROUP, NAME, variables...
-    censusdata returned: GEOID as index with variables as columns
+    censusdis returns wide format:
+        STATE | COUNTY | TRACT | BLOCK_GROUP | B01001_001E | B01001_002E | ...
 
-    This function maintains backward compatibility by transforming censusdis output
-    to match the expected format from censusdata.
+    sam.acs expects long format:
+        GEOID | variable | estimate
+
+    Where 'variable' contains codes like 'B01001_003' (no E suffix) and
+    'estimate' contains the numeric values.
 
     Args:
         df: DataFrame from censusdis.data.download()
         geography: Geography level for GEOID construction
 
     Returns:
-        DataFrame with GEOID index matching censusdata format
+        Long-format DataFrame with columns: GEOID, variable, estimate
     """
     # Build GEOID from geographic components
     if geography == 'block group':
-        # GEOID: STATE(2) + COUNTY(3) + TRACT(6) + BLOCK_GROUP(1) = 12 digits
         df['GEOID'] = (df['STATE'].astype(str).str.zfill(2) +
                       df['COUNTY'].astype(str).str.zfill(3) +
                       df['TRACT'].astype(str).str.zfill(6) +
                       df['BLOCK_GROUP'].astype(str))
     elif geography == 'tract':
-        # GEOID: STATE(2) + COUNTY(3) + TRACT(6) = 11 digits
         df['GEOID'] = (df['STATE'].astype(str).str.zfill(2) +
                       df['COUNTY'].astype(str).str.zfill(3) +
                       df['TRACT'].astype(str).str.zfill(6))
     elif geography == 'county':
-        # GEOID: STATE(2) + COUNTY(3) = 5 digits
         df['GEOID'] = (df['STATE'].astype(str).str.zfill(2) +
                       df['COUNTY'].astype(str).str.zfill(3))
     elif geography == 'state':
-        # GEOID: STATE(2)
         df['GEOID'] = df['STATE'].astype(str).str.zfill(2)
 
-    # Drop geographic component columns (keep GEOID as column, not index)
-    # The ACS processing code expects GEOID as a column, not an index
-    geo_cols = ['STATE', 'COUNTY', 'TRACT', 'BLOCK_GROUP']
-    df = df.drop(columns=[c for c in geo_cols if c in df.columns], errors='ignore')
+    # Identify estimate columns (ending in 'E'), excluding geo/metadata columns.
+    # censusdis always returns E-suffixed column names (e.g. B01001_002E).
+    # Both group_variables and _generate_table_variables produce E-suffixed codes.
+    geo_cols = {'STATE', 'COUNTY', 'TRACT', 'BLOCK_GROUP', 'NAME', 'GEOID'}
 
-    # Keep only GEOID, NAME, and estimate columns (_E suffix)
-    # Drop margin of error (_M) and annotation columns
-    var_cols = ['GEOID']
-    var_cols.extend([col for col in df.columns if col.endswith('E')])
-    if 'NAME' in df.columns:
-        var_cols.append('NAME')
-    df = df[var_cols]
+    import re
+    estimate_cols = [col for col in df.columns
+                     if col not in geo_cols
+                     and re.match(r'^[BC]\d{5}_\d{3}E$', col)]
 
-    return df
+    if not estimate_cols:
+        # Fallback: grab anything ending in 'E' that isn't a geo column
+        estimate_cols = [col for col in df.columns
+                         if col.endswith('E') and col not in geo_cols]
+
+    if not estimate_cols:
+        logger.warning(f"No estimate columns found. Columns: {list(df.columns)}")
+        # Last resort: everything that isn't a geo column
+        estimate_cols = [col for col in df.columns if col not in geo_cols]
+
+    # Melt wide to long
+    df_long = df.melt(
+        id_vars=['GEOID'],
+        value_vars=estimate_cols,
+        var_name='variable',
+        value_name='estimate'
+    )
+
+    # Strip trailing 'E' suffix: B01001_003E -> B01001_003
+    # This matches the variable codes in ACS config DataFrames (no E suffix)
+    df_long['variable'] = df_long['variable'].apply(
+        lambda v: v[:-1] if v.endswith('E') else v
+    )
+
+    return df_long
 
 
 def dl_census_python(
@@ -331,21 +357,24 @@ def dl_census_python(
     # Handle table vs variables
     # In R tidycensus, you can specify either 'table' (gets all vars) or 'variables' (specific vars)
     if table is not None and variables is None:
-        # censusdis requires individual variable codes
-        # For tables, we need to get all variables that belong to that table
-        # ced.variables.group_leaves returns list of leaf variables from table/group
+        # censusdis requires individual variable codes with 'E' suffix.
+        # Use group_variables (NOT group_leaves) to get ALL variables including
+        # subtotals/parents. group_leaves only returns leaf nodes and excludes
+        # aggregate variables like B01001_002E (male total) and B01001_026E
+        # (female total) that ACS configs depend on.
+        import re
         try:
-            variables = ced.variables.group_leaves('acs/acs5', year, table, skip_annotations=True)
+            all_vars = ced.variables.group_variables('acs/acs5', year, table)
+            # Filter to estimate variables only (exclude GEO_ID, etc.)
+            variables = [v for v in all_vars
+                         if re.match(r'^[BC]\d{5}_\d{3}E$', v)]
 
             if not variables or len(variables) == 0:
-                # censusdis returned empty - generate variables manually
-                logger.info(f"censusdis returned no variables for {table}. Generating manually.")
+                logger.info(f"censusdis returned no estimate variables for {table}. Generating manually.")
                 variables = _generate_table_variables(table)
             else:
-                logger.info(f"Expanded table {table} to {len(variables)} variables")
+                logger.info(f"Expanded table {table} to {len(variables)} variables (all levels)")
         except Exception as e:
-            # censusdis threw exception - generate variables manually
-            # This creates variable codes in the format Census API expects: B01001_001E, B01001_002E, etc.
             logger.warning(f"Could not expand table {table}: {e}. Generating manually.")
             variables = _generate_table_variables(table)
 

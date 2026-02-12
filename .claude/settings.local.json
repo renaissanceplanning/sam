@@ -59,7 +59,19 @@
       "Bash(where:*)",
       "Bash(C:UsersCharlesRudderminiconda3envsrenplanpython.exe C:/temp/test_acs_download_fixed.py)",
       "WebFetch(domain:censusdis.readthedocs.io)",
-      "Bash(publish the shapefile you are looking for\"\n\nThis fix allows blocks to download successfully using full TIGER files.\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+      "Bash(publish the shapefile you are looking for\"\n\nThis fix allows blocks to download successfully using full TIGER files.\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(conda list:*)",
+      "Bash(C:UsersCharlesRudderminiconda3condabinconda.bat list)",
+      "Bash(findstr:*)",
+      "Bash(\"C:\\\\Users\\\\CharlesRudder\\\\miniconda3\\\\envs\\\\renplan\\\\python.exe\" -m pip list)",
+      "Bash(\"C:\\\\Users\\\\CharlesRudder\\\\miniconda3\\\\envs\\\\renplan\\\\python.exe\" --version)",
+      "Bash(\"C:\\\\Users\\\\CharlesRudder\\\\miniconda3\\\\envs\\\\renplan\\\\python.exe\" -c:*)",
+      "Bash(\"C:\\\\Users\\\\CharlesRudder\\\\miniconda3\\\\envs\\\\sam\\\\python.exe\" --version)",
+      "Bash(\"C:\\\\Users\\\\CharlesRudder\\\\miniconda3\\\\envs\\\\renplan\\\\python.exe\" -c \"import numpy; print\\(numpy.lib.__file__\\); print\\(numpy.__version__\\)\")",
+      "Bash(\"C:\\\\Users\\\\CharlesRudder\\\\miniconda3\\\\envs\\\\renplan\\\\python.exe\" -m pip show geopandas numpy rasterio fiona)",
+      "Bash(\"C:\\\\Users\\\\CharlesRudder\\\\miniconda3\\\\envs\\\\renplan\\\\python.exe\":*)",
+      "Bash(/c/Users/CharlesRudder/miniconda3/condabin/conda.bat install:*)",
+      "Bash(/c/Users/CharlesRudder/miniconda3/envs/renplan/python.exe:*)"
     ]
   }
 }

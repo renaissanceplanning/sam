@@ -142,3 +142,5 @@ dmypy.json
 
 /sam/tests/data/RAW/
 /sam/tests/data/PRODUCTION/
+/.claude
+/.claude
