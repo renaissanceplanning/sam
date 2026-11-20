@@ -56,6 +56,14 @@ def _bbox_from_geometry(geometry) -> tuple:
         return geometry.bounds
 
 
+_EMPTY_COLUMNS = [
+    "id", "name", "basic_category", "category_primary", "category_alternate",
+    "category_hierarchy", "brand_name", "brand_wikidata", "confidence",
+    "operating_status", "website", "phone", "street_address", "locality",
+    "region", "postcode", "country", "geometry",
+]
+
+
 def download_overture_places(
     geometry: Union[gpd.GeoDataFrame, gpd.GeoSeries],
     release: str = _DEFAULT_RELEASE,
@@ -68,8 +76,8 @@ def download_overture_places(
     Download Overture Maps Places (POI) data for a study area.
 
     Queries Overture GeoParquet on S3 via DuckDB, filtering by bounding box
-    and optionally by category and confidence. Returns a GeoDataFrame of
-    point features.
+    and optionally by category and confidence. Returns a GeoDataFrame with
+    full taxonomy, brand, and address detail for land-use classification.
 
     Parameters
     ----------
@@ -91,14 +99,37 @@ def download_overture_places(
     Returns
     -------
     gpd.GeoDataFrame
-        Point features with columns: id, name, basic_category, confidence,
-        operating_status, websites, phones, addresses, geometry.
+        Point features with columns:
+
+        Identity:
+            id, name, confidence, operating_status
+
+        Taxonomy (for land-use classification):
+            basic_category - top-level category (e.g. "restaurant")
+            category_primary - detailed primary from taxonomy struct
+            category_alternate - pipe-delimited alternate categories
+            category_hierarchy - pipe-delimited full hierarchy path
+
+        Brand (useful for auto-oriented retail identification):
+            brand_name - brand display name
+            brand_wikidata - Wikidata QID for the brand
+
+        Contact:
+            website, phone
+
+        Address:
+            street_address, locality, region, postcode, country
+
+        Geometry:
+            geometry - Point in EPSG:4326
 
     Examples
     --------
     >>> study_area = gpd.read_file("study_area.shp")
     >>> places = download_overture_places(study_area)
-    >>> restaurants = download_overture_places(study_area, category="restaurant")
+    >>> auto = places[places['brand_name'].notna() & places['basic_category'].isin([
+    ...     'auto_dealer', 'auto_repair', 'gas_station', 'car_wash'
+    ... ])]
     """
     xmin, ymin, xmax, ymax = _bbox_from_geometry(geometry)
     parquet_path = (
@@ -134,11 +165,31 @@ def download_overture_places(
         SELECT
             id,
             names.primary AS name,
+
+            -- Taxonomy: basic_category plus the full hierarchy
             basic_category,
+            taxonomy.primary AS category_primary,
+            array_to_string(taxonomy.alternates, '|') AS category_alternate,
+            array_to_string(taxonomy.hierarchy, '|') AS category_hierarchy,
+
+            -- Brand
+            brand.names.primary AS brand_name,
+            brand.wikidata AS brand_wikidata,
+
             confidence,
             operating_status,
+
+            -- Contact (first entry from each list)
             websites[1] AS website,
             phones[1] AS phone,
+
+            -- Address (first entry, flattened)
+            addresses[1].freeform AS street_address,
+            addresses[1].locality AS locality,
+            addresses[1].region AS region,
+            addresses[1].postcode AS postcode,
+            addresses[1].country AS country,
+
             geometry
         FROM read_parquet('{parquet_path}', filename=true, hive_partitioning=1)
         WHERE {where_sql}
@@ -152,8 +203,7 @@ def download_overture_places(
     if df.empty:
         logger.warning("No places found for the given area and filters.")
         return gpd.GeoDataFrame(
-            columns=["id", "name", "basic_category", "confidence",
-                     "operating_status", "website", "phone", "geometry"],
+            columns=_EMPTY_COLUMNS,
             geometry="geometry",
             crs="EPSG:4326",
         )
@@ -179,11 +229,13 @@ def download_overture_places(
 def list_overture_categories(
     geometry: Union[gpd.GeoDataFrame, gpd.GeoSeries],
     release: str = _DEFAULT_RELEASE,
+    by_brand: bool = False,
 ) -> pd.DataFrame:
     """
     List available Overture place categories within a study area.
 
-    Useful for exploring what category values are present before filtering.
+    Useful for exploring what category values are present before filtering,
+    or for inspecting which brands appear under each category.
 
     Parameters
     ----------
@@ -191,34 +243,53 @@ def list_overture_categories(
         Study area boundary.
     release : str, optional
         Overture release tag.
+    by_brand : bool, optional
+        If True, group by (basic_category, brand_name) instead of just
+        basic_category. Useful for identifying auto-oriented retail chains.
 
     Returns
     -------
     pd.DataFrame
-        Columns: basic_category, count. Sorted by count descending.
+        Sorted by count descending. Columns depend on by_brand:
+        - False: basic_category, category_primary, count
+        - True: basic_category, brand_name, count
     """
     xmin, ymin, xmax, ymax = _bbox_from_geometry(geometry)
     parquet_path = (
         f"s3://{_S3_BUCKET}/release/{release}/{_PLACES_PATH}"
     )
 
-    query = f"""
-        SELECT
-            basic_category,
-            COUNT(*) as count
-        FROM read_parquet('{parquet_path}', filename=true, hive_partitioning=1)
-        WHERE
-            bbox.xmin >= {xmin} AND
-            bbox.xmax <= {xmax} AND
-            bbox.ymin >= {ymin} AND
-            bbox.ymax <= {ymax}
-        GROUP BY basic_category
-        ORDER BY count DESC
-    """
+    bbox_where = (
+        f"bbox.xmin >= {xmin} AND bbox.xmax <= {xmax} AND "
+        f"bbox.ymin >= {ymin} AND bbox.ymax <= {ymax}"
+    )
+
+    if by_brand:
+        query = f"""
+            SELECT
+                basic_category,
+                brand.names.primary AS brand_name,
+                COUNT(*) as count
+            FROM read_parquet('{parquet_path}', filename=true, hive_partitioning=1)
+            WHERE {bbox_where}
+            GROUP BY basic_category, brand.names.primary
+            ORDER BY count DESC
+        """
+    else:
+        query = f"""
+            SELECT
+                basic_category,
+                taxonomy.primary AS category_primary,
+                COUNT(*) as count
+            FROM read_parquet('{parquet_path}', filename=true, hive_partitioning=1)
+            WHERE {bbox_where}
+            GROUP BY basic_category, taxonomy.primary
+            ORDER BY count DESC
+        """
 
     db = _get_connection()
     result = db.execute(query).df()
     db.close()
 
-    logger.info(f"Found {len(result)} unique categories in area")
+    logger.info(f"Found {len(result)} category entries in area")
     return result
