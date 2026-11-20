@@ -12,3 +12,8 @@ from . import pad
 from . import core
 from . import sld
 from . import ms_footprints
+try:
+    from . import POI
+except ImportError:
+    # POI requires duckdb - skip if not available
+    POI = None

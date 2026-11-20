@@ -12,6 +12,7 @@ Install dependencies:
     pip install censusdis
 """
 import logging
+import os
 from typing import Optional, Dict, Any, List
 import numpy as np
 import pandas as pd
@@ -132,6 +133,14 @@ def _download_single_tiger(geography: str, state: str, county: Optional[str], ye
 
     logger.info(f"Downloading {geography} for state={state}, county={county} with censusdis (year={year}, cb={use_cb})")
 
+    # 2020 blocks use TABBLOCK20 path which censusdis doesn't handle.
+    # Download directly from Census FTP instead.
+    if geography == 'block' and year == 2020:
+        gdf = _download_2020_blocks_direct(state, county)
+        if gdf.crs != 'EPSG:4269':
+            gdf = gdf.to_crs('EPSG:4269')
+        return gdf
+
     # Create ShapeReader for the year
     reader = cem.ShapeReader(year=year)
 
@@ -167,6 +176,52 @@ def _download_single_tiger(geography: str, state: str, county: Optional[str], ye
     # Ensure CRS is EPSG:4269 (NAD83) to match pygris behavior
     if gdf.crs != 'EPSG:4269':
         gdf = gdf.to_crs('EPSG:4269')
+
+    return gdf
+
+
+def _download_2020_blocks_direct(state: str, county: Optional[str] = None) -> gpd.GeoDataFrame:
+    """
+    Download 2020 Census blocks directly from Census FTP.
+
+    censusdis doesn't handle the TABBLOCK20 naming convention used for
+    2020 decennial blocks, so we download the zip directly.
+
+    Args:
+        state: State FIPS code (2-digit)
+        county: County FIPS code (3-digit), optional — filters after download
+
+    Returns:
+        GeoDataFrame with 2020 block geometries
+    """
+    import tempfile
+    import urllib.request
+    import zipfile
+
+    url = f"https://www2.census.gov/geo/tiger/TIGER2020/TABBLOCK20/tl_2020_{state}_tabblock20.zip"
+    logger.info(f"Downloading 2020 blocks directly: {url}")
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        zip_path = os.path.join(tmpdir, "blocks.zip")
+        urllib.request.urlretrieve(url, zip_path)
+
+        with zipfile.ZipFile(zip_path, 'r') as zf:
+            zf.extractall(tmpdir)
+
+        shp_files = [f for f in os.listdir(tmpdir) if f.endswith('.shp')]
+        if not shp_files:
+            raise FileNotFoundError(f"No shapefile found in downloaded zip from {url}")
+
+        gdf = gpd.read_file(os.path.join(tmpdir, shp_files[0]))
+
+    logger.info(f"Downloaded {len(gdf)} blocks for state {state}")
+
+    # Filter to county if specified
+    if county:
+        col = 'COUNTYFP20' if 'COUNTYFP20' in gdf.columns else 'COUNTYFP'
+        if col in gdf.columns:
+            gdf = gdf[gdf[col] == county].copy()
+            logger.info(f"Filtered to {len(gdf)} blocks in county {county}")
 
     return gdf
 
@@ -504,7 +559,7 @@ dl_acs = dl_acs_python
 # =============================================================================
 
 # LODES constants
-__LODES_YEAR__ = 2022
+__LODES_YEAR__ = 2023  # LODES 8.4 released Dec 2025
 __LODES_VERSION__ = 8
 __LODES_URL__ = "https://lehd.ces.census.gov/data/lodes/LODES"
 

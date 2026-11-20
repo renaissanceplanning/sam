@@ -15,7 +15,7 @@ from shapely.geometry import Polygon
 from warnings import warn
 
 import gary
-from algi.dep.BBOX import BBOX
+from rputils.geometry.bbox import BBOX
 from osmnx._errors import ResponseStatusCodeError
 
 # %% Globals
